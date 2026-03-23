@@ -5,7 +5,7 @@ import (
 	"io"
 
 	"github.com/OJOMB/monkey/internal/lexer"
-	"github.com/OJOMB/monkey/internal/lexer/tokens"
+	"github.com/OJOMB/monkey/internal/tokens"
 )
 
 const Prompt = ">> "

@@ -1,6 +1,6 @@
 package lexer
 
-import "github.com/OJOMB/monkey/internal/lexer/tokens"
+import "github.com/OJOMB/monkey/internal/tokens"
 
 type Lexer struct {
 	input        string
