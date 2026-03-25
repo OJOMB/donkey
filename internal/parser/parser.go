@@ -1,9 +1,37 @@
 package parser
 
 import (
+	"fmt"
+	"strconv"
+
 	"github.com/OJOMB/monkey/internal/ast"
 	"github.com/OJOMB/monkey/internal/lexer"
 	"github.com/OJOMB/monkey/internal/tokens"
+	"github.com/OJOMB/monkey/pkg/logs"
+)
+
+const (
+	// Precedence levels for parsing expressions
+	_ int = iota
+	// LOWEST is the lowest precedence level, used for expressions that don't have any operators.
+	LOWEST
+	// EQUALS is the precedence level for the equality operator (==).
+	EQUALS // ==
+	// LESSGREATER is the precedence level for the less than and greater than operators (< and >).
+	LESSGREATER // > or <
+	// SUM is the precedence level for the addition operator (+).
+	SUM // +
+	// PRODUCT is the precedence level for the multiplication operator (*).
+	PRODUCT // *
+	// PREFIX is the precedence level for prefix operators, such as -X or !X.
+	PREFIX // -X or !X
+	// CALL is the precedence level for function call expressions, such as myFunction(X).
+	CALL // myFunction(X)
+)
+
+type (
+	parseFuncPrefix func() ast.Expression
+	parseFuncInfix  func(expr ast.Expression) ast.Expression
 )
 
 type Parser struct {
@@ -11,16 +39,51 @@ type Parser struct {
 
 	currToken tokens.Token
 	peekToken tokens.Token
+
+	Errors []string
+
+	parseFuncsPrefix map[tokens.TokenType]parseFuncPrefix
+	parseFuncsInfix  map[tokens.TokenType]parseFuncInfix
+
+	logger logs.Logger
 }
 
-func New(l *lexer.Lexer) *Parser {
-	p := &Parser{l: l}
+func New(l *lexer.Lexer, logger logs.Logger) (*Parser, error) {
+	if logger == nil {
+		// null logger to avoid nil pointer dereference
+		logger = logs.NewNullSlogger()
+	}
+
+	if !l.IsInitialised() {
+		return nil, fmt.Errorf("lexer is not initialised with an input string")
+	}
+
+	p := &Parser{
+		l:                l,
+		parseFuncsPrefix: make(map[tokens.TokenType]parseFuncPrefix),
+		parseFuncsInfix:  make(map[tokens.TokenType]parseFuncInfix),
+		logger:           logger,
+	}
+
+	// register prefix parse functions for different token types
+	p.RegisterPrefix(tokens.TokenTypeIdent, p.parseExpressionIdentifier)
+	p.RegisterPrefix(tokens.TokenTypeInt, p.parseLiteralInteger)
+	p.RegisterPrefix(tokens.TokenTypeBang, p.parseExpressionPrefix)
+	p.RegisterPrefix(tokens.TokenTypeMinus, p.parseExpressionPrefix)
 
 	// Read two tokens, so currToken and peekToken are both set
 	p.nextToken()
 	p.nextToken()
 
-	return p
+	return p, nil
+}
+
+func (p *Parser) RegisterPrefix(tokType tokens.TokenType, fn parseFuncPrefix) {
+	p.parseFuncsPrefix[tokType] = fn
+}
+
+func (p *Parser) RegisterInfix(tokType tokens.TokenType, fn parseFuncInfix) {
+	p.parseFuncsInfix[tokType] = fn
 }
 
 func (p *Parser) nextToken() {
@@ -29,5 +92,165 @@ func (p *Parser) nextToken() {
 }
 
 func (p *Parser) ParseProgram() *ast.Program {
-	return nil
+	prgrm := ast.NewProgram()
+	for p.currToken.Type != tokens.TokenTypeEOF {
+		if stmt := p.parseStatement(); stmt != nil {
+			prgrm.Statements = append(prgrm.Statements, stmt)
+		}
+
+		p.nextToken()
+	}
+
+	return prgrm
+}
+
+func (p *Parser) noPrefixParseFuncError(tokType tokens.TokenType) {
+	msg := fmt.Sprintf("no prefix parse function for %s found", tokType)
+	p.Errors = append(p.Errors, msg)
+}
+
+// peekError adds an error message to the parser's Errors slice indicating that the next token was not of the expected type.
+func (p *Parser) peekError(tokType tokens.TokenType) {
+	errMsg := fmt.Sprintf("expected next token type to be %s, got %s", tokType, p.peekToken.Type)
+	p.Errors = append(p.Errors, errMsg)
+}
+
+func (p *Parser) parseStatement() ast.Statement {
+	var stmt ast.Statement
+	switch p.currToken.Type {
+	case tokens.TokenTypeLet:
+		stmt = p.parseStatementLet()
+	case tokens.TokenTypeReturn:
+		stmt = p.parseStatementReturn()
+	default:
+		stmt = p.parseExpressionStatement()
+	}
+
+	return stmt
+}
+
+// parseStatementLet parses a let statement and returns an ast.LetStatement node.
+func (p *Parser) parseStatementLet() *ast.StatementLet {
+	// first token must be LET
+	if p.currToken.Type != tokens.TokenTypeLet {
+		return nil
+	}
+
+	var ls = &ast.StatementLet{Token: p.currToken}
+
+	// next token must be ident
+	if !p.expectPeek(tokens.TokenTypeIdent) {
+		return nil
+	}
+
+	ls.Name = &ast.ExpressionIdentifier{
+		Token: p.currToken,
+		Value: p.currToken.Lexeme,
+	}
+
+	// next token must be assign =
+	if !p.expectPeek(tokens.TokenTypeAssign) {
+		return nil
+	}
+
+	// next we have the expression which will be the LetStatement.Value
+	value := p.parseExpression(LOWEST)
+
+	ls.Value = value
+
+	// we need to see a semicolon to end the expression
+	if p.currToken.Type != tokens.TokenTypeSemicolon {
+		return nil
+	}
+
+	return ls
+}
+
+func (p *Parser) parseStatementReturn() *ast.ReturnStatement {
+	if p.currToken.Type != tokens.TokenTypeReturn {
+		return nil
+	}
+
+	rs := &ast.ReturnStatement{Token: p.currToken}
+
+	p.nextToken()
+
+	rs.ReturnValue = p.parseExpression(LOWEST)
+
+	if p.currToken.Type != tokens.TokenTypeSemicolon {
+		return nil
+	}
+
+	return rs
+}
+
+func (p *Parser) parseLiteralInteger() ast.Expression {
+	lit := &ast.LiteralInteger{Token: p.currToken}
+
+	value, err := strconv.Atoi(p.currToken.Lexeme)
+	if err != nil {
+		msg := fmt.Sprintf("could not parse %q as integer", p.currToken.Lexeme)
+		p.Errors = append(p.Errors, msg)
+		return nil
+	}
+
+	lit.Value = value
+
+	return lit
+}
+
+func (p *Parser) parseExpressionStatement() ast.Statement {
+	if p.currToken.Type == tokens.TokenTypeSemicolon {
+		return nil
+	}
+
+	stmt := &ast.ExpressionStatement{Token: p.currToken}
+	stmt.Expression = p.parseExpression(LOWEST)
+
+	return stmt
+}
+
+// parseExpression parses an expression based on the precedence of the current token and returns an ast.Expression node representing the parsed expression.
+func (p *Parser) parseExpression(precedence int) ast.Expression {
+	prefixFunc := p.parseFuncsPrefix[p.currToken.Type]
+	if prefixFunc == nil {
+		p.noPrefixParseFuncError(p.currToken.Type)
+		return nil
+	}
+
+	leftExp := prefixFunc()
+
+	return leftExp
+}
+
+func (p *Parser) parseExpressionIdentifier() ast.Expression {
+	return &ast.ExpressionIdentifier{
+		Token: p.currToken,
+		Value: p.currToken.Lexeme,
+	}
+}
+
+func (p *Parser) parseExpressionPrefix() ast.Expression {
+	expression := &ast.ExpressionPrefix{
+		Token:    p.currToken,
+		Operator: p.currToken.Lexeme,
+	}
+
+	p.nextToken()
+
+	expression.Right = p.parseExpression(PREFIX)
+
+	return expression
+}
+
+// expectPeek checks if the peek token is of the expected type, and if so advances the parser's tokens.
+// it returns true if the peek token is of the expected type, and false otherwise.
+func (p *Parser) expectPeek(tokType tokens.TokenType) bool {
+	if p.peekToken.Type != tokType {
+		p.peekError(tokType)
+		return false
+	}
+
+	p.nextToken()
+	return true
 }

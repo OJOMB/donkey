@@ -1,12 +1,14 @@
 package ast
 
-import "github.com/OJOMB/monkey/internal/tokens"
+import "strings"
 
 // Node is the base interface for all nodes in the AST.
 // It has a method TokenLexeme() that returns the lexeme of the token associated with the node.
 type Node interface {
 	// TokenLexeme returns the lexeme of the token associated with the node.
 	TokenLexeme() string
+	// String returns a string representation of the node.
+	String() string
 }
 
 // Statement represents a statement in the AST.
@@ -30,6 +32,12 @@ type Program struct {
 	Statements []Statement
 }
 
+func NewProgram() *Program {
+	return &Program{
+		Statements: make([]Statement, 0),
+	}
+}
+
 // TokenLexeme returns the lexeme of the first statement's token in the program, or an empty string if there are no statements.
 func (p *Program) TokenLexeme() string {
 	if len(p.Statements) > 0 {
@@ -39,28 +47,12 @@ func (p *Program) TokenLexeme() string {
 	return ""
 }
 
-// LetStatement represents a let statement in the AST. It contains a token, an identifier for the variable name, and an expression for the value.
-type LetStatement struct {
-	// Token is the token associated with the let statement, which is typically a token.TokenTypeLet token.
-	Token tokens.Token
-	// Name is the identifier for the variable name being declared in the let statement.
-	// LHS of the let statement, which is the variable name being declared.
-	Name *Identifier
-	// Value is the expression that represents the value being assigned to the variable in the let statement.
-	// RHS of the let statement, which is the expression representing the value being assigned to the variable.
-	Value Expression
+// String returns a string representation of the program by concatenating the string representations of all its statements.
+func (p *Program) String() string {
+	var result = strings.Builder{}
+	for _, stmt := range p.Statements {
+		_, _ = result.WriteString(stmt.String())
+	}
+
+	return result.String()
 }
-
-func (ls *LetStatement) statementNode()      {}
-func (ls *LetStatement) TokenLexeme() string { return ls.Token.Lexeme }
-
-// Identifier represents an identifier in the AST. It contains a token and a value for the identifier name.
-type Identifier struct {
-	// Token is the token associated with the identifier, which is typically a token.TokenTypeIdent token.
-	Token tokens.Token
-	// Value is the name of the identifier, which is the lexeme of the token.
-	Value string
-}
-
-func (i *Identifier) expressionNode()     {}
-func (i *Identifier) TokenLexeme() string { return i.Token.Lexeme }

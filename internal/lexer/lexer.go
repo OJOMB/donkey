@@ -11,9 +11,16 @@ type Lexer struct {
 
 func New(input string) *Lexer {
 	l := &Lexer{input: input}
+
+	// read the first char so that the lexer is ready to return the first token when NextToken is called
 	l.readChar()
 
 	return l
+}
+
+// IsInitialised returns true if the lexer has been initialised with an input string and is ready to return tokens, and false otherwise.
+func (l *Lexer) IsInitialised() bool {
+	return l != nil && (l.position != 0 || l.readPosition > 1 || l.ch != 0)
 }
 
 func (l *Lexer) NextToken() tokens.Token {
