@@ -32,6 +32,10 @@ func TestNextToken1(t *testing.T) {
 					let __one = false;
 				} elif (ten10 > 10) {
 				 	let __two = true;
+				} elif (ten10 >= 10) {
+					let __twoPointFive = true;
+				} elif (ten10 <= 10) {
+					let __twoPointSix = true;
 				} elif (ten10 == 10) {
 					let __three = false;
 				} elif (ten10 != 10) {
@@ -99,6 +103,32 @@ func TestNextToken1(t *testing.T) {
 				{Type: tokens.TokenTypeLBrace, Lexeme: "{"},
 				{Type: tokens.TokenTypeLet, Lexeme: "let"},
 				{Type: tokens.TokenTypeIdent, Lexeme: "__two"},
+				{Type: tokens.TokenTypeAssign, Lexeme: "="},
+				{Type: tokens.TokenTypeTrue, Lexeme: "true"},
+				{Type: tokens.TokenTypeSemicolon, Lexeme: ";"},
+				{Type: tokens.TokenTypeRBrace, Lexeme: "}"},
+				{Type: tokens.TokenTypeElif, Lexeme: "elif"},
+				{Type: tokens.TokenTypeLParen, Lexeme: "("},
+				{Type: tokens.TokenTypeIdent, Lexeme: "ten10"},
+				{Type: tokens.TokenTypeGTEQ, Lexeme: ">="},
+				{Type: tokens.TokenTypeInt, Lexeme: "10"},
+				{Type: tokens.TokenTypeRParen, Lexeme: ")"},
+				{Type: tokens.TokenTypeLBrace, Lexeme: "{"},
+				{Type: tokens.TokenTypeLet, Lexeme: "let"},
+				{Type: tokens.TokenTypeIdent, Lexeme: "__twoPointFive"},
+				{Type: tokens.TokenTypeAssign, Lexeme: "="},
+				{Type: tokens.TokenTypeTrue, Lexeme: "true"},
+				{Type: tokens.TokenTypeSemicolon, Lexeme: ";"},
+				{Type: tokens.TokenTypeRBrace, Lexeme: "}"},
+				{Type: tokens.TokenTypeElif, Lexeme: "elif"},
+				{Type: tokens.TokenTypeLParen, Lexeme: "("},
+				{Type: tokens.TokenTypeIdent, Lexeme: "ten10"},
+				{Type: tokens.TokenTypeLTEQ, Lexeme: "<="},
+				{Type: tokens.TokenTypeInt, Lexeme: "10"},
+				{Type: tokens.TokenTypeRParen, Lexeme: ")"},
+				{Type: tokens.TokenTypeLBrace, Lexeme: "{"},
+				{Type: tokens.TokenTypeLet, Lexeme: "let"},
+				{Type: tokens.TokenTypeIdent, Lexeme: "__twoPointSix"},
 				{Type: tokens.TokenTypeAssign, Lexeme: "="},
 				{Type: tokens.TokenTypeTrue, Lexeme: "true"},
 				{Type: tokens.TokenTypeSemicolon, Lexeme: ";"},

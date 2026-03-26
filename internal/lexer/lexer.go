@@ -3,12 +3,17 @@ package lexer
 import "github.com/OJOMB/monkey/internal/tokens"
 
 type Lexer struct {
-	input        string
-	position     int  // current position in input (points to current char)
-	readPosition int  // current reading position in input (after current char)
-	ch           byte // current char literal under examination (ASCII single byte chars - Unicode not supported)
+	// input is the string input that the lexer will tokenize.
+	input string
+	// position is the current position in the input (points to current char)
+	position int
+	// readPosition is the current reading position in input (after current char)
+	readPosition int
+	// ch is the current char literal under examination (ASCII single byte chars - Unicode not supported)
+	ch byte
 }
 
+// New creates a new Lexer instance with the given input string and returns a pointer to it. The lexer is initialised and ready to return tokens when NextToken is called.
 func New(input string) *Lexer {
 	l := &Lexer{input: input}
 
@@ -49,8 +54,20 @@ func (l *Lexer) NextToken() tokens.Token {
 	case '-':
 		tok = tokens.New(tokens.TokenTypeMinus, "-")
 	case '<':
+		if l.peekChar() == '=' {
+			l.readChar()
+			tok = tokens.New(tokens.TokenTypeLTEQ, "<=")
+			break
+		}
+
 		tok = tokens.New(tokens.TokenTypeLT, "<")
 	case '>':
+		if l.peekChar() == '=' {
+			l.readChar()
+			tok = tokens.New(tokens.TokenTypeGTEQ, ">=")
+			break
+		}
+
 		tok = tokens.New(tokens.TokenTypeGT, ">")
 	case '*':
 		tok = tokens.New(tokens.TokenTypeAsterisk, "*")

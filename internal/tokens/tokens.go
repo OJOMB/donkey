@@ -29,6 +29,10 @@ const (
 	TokenTypeForwardSlash TokenType = "/"
 	// TokenTypeLT represents the less than operator token.
 	TokenTypeLT TokenType = "<"
+	// TokenTypeLTEQ represents the less than or equal to operator token.
+	TokenTypeLTEQ TokenType = "<="
+	// TokenTypeGTEQ represents the greater than or equal to operator token.
+	TokenTypeGTEQ TokenType = ">="
 	// TokenTypeGT represents the greater than operator token.
 	TokenTypeGT TokenType = ">"
 	// TokenTypeComma represents the comma token.

@@ -16,17 +16,17 @@ const (
 	// precedenceLowest is the lowest precedence level, used for expressions that don't have any operators.
 	precedenceLowest
 	// precedenceEquals is the precedence level for the equality operator (==).
-	precedenceEquals // ==
+	precedenceEquals
 	// precedenceLessGreater is the precedence level for the less than and greater than operators (< and >).
-	precedenceLessGreater // > or <
-	// precedenceSum is the precedence level for the addition operator (+).
-	precedenceSum // +
-	// precedenceProduct is the precedence level for the multiplication operator (*).
-	precedenceProduct // *
+	precedenceLessGreater
+	// precedenceAdditive is the precedence level for addition and subtraction operators (+ and -).
+	precedenceAdditive
+	// precedenceMultiplicative is the precedence level for multiplication and division operators (* and /).
+	precedenceMultiplicative
 	// precedencePrefix is the precedence level for prefix operators, such as -X or !X.
-	precedencePrefix // -X or !X
+	precedencePrefix
 	// precedenceCall is the precedence level for function call expressions, such as myFunction(X).
-	precedenceCall // myFunction(X)
+	precedenceCall
 )
 
 var precedences = map[tokens.TokenType]int{
@@ -34,10 +34,10 @@ var precedences = map[tokens.TokenType]int{
 	tokens.TokenTypeNotEq:        precedenceEquals,
 	tokens.TokenTypeLT:           precedenceLessGreater,
 	tokens.TokenTypeGT:           precedenceLessGreater,
-	tokens.TokenTypePlus:         precedenceSum,
-	tokens.TokenTypeMinus:        precedenceSum,
-	tokens.TokenTypeForwardSlash: precedenceProduct,
-	tokens.TokenTypeAsterisk:     precedenceProduct,
+	tokens.TokenTypePlus:         precedenceAdditive,
+	tokens.TokenTypeMinus:        precedenceAdditive,
+	tokens.TokenTypeForwardSlash: precedenceMultiplicative,
+	tokens.TokenTypeAsterisk:     precedenceMultiplicative,
 	tokens.TokenTypeLParen:       precedenceCall,
 }
 
@@ -221,7 +221,8 @@ func (p *Parser) parseExpression(precedence int) ast.Expression {
 
 	leftExp := prefixFunc()
 
-	// next check if the expression ends here or if we have an infix operator to parse
+	// next check if the expression ends here or if we more to parse
+	//
 	for p.peekToken.Type != tokens.TokenTypeSemicolon && precedence < p.peekPrecedence() {
 		infixFunc := p.parseFuncsInfix[p.peekToken.Type]
 		if infixFunc == nil {
