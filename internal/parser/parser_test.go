@@ -35,7 +35,7 @@ func TestLetStmts(t *testing.T) {
 							Token: tokens.Token{Type: "IDENT", Lexeme: "x"},
 							Value: "x",
 						},
-						Value: &ast.LiteralInteger{
+						Value: &ast.ExpressionLiteralInteger{
 							Token: tokens.Token{Type: "INT", Lexeme: "5"},
 							Value: 5,
 						},
@@ -140,28 +140,147 @@ func TestIntegerExpression(t *testing.T) {
 	stmt, ok := program.Statements[0].(*ast.ExpressionStatement)
 	require.True(t, ok)
 
-	intLiteral, ok := stmt.Expression.(*ast.LiteralInteger)
+	intLiteral, ok := stmt.Expression.(*ast.ExpressionLiteralInteger)
 	require.True(t, ok)
 	assert.Equal(t, 5, intLiteral.Value)
 	assert.Equal(t, "5", intLiteral.TokenLexeme())
 }
 
 func TestExpressionPrefix(t *testing.T) {
-	input := "!5;"
+	t.Run("prefix expression: !", func(t *testing.T) {
+		input := "!5;"
 
-	p, err := New(lexer.New(input), nil)
-	require.NoError(t, err)
+		p, err := New(lexer.New(input), nil)
+		require.NoError(t, err)
 
-	program := p.ParseProgram()
-	assert.NotNil(t, program)
-	require.Len(t, program.Statements, 1)
+		program := p.ParseProgram()
+		assert.NotNil(t, program)
+		require.Len(t, program.Statements, 1)
 
-	stmt, ok := program.Statements[0].(*ast.ExpressionStatement)
-	require.True(t, ok)
+		stmt, ok := program.Statements[0].(*ast.ExpressionStatement)
+		require.True(t, ok)
 
-	prefixExp, ok := stmt.Expression.(*ast.ExpressionPrefix)
-	require.True(t, ok)
-	assert.Equal(t, "!", prefixExp.Operator)
-	assert.Equal(t, 5, prefixExp.Right.(*ast.LiteralInteger).Value)
-	assert.Equal(t, "!", prefixExp.TokenLexeme())
+		assert.IsType(t, &ast.ExpressionPrefix{}, stmt.Expression)
+
+		prefixExp, ok := stmt.Expression.(*ast.ExpressionPrefix)
+		require.True(t, ok)
+		assert.Equal(t, "!", prefixExp.Operator)
+		assert.Equal(t, 5, prefixExp.Right.(*ast.ExpressionLiteralInteger).Value)
+		assert.Equal(t, "!", prefixExp.TokenLexeme())
+	})
+
+	t.Run("prefix expression: -", func(t *testing.T) {
+		input := "-15;"
+
+		p, err := New(lexer.New(input), nil)
+		require.NoError(t, err)
+
+		program := p.ParseProgram()
+		assert.NotNil(t, program)
+		require.Len(t, program.Statements, 1)
+
+		stmt, ok := program.Statements[0].(*ast.ExpressionStatement)
+		require.True(t, ok)
+
+		assert.IsType(t, &ast.ExpressionPrefix{}, stmt.Expression)
+
+		prefixExp, ok := stmt.Expression.(*ast.ExpressionPrefix)
+		require.True(t, ok)
+		assert.Equal(t, "-", prefixExp.Operator)
+		assert.Equal(t, 15, prefixExp.Right.(*ast.ExpressionLiteralInteger).Value)
+		assert.Equal(t, "-", prefixExp.TokenLexeme())
+	})
+}
+
+func TestExpressionStatementBool(t *testing.T) {
+	t.Run("simple boolean literal: true", func(t *testing.T) {
+		input := "true;"
+
+		p, err := New(lexer.New(input), nil)
+		require.NoError(t, err)
+
+		program := p.ParseProgram()
+		assert.NotNil(t, program)
+		require.Len(t, program.Statements, 1)
+
+		stmt, ok := program.Statements[0].(*ast.ExpressionStatement)
+		require.True(t, ok)
+
+		assert.IsType(t, &ast.ExpressionLiteralBoolean{}, stmt.Expression)
+
+		boolExp, ok := stmt.Expression.(*ast.ExpressionLiteralBoolean)
+		require.True(t, ok)
+		assert.Equal(t, true, boolExp.Value)
+		assert.Equal(t, "true", boolExp.TokenLexeme())
+	})
+
+	t.Run("simple boolean literal: false", func(t *testing.T) {
+		input := "false;"
+
+		p, err := New(lexer.New(input), nil)
+		require.NoError(t, err)
+
+		program := p.ParseProgram()
+		assert.NotNil(t, program)
+		require.Len(t, program.Statements, 1)
+
+		stmt, ok := program.Statements[0].(*ast.ExpressionStatement)
+		require.True(t, ok)
+
+		assert.IsType(t, &ast.ExpressionLiteralBoolean{}, stmt.Expression)
+
+		boolExp, ok := stmt.Expression.(*ast.ExpressionLiteralBoolean)
+		require.True(t, ok)
+		assert.Equal(t, false, boolExp.Value)
+		assert.Equal(t, "false", boolExp.TokenLexeme())
+	})
+}
+
+func TestParsingInfixExpressions(t *testing.T) {
+	type testCase struct {
+		Name           string
+		input          string
+		expectedOutput *ast.Program
+		expectedErrs   []string
+	}
+
+	var testCases = []testCase{
+		{
+			Name:  "test infix expressions - no errors",
+			input: `5 + 122;`,
+			expectedOutput: &ast.Program{
+				Statements: []ast.Statement{
+					&ast.ExpressionStatement{
+						Token: tokens.Token{Type: "INT", Lexeme: "5"},
+						Expression: &ast.ExpressionInfix{
+							Token:    tokens.Token{Type: "+", Lexeme: "+"},
+							Operator: "+",
+							Left: &ast.ExpressionLiteralInteger{
+								Token: tokens.Token{Type: "INT", Lexeme: "5"},
+								Value: 5,
+							},
+							Right: &ast.ExpressionLiteralInteger{
+								Token: tokens.Token{Type: "INT", Lexeme: "122"},
+								Value: 122,
+							},
+						},
+					},
+				},
+			},
+			expectedErrs: nil,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.Name, func(t *testing.T) {
+			p, err := New(lexer.New(tc.input), nil)
+			require.NoError(t, err)
+
+			program := p.ParseProgram()
+			assert.NotNil(t, program)
+
+			assert.Equal(t, tc.expectedOutput, program)
+			assert.Equal(t, tc.expectedErrs, p.Errors)
+		})
+	}
 }

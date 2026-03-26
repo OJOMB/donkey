@@ -29,7 +29,7 @@ const (
 	TokenTypeForwardSlash TokenType = "/"
 	// TokenTypeLT represents the less than operator token.
 	TokenTypeLT TokenType = "<"
-	// TokenTypeGT represents the less than operator token.
+	// TokenTypeGT represents the greater than operator token.
 	TokenTypeGT TokenType = ">"
 	// TokenTypeComma represents the comma token.
 	TokenTypeComma TokenType = ","
@@ -44,10 +44,10 @@ const (
 	TokenTypeLBrace TokenType = "{"
 	// TokenTypeRBrace represents the right brace token.
 	TokenTypeRBrace TokenType = "}"
-	// TokenTypeEquality represents the equality operator token.
-	TokenTypeEquality TokenType = "=="
-	// TokenTypeNotEqual represents the not equal operator token.
-	TokenTypeNotEqual TokenType = "!="
+	// TokenTypeEq represents the equality operator token.
+	TokenTypeEq TokenType = "=="
+	// TokenTypeNotEq represents the not equal operator token.
+	TokenTypeNotEq TokenType = "!="
 
 	///////////////
 	// keywords //
@@ -59,7 +59,7 @@ const (
 	TokenTypeLet TokenType = "LET"
 	// TokenTypeTrue represents the boolean value true
 	TokenTypeTrue TokenType = "true"
-	// TokenTypeFalse represents the boolean value true
+	// TokenTypeFalse represents the boolean value false
 	TokenTypeFalse TokenType = "false"
 	// TokenTypeIf represents the control flow keyword if.
 	TokenTypeIf TokenType = "if"

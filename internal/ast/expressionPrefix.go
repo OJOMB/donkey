@@ -2,6 +2,7 @@ package ast
 
 import "github.com/OJOMB/monkey/internal/tokens"
 
+// ExpressionPrefix represents a prefix expression in the Monkey programming language, such as -5 or !true.
 type ExpressionPrefix struct {
 	Token    tokens.Token
 	Operator string
