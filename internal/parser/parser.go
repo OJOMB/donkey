@@ -205,7 +205,7 @@ func (p *Parser) parseExpressionStatement() ast.Statement {
 		return nil
 	}
 
-	stmt := &ast.ExpressionStatement{Token: p.currToken}
+	stmt := &ast.StatementExpression{Token: p.currToken}
 	stmt.Expression = p.parseExpression(precedenceLowest)
 
 	return stmt

@@ -118,7 +118,7 @@ func TestIdentifierExpression(t *testing.T) {
 	assert.NotNil(t, program)
 	require.Len(t, program.Statements, 1)
 
-	stmt, ok := program.Statements[0].(*ast.ExpressionStatement)
+	stmt, ok := program.Statements[0].(*ast.StatementExpression)
 	require.True(t, ok)
 
 	ident, ok := stmt.Expression.(*ast.ExpressionIdentifier)
@@ -137,7 +137,7 @@ func TestIntegerExpression(t *testing.T) {
 	assert.NotNil(t, program)
 	require.Len(t, program.Statements, 1)
 
-	stmt, ok := program.Statements[0].(*ast.ExpressionStatement)
+	stmt, ok := program.Statements[0].(*ast.StatementExpression)
 	require.True(t, ok)
 
 	intLiteral, ok := stmt.Expression.(*ast.ExpressionLiteralInteger)
@@ -157,7 +157,7 @@ func TestExpressionPrefix(t *testing.T) {
 		assert.NotNil(t, program)
 		require.Len(t, program.Statements, 1)
 
-		stmt, ok := program.Statements[0].(*ast.ExpressionStatement)
+		stmt, ok := program.Statements[0].(*ast.StatementExpression)
 		require.True(t, ok)
 
 		assert.IsType(t, &ast.ExpressionPrefix{}, stmt.Expression)
@@ -179,7 +179,7 @@ func TestExpressionPrefix(t *testing.T) {
 		assert.NotNil(t, program)
 		require.Len(t, program.Statements, 1)
 
-		stmt, ok := program.Statements[0].(*ast.ExpressionStatement)
+		stmt, ok := program.Statements[0].(*ast.StatementExpression)
 		require.True(t, ok)
 
 		assert.IsType(t, &ast.ExpressionPrefix{}, stmt.Expression)
@@ -203,7 +203,7 @@ func TestExpressionStatementBool(t *testing.T) {
 		assert.NotNil(t, program)
 		require.Len(t, program.Statements, 1)
 
-		stmt, ok := program.Statements[0].(*ast.ExpressionStatement)
+		stmt, ok := program.Statements[0].(*ast.StatementExpression)
 		require.True(t, ok)
 
 		assert.IsType(t, &ast.ExpressionLiteralBoolean{}, stmt.Expression)
@@ -224,7 +224,7 @@ func TestExpressionStatementBool(t *testing.T) {
 		assert.NotNil(t, program)
 		require.Len(t, program.Statements, 1)
 
-		stmt, ok := program.Statements[0].(*ast.ExpressionStatement)
+		stmt, ok := program.Statements[0].(*ast.StatementExpression)
 		require.True(t, ok)
 
 		assert.IsType(t, &ast.ExpressionLiteralBoolean{}, stmt.Expression)
@@ -250,7 +250,7 @@ func TestParsingInfixExpressions(t *testing.T) {
 			input: `5 + 122;`,
 			expectedOutput: &ast.Program{
 				Statements: []ast.Statement{
-					&ast.ExpressionStatement{
+					&ast.StatementExpression{
 						Token: tokens.Token{Type: "INT", Lexeme: "5"},
 						Expression: &ast.ExpressionInfix{
 							Token:    tokens.Token{Type: "+", Lexeme: "+"},
