@@ -2,7 +2,9 @@ package ast
 
 import "github.com/OJOMB/monkey/internal/tokens"
 
-// ExpressionPrefix represents a prefix expression in the Monkey programming language, such as -5 or !true.
+// ExpressionPrefix represents a prefix expression in the Monkey programming language.
+// For example, in the expression "!true", the "!" is the prefix operator and "true" is the RHS expression.
+// Similarly, in the expression "-10", the "-" is the prefix operator and "10" is the RHS expression.
 type ExpressionPrefix struct {
 	Token    tokens.Token
 	Operator string

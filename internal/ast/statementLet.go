@@ -7,10 +7,12 @@ import (
 )
 
 // stringFmtLetStatement is the format string used for representing a let statement in the AST when converting it to a string.
-// let <identifier> = <expression>;
+// let <ExpressionIdentifier> = <Expression>;
 const stringFmtLetStatement = "let %s = %s;"
 
 // StatementLet represents a let statement in the AST. It contains a token, an identifier for the variable name, and an expression for the value.
+// For example, in the let statement "let x = 5;", the token would be the "let" token, the Name would be an ExpressionIdentifier representing "x", and the Value would be an ExpressionLiteralInteger representing "5".
+// Or we might have let x = y; in which case the Value would be an ExpressionIdentifier representing "y".
 type StatementLet struct {
 	// Token is the token associated with the let statement, which is typically a token.TokenTypeLet token.
 	Token tokens.Token
