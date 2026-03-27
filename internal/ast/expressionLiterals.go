@@ -2,6 +2,8 @@ package ast
 
 import "github.com/OJOMB/monkey/internal/tokens"
 
+// ExpressionLiteralInteger represents an integer literal expression in the Monkey programming language, such as 5 or 10.
+// For example, in the expression "let x = 5;", the "5" is an integer literal expression that represents the value being assigned to the variable "x" in the let statement.
 type ExpressionLiteralInteger struct {
 	Token tokens.Token
 	Value int
