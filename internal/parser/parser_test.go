@@ -46,12 +46,20 @@ func TestLetStmts(t *testing.T) {
 							Token: tokens.Token{Type: "IDENT", Lexeme: "y"},
 							Value: "y",
 						},
+						Value: &ast.ExpressionLiteralInteger{
+							Token: tokens.Token{Type: "INT", Lexeme: "10"},
+							Value: 10,
+						},
 					},
 					&ast.StatementLet{
 						Token: tokens.Token{Type: "LET", Lexeme: "let"},
 						Name: &ast.ExpressionIdentifier{
 							Token: tokens.Token{Type: "IDENT", Lexeme: "__foobar__"},
 							Value: "__foobar__",
+						},
+						Value: &ast.ExpressionLiteralInteger{
+							Token: tokens.Token{Type: "INT", Lexeme: "838383"},
+							Value: 838383,
 						},
 					},
 				},
@@ -69,23 +77,23 @@ func TestLetStmts(t *testing.T) {
 				Statements: []ast.Statement{
 					&ast.ReturnStatement{
 						Token: tokens.Token{Type: "RETURN", Lexeme: "return"},
-						ReturnValue: &ast.ExpressionIdentifier{
+						ReturnValue: &ast.ExpressionLiteralInteger{
 							Token: tokens.Token{Type: "INT", Lexeme: "5"},
-							Value: "5",
+							Value: 5,
 						},
 					},
 					&ast.ReturnStatement{
 						Token: tokens.Token{Type: "RETURN", Lexeme: "return"},
-						ReturnValue: &ast.ExpressionIdentifier{
+						ReturnValue: &ast.ExpressionLiteralInteger{
 							Token: tokens.Token{Type: "INT", Lexeme: "10"},
-							Value: "10",
+							Value: 10,
 						},
 					},
 					&ast.ReturnStatement{
 						Token: tokens.Token{Type: "RETURN", Lexeme: "return"},
-						ReturnValue: &ast.ExpressionIdentifier{
+						ReturnValue: &ast.ExpressionLiteralInteger{
 							Token: tokens.Token{Type: "INT", Lexeme: "993322"},
-							Value: "993322",
+							Value: 993322,
 						},
 					},
 				},
@@ -144,6 +152,27 @@ func TestIntegerExpression(t *testing.T) {
 	require.True(t, ok)
 	assert.Equal(t, 5, intLiteral.Value)
 	assert.Equal(t, "5", intLiteral.TokenLexeme())
+	assert.Equal(t, "5", intLiteral.String())
+}
+
+func TestStringExpression(t *testing.T) {
+	input := `"hello";`
+
+	p, err := New(lexer.New(input), nil)
+	require.NoError(t, err)
+
+	program := p.ParseProgram()
+	assert.NotNil(t, program)
+	require.Len(t, program.Statements, 1)
+
+	stmt, ok := program.Statements[0].(*ast.StatementExpression)
+	require.True(t, ok)
+
+	strLiteral, ok := stmt.Expression.(*ast.ExpressionLiteralString)
+	require.True(t, ok)
+	assert.Equal(t, "hello", strLiteral.Value)
+	assert.Equal(t, "hello", strLiteral.TokenLexeme())
+	assert.Equal(t, "hello", strLiteral.String())
 }
 
 func TestExpressionPrefix(t *testing.T) {

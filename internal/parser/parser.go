@@ -83,6 +83,7 @@ func New(l *lexer.Lexer, logger logs.Logger) (*Parser, error) {
 	// register prefix parse functions for different token types
 	p.RegisterPrefix(tokens.TokenTypeIdent, p.parseExpressionIdentifier)
 	p.RegisterPrefix(tokens.TokenTypeInt, p.parseExpressionLiteralInteger)
+	p.RegisterPrefix(tokens.TokenTypeString, p.parseExpressionLiteralString)
 	p.RegisterPrefix(tokens.TokenTypeTrue, p.parseExpressionLiteralBoolean)
 	p.RegisterPrefix(tokens.TokenTypeFalse, p.parseExpressionLiteralBoolean)
 	p.RegisterPrefix(tokens.TokenTypeBang, p.parseExpressionPrefix)
@@ -213,6 +214,7 @@ func (p *Parser) parseExpressionStatement() ast.Statement {
 
 // parseExpression parses an expression based on the precedence of the current token and returns an ast.Expression node representing the parsed expression.
 func (p *Parser) parseExpression(precedence int) ast.Expression {
+	// first we need to find the prefix parse function for the current token type
 	prefixFunc := p.parseFuncsPrefix[p.currToken.Type]
 	if prefixFunc == nil {
 		p.noPrefixParseFuncError(p.currToken.Type)
@@ -221,11 +223,14 @@ func (p *Parser) parseExpression(precedence int) ast.Expression {
 
 	leftExp := prefixFunc()
 
-	// next check if the expression ends here or if we more to parse
-	//
+	// next check if the expression ends here or if we have more to parse
+	// vf
 	for p.peekToken.Type != tokens.TokenTypeSemicolon && precedence < p.peekPrecedence() {
 		infixFunc := p.parseFuncsInfix[p.peekToken.Type]
 		if infixFunc == nil {
+			// TODO should this not be an error instead of just returning the left expression?
+			// in this case we have a valid left expression but we don't know how to parse the next token as an infix
+
 			return leftExp
 		}
 
@@ -247,19 +252,6 @@ func (p *Parser) parseExpressionIdentifier() ast.Expression {
 		Token: p.currToken,
 		Value: p.currToken.Lexeme,
 	}
-}
-
-func (p *Parser) parseExpressionPrefix() ast.Expression {
-	expression := &ast.ExpressionPrefix{
-		Token:    p.currToken,
-		Operator: p.currToken.Lexeme,
-	}
-
-	p.nextToken()
-
-	expression.Right = p.parseExpression(precedencePrefix)
-
-	return expression
 }
 
 // peekError adds an error message to the parser's Errors slice indicating that the next token was not of the expected type.
@@ -303,6 +295,27 @@ func (p *Parser) parseExpressionLiteralBoolean() ast.Expression {
 	lit.Value = value
 
 	return lit
+}
+
+func (p *Parser) parseExpressionLiteralString() ast.Expression {
+	lit := &ast.ExpressionLiteralString{Token: p.currToken}
+
+	lit.Value = p.currToken.Lexeme
+
+	return lit
+}
+
+func (p *Parser) parseExpressionPrefix() ast.Expression {
+	expression := &ast.ExpressionPrefix{
+		Token:    p.currToken,
+		Operator: p.currToken.Lexeme,
+	}
+
+	p.nextToken()
+
+	expression.Right = p.parseExpression(precedencePrefix)
+
+	return expression
 }
 
 func (p *Parser) peekPrecedence() int {
