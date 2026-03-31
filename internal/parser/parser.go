@@ -90,6 +90,7 @@ func New(l *lexer.Lexer, logger logs.Logger) (*Parser, error) {
 	p.RegisterPrefix(tokens.TokenTypeBang, p.parseExpressionPrefix)
 	p.RegisterPrefix(tokens.TokenTypeMinus, p.parseExpressionPrefix)
 	p.RegisterPrefix(tokens.TokenTypeLParen, p.parseExpressionGrouped)
+	p.RegisterPrefix(tokens.TokenTypeIf, p.parseExpressionIf)
 
 	// register infix parse functions for different token types
 	p.RegisterInfix(tokens.TokenTypePlus, p.parseExpressionInfix)
@@ -241,6 +242,11 @@ func (p *Parser) parseExpression(precedence int) ast.Expression {
 
 		p.nextToken()
 
+		// so if we have an infix function, we need to parse the infix expression and update the left expression to be the result of the infix expression
+		// for example, if we have 5 + 5 * 5, then we would first parse the left expression as 5
+		// then we would see the + token and parse the infix expression as (5 + 5)
+		// and then we would see the * token and parse the infix expression as ((5 + 5) * 5)
+		// if we then peek a token with lower precedence than the current precedence, we would stop parsing infix expressions and return the left expression, which would be ((5 + 5) * 5) in this example
 		leftExp = infixFunc(leftExp)
 	}
 
@@ -363,4 +369,53 @@ func (p *Parser) parseExpressionGrouped() ast.Expression {
 	}
 
 	return expr
+}
+
+func (p *Parser) parseExpressionIf() ast.Expression {
+	expr := &ast.ExpressionIf{Token: p.currToken}
+
+	if !p.expectPeek(tokens.TokenTypeLParen) {
+		return nil
+	}
+
+	p.nextToken()
+	expr.Condition = p.parseExpression(precedenceLowest)
+
+	if !p.expectPeek(tokens.TokenTypeRParen) {
+		return nil
+	}
+
+	if !p.expectPeek(tokens.TokenTypeLBrace) {
+		return nil
+	}
+
+	expr.Consequence = p.parseBlockStatement()
+
+	if p.peekToken.Type == tokens.TokenTypeElse {
+		p.nextToken()
+
+		if !p.expectPeek(tokens.TokenTypeLBrace) {
+			return nil
+		}
+
+		expr.Alternative = p.parseBlockStatement()
+	}
+
+	return expr
+}
+
+func (p *Parser) parseBlockStatement() *ast.StatementBlock {
+	block := &ast.StatementBlock{Statements: make([]ast.Statement, 0)}
+
+	p.nextToken()
+
+	for p.currToken.Type != tokens.TokenTypeRBrace && p.currToken.Type != tokens.TokenTypeEOF {
+		stmt := p.parseStatement()
+		if stmt != nil {
+			block.Statements = append(block.Statements, stmt)
+		}
+		p.nextToken()
+	}
+
+	return block
 }

@@ -355,6 +355,46 @@ func TestParsingInfixExpressions(t *testing.T) {
 			expectedErrs: []string{},
 		},
 		{
+			name:  "slightly more complex infix expression - no errors",
+			input: `5 * 5 + 10 / 4;`,
+			expectedOutput: &ast.Program{
+				Statements: []ast.Statement{
+					&ast.StatementExpression{
+						Token: tokens.Token{Type: tokens.TokenTypeInt, Lexeme: "5"},
+						Expression: &ast.ExpressionInfix{
+							Token:    tokens.Token{Type: tokens.TokenTypePlus, Lexeme: "+"},
+							Operator: "+",
+							Left: &ast.ExpressionInfix{
+								Token:    tokens.Token{Type: tokens.TokenTypeAsterisk, Lexeme: "*"},
+								Operator: "*",
+								Left: &ast.ExpressionLiteralInteger{
+									Token: tokens.Token{Type: tokens.TokenTypeInt, Lexeme: "5"},
+									Value: 5,
+								},
+								Right: &ast.ExpressionLiteralInteger{
+									Token: tokens.Token{Type: tokens.TokenTypeInt, Lexeme: "5"},
+									Value: 5,
+								},
+							},
+							Right: &ast.ExpressionInfix{
+								Token:    tokens.Token{Type: tokens.TokenTypeForwardSlash, Lexeme: "/"},
+								Operator: "/",
+								Left: &ast.ExpressionLiteralInteger{
+									Token: tokens.Token{Type: tokens.TokenTypeInt, Lexeme: "10"},
+									Value: 10,
+								},
+								Right: &ast.ExpressionLiteralInteger{
+									Token: tokens.Token{Type: tokens.TokenTypeInt, Lexeme: "4"},
+									Value: 4,
+								},
+							},
+						},
+					},
+				},
+			},
+			expectedErrs: []string{},
+		},
+		{
 			name:  "grouped infix expression - no errors",
 			input: `(5 + 5) * (10 / 4);`,
 			expectedOutput: &ast.Program{
@@ -388,6 +428,70 @@ func TestParsingInfixExpressions(t *testing.T) {
 									Value: 4,
 								},
 							},
+						},
+					},
+				},
+			},
+			expectedErrs: []string{},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			p, err := New(lexer.New(tc.input), nil)
+			require.NoError(t, err)
+
+			program := p.ParseProgram()
+			assert.NotNil(t, program)
+
+			assert.Equal(t, tc.expectedOutput, program)
+			assert.Equal(t, tc.expectedErrs, p.Errors)
+		})
+	}
+}
+
+func TestIfExpression(t *testing.T) {
+	type testCase struct {
+		name           string
+		input          string
+		expectedOutput *ast.Program
+		expectedErrs   []string
+	}
+
+	var testCases = []testCase{
+		{
+			name:  "if expression without else - no errors",
+			input: `if (x < y) { x }`,
+			expectedOutput: &ast.Program{
+				Statements: []ast.Statement{
+					&ast.StatementExpression{
+						Token: tokens.Token{Type: tokens.TokenTypeIf, Lexeme: "if"},
+						Expression: &ast.ExpressionIf{
+							Token: tokens.Token{Type: tokens.TokenTypeIf, Lexeme: "if"},
+							Condition: &ast.ExpressionInfix{
+								Token:    tokens.Token{Type: tokens.TokenTypeLT, Lexeme: "<"},
+								Operator: "<",
+								Left: &ast.ExpressionIdentifier{
+									Token: tokens.Token{Type: tokens.TokenTypeIdent, Lexeme: "x"},
+									Value: "x",
+								},
+								Right: &ast.ExpressionIdentifier{
+									Token: tokens.Token{Type: tokens.TokenTypeIdent, Lexeme: "y"},
+									Value: "y",
+								},
+							},
+							Consequence: &ast.StatementBlock{
+								Statements: []ast.Statement{
+									&ast.StatementExpression{
+										Token: tokens.Token{Type: tokens.TokenTypeIdent, Lexeme: "x"},
+										Expression: &ast.ExpressionIdentifier{
+											Token: tokens.Token{Type: tokens.TokenTypeIdent, Lexeme: "x"},
+											Value: "x",
+										},
+									},
+								},
+							},
+							Alternative: nil,
 						},
 					},
 				},
