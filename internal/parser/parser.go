@@ -89,6 +89,7 @@ func New(l *lexer.Lexer, logger logs.Logger) (*Parser, error) {
 	p.RegisterPrefix(tokens.TokenTypeFalse, p.parseExpressionLiteralBoolean)
 	p.RegisterPrefix(tokens.TokenTypeBang, p.parseExpressionPrefix)
 	p.RegisterPrefix(tokens.TokenTypeMinus, p.parseExpressionPrefix)
+	p.RegisterPrefix(tokens.TokenTypeLParen, p.parseExpressionGrouped)
 
 	// register infix parse functions for different token types
 	p.RegisterInfix(tokens.TokenTypePlus, p.parseExpressionInfix)
@@ -233,6 +234,7 @@ func (p *Parser) parseExpression(precedence int) ast.Expression {
 		if infixFunc == nil {
 			// TODO should this not be an error instead of just returning the left expression?
 			// in this case we have a valid left expression but we don't know how to parse the next token as an infix
+			// in what case would this be valid?
 
 			return leftExp
 		}
@@ -309,16 +311,16 @@ func (p *Parser) parseExpressionLiteralString() ast.Expression {
 }
 
 func (p *Parser) parseExpressionPrefix() ast.Expression {
-	expression := &ast.ExpressionPrefix{
+	expr := &ast.ExpressionPrefix{
 		Token:    p.currToken,
 		Operator: p.currToken.Lexeme,
 	}
 
 	p.nextToken()
 
-	expression.Right = p.parseExpression(precedencePrefix)
+	expr.Right = p.parseExpression(precedencePrefix)
 
-	return expression
+	return expr
 }
 
 func (p *Parser) peekPrecedence() int {
@@ -338,7 +340,7 @@ func (p *Parser) currPrecedence() int {
 }
 
 func (p *Parser) parseExpressionInfix(left ast.Expression) ast.Expression {
-	expression := &ast.ExpressionInfix{
+	expr := &ast.ExpressionInfix{
 		Token:    p.currToken,
 		Operator: p.currToken.Lexeme,
 		Left:     left,
@@ -346,7 +348,19 @@ func (p *Parser) parseExpressionInfix(left ast.Expression) ast.Expression {
 
 	precedence := p.currPrecedence()
 	p.nextToken()
-	expression.Right = p.parseExpression(precedence)
+	expr.Right = p.parseExpression(precedence)
 
-	return expression
+	return expr
+}
+
+func (p *Parser) parseExpressionGrouped() ast.Expression {
+	p.nextToken()
+
+	expr := p.parseExpression(precedenceLowest)
+
+	if !p.expectPeek(tokens.TokenTypeRParen) {
+		return nil
+	}
+
+	return expr
 }
