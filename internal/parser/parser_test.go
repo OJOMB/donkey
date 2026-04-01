@@ -30,7 +30,7 @@ func TestParseStatements(t *testing.T) {
 			expectedOutput: &ast.Program{
 				Statements: []ast.Statement{
 					&ast.StatementBind{
-						Token: tokens.Token{Type: tokens.TokenTypeBinder, Lexeme: "var"},
+						Token: tokens.Token{Type: tokens.TypeBinder, Lexeme: "var"},
 						Name: &ast.ExpressionIdentifier{
 							Token: tokens.Token{Type: "IDENT", Lexeme: "x"},
 							Value: "x",
@@ -41,7 +41,7 @@ func TestParseStatements(t *testing.T) {
 						},
 					},
 					&ast.StatementBind{
-						Token: tokens.Token{Type: tokens.TokenTypeBinder, Lexeme: "var"},
+						Token: tokens.Token{Type: tokens.TypeBinder, Lexeme: "var"},
 						Name: &ast.ExpressionIdentifier{
 							Token: tokens.Token{Type: "IDENT", Lexeme: "y"},
 							Value: "y",
@@ -52,7 +52,7 @@ func TestParseStatements(t *testing.T) {
 						},
 					},
 					&ast.StatementBind{
-						Token: tokens.Token{Type: tokens.TokenTypeBinder, Lexeme: "var"},
+						Token: tokens.Token{Type: tokens.TypeBinder, Lexeme: "var"},
 						Name: &ast.ExpressionIdentifier{
 							Token: tokens.Token{Type: "IDENT", Lexeme: "__foobar__"},
 							Value: "__foobar__",
@@ -296,16 +296,16 @@ func TestParsingInfixExpressions(t *testing.T) {
 			expectedOutput: &ast.Program{
 				Statements: []ast.Statement{
 					&ast.StatementExpression{
-						Token: tokens.Token{Type: tokens.TokenTypeInt, Lexeme: "5"},
+						Token: tokens.Token{Type: tokens.TypeInt, Lexeme: "5"},
 						Expression: &ast.ExpressionInfix{
-							Token:    tokens.Token{Type: tokens.TokenTypePlus, Lexeme: "+"},
+							Token:    tokens.Token{Type: tokens.TypePlus, Lexeme: "+"},
 							Operator: "+",
 							Left: &ast.ExpressionLiteralInteger{
-								Token: tokens.Token{Type: tokens.TokenTypeInt, Lexeme: "5"},
+								Token: tokens.Token{Type: tokens.TypeInt, Lexeme: "5"},
 								Value: 5,
 							},
 							Right: &ast.ExpressionLiteralInteger{
-								Token: tokens.Token{Type: tokens.TokenTypeInt, Lexeme: "122"},
+								Token: tokens.Token{Type: tokens.TypeInt, Lexeme: "122"},
 								Value: 122,
 							},
 						},
@@ -320,31 +320,31 @@ func TestParsingInfixExpressions(t *testing.T) {
 			expectedOutput: &ast.Program{
 				Statements: []ast.Statement{
 					&ast.StatementExpression{
-						Token: tokens.Token{Type: tokens.TokenTypeInt, Lexeme: "5"},
+						Token: tokens.Token{Type: tokens.TypeInt, Lexeme: "5"},
 						Expression: &ast.ExpressionInfix{
-							Token:    tokens.Token{Type: tokens.TokenTypePlus, Lexeme: "+"},
+							Token:    tokens.Token{Type: tokens.TypePlus, Lexeme: "+"},
 							Operator: "+",
 							Left: &ast.ExpressionLiteralInteger{
-								Token: tokens.Token{Type: tokens.TokenTypeInt, Lexeme: "5"},
+								Token: tokens.Token{Type: tokens.TypeInt, Lexeme: "5"},
 								Value: 5,
 							},
 							Right: &ast.ExpressionInfix{
-								Token:    tokens.Token{Type: tokens.TokenTypeAsterisk, Lexeme: "*"},
+								Token:    tokens.Token{Type: tokens.TypeAsterisk, Lexeme: "*"},
 								Operator: "*",
 								Left: &ast.ExpressionInfix{
-									Token:    tokens.Token{Type: tokens.TokenTypeForwardSlash, Lexeme: "/"},
+									Token:    tokens.Token{Type: tokens.TypeForwardSlash, Lexeme: "/"},
 									Operator: "/",
 									Left: &ast.ExpressionLiteralInteger{
-										Token: tokens.Token{Type: tokens.TokenTypeInt, Lexeme: "5"},
+										Token: tokens.Token{Type: tokens.TypeInt, Lexeme: "5"},
 										Value: 5,
 									},
 									Right: &ast.ExpressionLiteralInteger{
-										Token: tokens.Token{Type: tokens.TokenTypeInt, Lexeme: "10"},
+										Token: tokens.Token{Type: tokens.TypeInt, Lexeme: "10"},
 										Value: 10,
 									},
 								},
 								Right: &ast.ExpressionLiteralInteger{
-									Token: tokens.Token{Type: tokens.TokenTypeInt, Lexeme: "4"},
+									Token: tokens.Token{Type: tokens.TypeInt, Lexeme: "4"},
 									Value: 4,
 								},
 							},
@@ -360,31 +360,31 @@ func TestParsingInfixExpressions(t *testing.T) {
 			expectedOutput: &ast.Program{
 				Statements: []ast.Statement{
 					&ast.StatementExpression{
-						Token: tokens.Token{Type: tokens.TokenTypeInt, Lexeme: "5"},
+						Token: tokens.Token{Type: tokens.TypeInt, Lexeme: "5"},
 						Expression: &ast.ExpressionInfix{
-							Token:    tokens.Token{Type: tokens.TokenTypePlus, Lexeme: "+"},
+							Token:    tokens.Token{Type: tokens.TypePlus, Lexeme: "+"},
 							Operator: "+",
 							Left: &ast.ExpressionInfix{
-								Token:    tokens.Token{Type: tokens.TokenTypeAsterisk, Lexeme: "*"},
+								Token:    tokens.Token{Type: tokens.TypeAsterisk, Lexeme: "*"},
 								Operator: "*",
 								Left: &ast.ExpressionLiteralInteger{
-									Token: tokens.Token{Type: tokens.TokenTypeInt, Lexeme: "5"},
+									Token: tokens.Token{Type: tokens.TypeInt, Lexeme: "5"},
 									Value: 5,
 								},
 								Right: &ast.ExpressionLiteralInteger{
-									Token: tokens.Token{Type: tokens.TokenTypeInt, Lexeme: "5"},
+									Token: tokens.Token{Type: tokens.TypeInt, Lexeme: "5"},
 									Value: 5,
 								},
 							},
 							Right: &ast.ExpressionInfix{
-								Token:    tokens.Token{Type: tokens.TokenTypeForwardSlash, Lexeme: "/"},
+								Token:    tokens.Token{Type: tokens.TypeForwardSlash, Lexeme: "/"},
 								Operator: "/",
 								Left: &ast.ExpressionLiteralInteger{
-									Token: tokens.Token{Type: tokens.TokenTypeInt, Lexeme: "10"},
+									Token: tokens.Token{Type: tokens.TypeInt, Lexeme: "10"},
 									Value: 10,
 								},
 								Right: &ast.ExpressionLiteralInteger{
-									Token: tokens.Token{Type: tokens.TokenTypeInt, Lexeme: "4"},
+									Token: tokens.Token{Type: tokens.TypeInt, Lexeme: "4"},
 									Value: 4,
 								},
 							},
@@ -400,31 +400,31 @@ func TestParsingInfixExpressions(t *testing.T) {
 			expectedOutput: &ast.Program{
 				Statements: []ast.Statement{
 					&ast.StatementExpression{
-						Token: tokens.Token{Type: tokens.TokenTypeLParen, Lexeme: "("},
+						Token: tokens.Token{Type: tokens.TypeLParen, Lexeme: "("},
 						Expression: &ast.ExpressionInfix{
-							Token:    tokens.Token{Type: tokens.TokenTypeAsterisk, Lexeme: "*"},
+							Token:    tokens.Token{Type: tokens.TypeAsterisk, Lexeme: "*"},
 							Operator: "*",
 							Left: &ast.ExpressionInfix{
-								Token:    tokens.Token{Type: tokens.TokenTypePlus, Lexeme: "+"},
+								Token:    tokens.Token{Type: tokens.TypePlus, Lexeme: "+"},
 								Operator: "+",
 								Left: &ast.ExpressionLiteralInteger{
-									Token: tokens.Token{Type: tokens.TokenTypeInt, Lexeme: "5"},
+									Token: tokens.Token{Type: tokens.TypeInt, Lexeme: "5"},
 									Value: 5,
 								},
 								Right: &ast.ExpressionLiteralInteger{
-									Token: tokens.Token{Type: tokens.TokenTypeInt, Lexeme: "5"},
+									Token: tokens.Token{Type: tokens.TypeInt, Lexeme: "5"},
 									Value: 5,
 								},
 							},
 							Right: &ast.ExpressionInfix{
-								Token:    tokens.Token{Type: tokens.TokenTypeForwardSlash, Lexeme: "/"},
+								Token:    tokens.Token{Type: tokens.TypeForwardSlash, Lexeme: "/"},
 								Operator: "/",
 								Left: &ast.ExpressionLiteralInteger{
-									Token: tokens.Token{Type: tokens.TokenTypeInt, Lexeme: "10"},
+									Token: tokens.Token{Type: tokens.TypeInt, Lexeme: "10"},
 									Value: 10,
 								},
 								Right: &ast.ExpressionLiteralInteger{
-									Token: tokens.Token{Type: tokens.TokenTypeInt, Lexeme: "4"},
+									Token: tokens.Token{Type: tokens.TypeInt, Lexeme: "4"},
 									Value: 4,
 								},
 							},
@@ -465,29 +465,29 @@ func TestIfExpression(t *testing.T) {
 			expectedOutput: &ast.Program{
 				Statements: []ast.Statement{
 					&ast.StatementExpression{
-						Token: tokens.Token{Type: tokens.TokenTypeIf, Lexeme: "if"},
+						Token: tokens.Token{Type: tokens.TypeIf, Lexeme: "if"},
 						Expression: &ast.ExpressionIf{
 							Branches: []ast.ConditionalBranch{
 								{
-									Token: tokens.Token{Type: tokens.TokenTypeIf, Lexeme: "if"},
+									Token: tokens.Token{Type: tokens.TypeIf, Lexeme: "if"},
 									Condition: &ast.ExpressionInfix{
-										Token:    tokens.Token{Type: tokens.TokenTypeLT, Lexeme: "<"},
+										Token:    tokens.Token{Type: tokens.TypeLT, Lexeme: "<"},
 										Operator: "<",
 										Left: &ast.ExpressionIdentifier{
-											Token: tokens.Token{Type: tokens.TokenTypeIdent, Lexeme: "x"},
+											Token: tokens.Token{Type: tokens.TypeIdent, Lexeme: "x"},
 											Value: "x",
 										},
 										Right: &ast.ExpressionIdentifier{
-											Token: tokens.Token{Type: tokens.TokenTypeIdent, Lexeme: "y"},
+											Token: tokens.Token{Type: tokens.TypeIdent, Lexeme: "y"},
 											Value: "y",
 										},
 									},
 									Consequence: &ast.StatementBlock{
 										Statements: []ast.Statement{
 											&ast.StatementExpression{
-												Token: tokens.Token{Type: tokens.TokenTypeIdent, Lexeme: "x"},
+												Token: tokens.Token{Type: tokens.TypeIdent, Lexeme: "x"},
 												Expression: &ast.ExpressionIdentifier{
-													Token: tokens.Token{Type: tokens.TokenTypeIdent, Lexeme: "x"},
+													Token: tokens.Token{Type: tokens.TypeIdent, Lexeme: "x"},
 													Value: "x",
 												},
 											},

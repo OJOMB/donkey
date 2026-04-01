@@ -1,114 +1,114 @@
 package tokens
 
 const (
-	// TokenTypeIllegal represents an illegal token.
-	TokenTypeIllegal TokenType = "ILLEGAL"
-	// TokenTypeEOF represents the end of file token.
-	TokenTypeEOF TokenType = "EOF"
+	// TypeIllegal represents an illegal token.
+	TypeIllegal Type = "ILLEGAL"
+	// TypeEOF represents the end of file token.
+	TypeEOF Type = "EOF"
 
-	// TokenTypeIdent represents an identifier token.
-	TokenTypeIdent TokenType = "IDENT"
-	// TokenTypeInt represents an integer token.
-	TokenTypeInt TokenType = "INT"
-	// TokenTypeString represents a string token.
-	TokenTypeString TokenType = "STRING"
+	// TypeIdent represents an identifier token.
+	TypeIdent Type = "IDENT"
+	// TypeInt represents an integer token.
+	TypeInt Type = "INT"
+	// TypeString represents a string token.
+	TypeString Type = "STRING"
 
 	///////////////////////////
 	// Symbols and operators //
 	///////////////////////////
 
-	// TokenTypeAssign represents the assignment operator token.
-	TokenTypeAssign TokenType = "="
-	// TokenTypePlus represents the addition operator token.
-	TokenTypePlus TokenType = "+"
-	// TokenTypeMinus represents the subtraction operator token.
-	TokenTypeMinus TokenType = "-"
-	// TokenTypeBang represents the logical not operator token.
-	TokenTypeBang TokenType = "!"
-	// TokenTypeAsterisk represents the multiplication operator token.
-	TokenTypeAsterisk TokenType = "*"
-	// TokenTypeForwardSlash represents the division operator token.
-	TokenTypeForwardSlash TokenType = "/"
-	// TokenTypeComma represents the comma token.
-	TokenTypeComma TokenType = ","
-	// TokenTypeSemicolon represents the semicolon token.
-	TokenTypeSemicolon TokenType = ";"
+	// TypeAssign represents the assignment operator token.
+	TypeAssign Type = "="
+	// TypePlus represents the addition operator token.
+	TypePlus Type = "+"
+	// TypeMinus represents the subtraction operator token.
+	TypeMinus Type = "-"
+	// TypeBang represents the logical not operator token.
+	TypeBang Type = "!"
+	// TypeAsterisk represents the multiplication operator token.
+	TypeAsterisk Type = "*"
+	// TypeForwardSlash represents the division operator token.
+	TypeForwardSlash Type = "/"
+	// TypeComma represents the comma token.
+	TypeComma Type = ","
+	// TypeSemicolon represents the semicolon token.
+	TypeSemicolon Type = ";"
 
-	// TokenTypeLParen represents the left parenthesis token.
-	TokenTypeLParen TokenType = "("
-	// TokenTypeRParen represents the right parenthesis token.
-	TokenTypeRParen TokenType = ")"
-	// TokenTypeLBrace represents the left brace token.
-	TokenTypeLBrace TokenType = "{"
-	// TokenTypeRBrace represents the right brace token.
-	TokenTypeRBrace TokenType = "}"
-	// TokenTypeEq represents the equality operator token.
-	TokenTypeEq TokenType = "=="
-	// TokenTypeNotEq represents the not equal operator token.
-	TokenTypeNotEq TokenType = "!="
-	// TokenTypeLT represents the less than operator token.
-	TokenTypeLT TokenType = "<"
-	// TokenTypeLTEQ represents the less than or equal to operator token.
-	TokenTypeLTEQ TokenType = "<="
-	// TokenTypeGTEQ represents the greater than or equal to operator token.
-	TokenTypeGTEQ TokenType = ">="
-	// TokenTypeGT represents the greater than operator token.
-	TokenTypeGT TokenType = ">"
-	// TokenTypeSpeechMarks represents the speech marks token used for opening string literals.
-	TokenTypeSpeechMarks TokenType = `"`
+	// TypeLParen represents the left parenthesis token.
+	TypeLParen Type = "("
+	// TypeRParen represents the right parenthesis token.
+	TypeRParen Type = ")"
+	// TypeLBrace represents the left brace token.
+	TypeLBrace Type = "{"
+	// TypeRBrace represents the right brace token.
+	TypeRBrace Type = "}"
+	// TypeEq represents the equality operator token.
+	TypeEq Type = "=="
+	// TypeNotEq represents the not equal operator token.
+	TypeNotEq Type = "!="
+	// TypeLT represents the less than operator token.
+	TypeLT Type = "<"
+	// TypeLTEQ represents the less than or equal to operator token.
+	TypeLTEQ Type = "<="
+	// TypeGTEQ represents the greater than or equal to operator token.
+	TypeGTEQ Type = ">="
+	// TypeGT represents the greater than operator token.
+	TypeGT Type = ">"
+	// TypeSpeechMarks represents the speech marks token used for opening string literals.
+	TypeSpeechMarks Type = `"`
 
 	///////////////
 	// keywords //
 	/////////////
 
-	// TokenTypeFunction represents the 'fn' keyword token.
-	TokenTypeFunction TokenType = "FUNCTION"
-	// TokenTypeBinder represents the 'var' keyword token.
-	TokenTypeBinder TokenType = "VAR"
-	// TokenTypeTrue represents the boolean value true
-	TokenTypeTrue TokenType = "TRUE"
-	// TokenTypeFalse represents the boolean value false
-	TokenTypeFalse TokenType = "FALSE"
-	// TokenTypeIf represents the control flow keyword if.
-	TokenTypeIf TokenType = "IF"
-	// TokenTypeElif represents the control flow keyword elif.
-	TokenTypeElif TokenType = "ELIF"
-	// TokenTypeElse represents the control flow keyword else.
-	TokenTypeElse TokenType = "ELSE"
-	// TokenTypeReturn represents the control flow keyword return.
-	TokenTypeReturn TokenType = "RETURN"
+	// TypeFunction represents the 'fn' keyword token.
+	TypeFunction Type = "FUNCTION"
+	// TypeBinder represents the 'var' keyword token.
+	TypeBinder Type = "VAR"
+	// TypeTrue represents the boolean value true
+	TypeTrue Type = "TRUE"
+	// TypeFalse represents the boolean value false
+	TypeFalse Type = "FALSE"
+	// TypeIf represents the control flow keyword if.
+	TypeIf Type = "IF"
+	// TypeElif represents the control flow keyword elif.
+	TypeElif Type = "ELIF"
+	// TypeElse represents the control flow keyword else.
+	TypeElse Type = "ELSE"
+	// TypeReturn represents the control flow keyword return.
+	TypeReturn Type = "RETURN"
 )
 
-var keywords = map[string]TokenType{
-	"fn":     TokenTypeFunction,
-	"var":    TokenTypeBinder,
-	"if":     TokenTypeIf,
-	"elif":   TokenTypeElif,
-	"else":   TokenTypeElse,
-	"return": TokenTypeReturn,
-	"true":   TokenTypeTrue,
-	"false":  TokenTypeFalse,
+var keywords = map[string]Type{
+	"fn":     TypeFunction,
+	"var":    TypeBinder,
+	"if":     TypeIf,
+	"elif":   TypeElif,
+	"else":   TypeElse,
+	"return": TypeReturn,
+	"true":   TypeTrue,
+	"false":  TypeFalse,
 }
 
 // LookupIdent checks if the given identifier is a keyword and returns the appropriate token type.
-func LookupIdent(ident string) TokenType {
+func LookupIdent(ident string) Type {
 	if tok, ok := keywords[ident]; ok {
 		return tok
 	}
 
-	return TokenTypeIdent
+	return TypeIdent
 }
 
-// TokenType represents the type of a token.
-type TokenType string
+// Type represents the type of a token.
+type Type string
 
 // Token represents a lexical input token.
 type Token struct {
-	Type   TokenType
+	Type   Type
 	Lexeme string
 }
 
-func New(tokType TokenType, tokLit string) Token {
+func New(tokType Type, tokLit string) Token {
 	return Token{
 		Type:   tokType,
 		Lexeme: tokLit,

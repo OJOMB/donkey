@@ -29,16 +29,16 @@ const (
 	precedenceCall
 )
 
-var precedences = map[tokens.TokenType]int{
-	tokens.TokenTypeEq:           precedenceEquals,
-	tokens.TokenTypeNotEq:        precedenceEquals,
-	tokens.TokenTypeLT:           precedenceLessGreater,
-	tokens.TokenTypeGT:           precedenceLessGreater,
-	tokens.TokenTypePlus:         precedenceAdditive,
-	tokens.TokenTypeMinus:        precedenceAdditive,
-	tokens.TokenTypeForwardSlash: precedenceMultiplicative,
-	tokens.TokenTypeAsterisk:     precedenceMultiplicative,
-	tokens.TokenTypeLParen:       precedenceCall,
+var precedences = map[tokens.Type]int{
+	tokens.TypeEq:           precedenceEquals,
+	tokens.TypeNotEq:        precedenceEquals,
+	tokens.TypeLT:           precedenceLessGreater,
+	tokens.TypeGT:           precedenceLessGreater,
+	tokens.TypePlus:         precedenceAdditive,
+	tokens.TypeMinus:        precedenceAdditive,
+	tokens.TypeForwardSlash: precedenceMultiplicative,
+	tokens.TypeAsterisk:     precedenceMultiplicative,
+	tokens.TypeLParen:       precedenceCall,
 }
 
 type (
@@ -54,8 +54,8 @@ type Parser struct {
 
 	Errors []string
 
-	parseFuncsPrefix map[tokens.TokenType]parseFuncPrefix
-	parseFuncsInfix  map[tokens.TokenType]parseFuncInfix
+	parseFuncsPrefix map[tokens.Type]parseFuncPrefix
+	parseFuncsInfix  map[tokens.Type]parseFuncInfix
 
 	logger logs.Logger
 }
@@ -75,32 +75,32 @@ func New(l *lexer.Lexer, logger logs.Logger) (*Parser, error) {
 
 	p := &Parser{
 		l:                l,
-		parseFuncsPrefix: make(map[tokens.TokenType]parseFuncPrefix),
-		parseFuncsInfix:  make(map[tokens.TokenType]parseFuncInfix),
+		parseFuncsPrefix: make(map[tokens.Type]parseFuncPrefix),
+		parseFuncsInfix:  make(map[tokens.Type]parseFuncInfix),
 		Errors:           make([]string, 0),
 		logger:           logger,
 	}
 
 	// register prefix parse functions for different token types
-	p.RegisterPrefix(tokens.TokenTypeIdent, p.parseExpressionIdentifier)
-	p.RegisterPrefix(tokens.TokenTypeInt, p.parseExpressionLiteralInteger)
-	p.RegisterPrefix(tokens.TokenTypeString, p.parseExpressionLiteralString)
-	p.RegisterPrefix(tokens.TokenTypeTrue, p.parseExpressionLiteralBoolean)
-	p.RegisterPrefix(tokens.TokenTypeFalse, p.parseExpressionLiteralBoolean)
-	p.RegisterPrefix(tokens.TokenTypeBang, p.parseExpressionPrefix)
-	p.RegisterPrefix(tokens.TokenTypeMinus, p.parseExpressionPrefix)
-	p.RegisterPrefix(tokens.TokenTypeLParen, p.parseExpressionGrouped)
-	p.RegisterPrefix(tokens.TokenTypeIf, p.parseExpressionIf)
+	p.RegisterPrefix(tokens.TypeIdent, p.parseExpressionIdentifier)
+	p.RegisterPrefix(tokens.TypeInt, p.parseExpressionLiteralInteger)
+	p.RegisterPrefix(tokens.TypeString, p.parseExpressionLiteralString)
+	p.RegisterPrefix(tokens.TypeTrue, p.parseExpressionLiteralBoolean)
+	p.RegisterPrefix(tokens.TypeFalse, p.parseExpressionLiteralBoolean)
+	p.RegisterPrefix(tokens.TypeBang, p.parseExpressionPrefix)
+	p.RegisterPrefix(tokens.TypeMinus, p.parseExpressionPrefix)
+	p.RegisterPrefix(tokens.TypeLParen, p.parseExpressionGrouped)
+	p.RegisterPrefix(tokens.TypeIf, p.parseExpressionIf)
 
 	// register infix parse functions for different token types
-	p.RegisterInfix(tokens.TokenTypePlus, p.parseExpressionInfix)
-	p.RegisterInfix(tokens.TokenTypeMinus, p.parseExpressionInfix)
-	p.RegisterInfix(tokens.TokenTypeForwardSlash, p.parseExpressionInfix)
-	p.RegisterInfix(tokens.TokenTypeAsterisk, p.parseExpressionInfix)
-	p.RegisterInfix(tokens.TokenTypeEq, p.parseExpressionInfix)
-	p.RegisterInfix(tokens.TokenTypeNotEq, p.parseExpressionInfix)
-	p.RegisterInfix(tokens.TokenTypeLT, p.parseExpressionInfix)
-	p.RegisterInfix(tokens.TokenTypeGT, p.parseExpressionInfix)
+	p.RegisterInfix(tokens.TypePlus, p.parseExpressionInfix)
+	p.RegisterInfix(tokens.TypeMinus, p.parseExpressionInfix)
+	p.RegisterInfix(tokens.TypeForwardSlash, p.parseExpressionInfix)
+	p.RegisterInfix(tokens.TypeAsterisk, p.parseExpressionInfix)
+	p.RegisterInfix(tokens.TypeEq, p.parseExpressionInfix)
+	p.RegisterInfix(tokens.TypeNotEq, p.parseExpressionInfix)
+	p.RegisterInfix(tokens.TypeLT, p.parseExpressionInfix)
+	p.RegisterInfix(tokens.TypeGT, p.parseExpressionInfix)
 
 	// Read two tokens, so currToken and peekToken are both set
 	p.nextToken()
@@ -109,11 +109,11 @@ func New(l *lexer.Lexer, logger logs.Logger) (*Parser, error) {
 	return p, nil
 }
 
-func (p *Parser) RegisterPrefix(tokType tokens.TokenType, fn parseFuncPrefix) {
+func (p *Parser) RegisterPrefix(tokType tokens.Type, fn parseFuncPrefix) {
 	p.parseFuncsPrefix[tokType] = fn
 }
 
-func (p *Parser) RegisterInfix(tokType tokens.TokenType, fn parseFuncInfix) {
+func (p *Parser) RegisterInfix(tokType tokens.Type, fn parseFuncInfix) {
 	p.parseFuncsInfix[tokType] = fn
 }
 
@@ -124,7 +124,7 @@ func (p *Parser) nextToken() {
 
 func (p *Parser) ParseProgram() *ast.Program {
 	prgrm := ast.NewProgram()
-	for p.currToken.Type != tokens.TokenTypeEOF {
+	for p.currToken.Type != tokens.TypeEOF {
 		if stmt := p.parseStatement(); stmt != nil {
 			prgrm.Statements = append(prgrm.Statements, stmt)
 		}
@@ -138,11 +138,11 @@ func (p *Parser) ParseProgram() *ast.Program {
 func (p *Parser) parseStatement() ast.Statement {
 	var stmt ast.Statement
 	switch p.currToken.Type {
-	case tokens.TokenTypeBinder:
+	case tokens.TypeBinder:
 		return p.parseStatementLet()
-	case tokens.TokenTypeReturn:
+	case tokens.TypeReturn:
 		return p.parseStatementReturn()
-	// case tokens.TokenTypeIdent:
+	// case tokens.TypeIdent:
 	// 	// TODO: can we add rebinding here? statements such as x = 42;
 	// 	//
 	// 	fallthrough
@@ -158,14 +158,14 @@ func (p *Parser) parseStatement() ast.Statement {
 // parseStatementLet parses a var statement and returns an ast.LetStatement node.
 func (p *Parser) parseStatementLet() *ast.StatementBind {
 	// first token must be var
-	if p.currToken.Type != tokens.TokenTypeBinder {
+	if p.currToken.Type != tokens.TypeBinder {
 		return nil
 	}
 
 	var ls = &ast.StatementBind{Token: p.currToken}
 
 	// next token must be ident
-	if !p.expectPeek(tokens.TokenTypeIdent) {
+	if !p.expectPeek(tokens.TypeIdent) {
 		return nil
 	}
 
@@ -175,7 +175,7 @@ func (p *Parser) parseStatementLet() *ast.StatementBind {
 	}
 
 	// next token must be assign =
-	if !p.expectPeek(tokens.TokenTypeAssign) {
+	if !p.expectPeek(tokens.TypeAssign) {
 		return nil
 	}
 
@@ -191,7 +191,7 @@ func (p *Parser) parseStatementLet() *ast.StatementBind {
 
 // parseStatementReturn parses a return statement and returns an ast.ReturnStatement node.
 func (p *Parser) parseStatementReturn() *ast.ReturnStatement {
-	if p.currToken.Type != tokens.TokenTypeReturn {
+	if p.currToken.Type != tokens.TypeReturn {
 		return nil
 	}
 
@@ -205,7 +205,7 @@ func (p *Parser) parseStatementReturn() *ast.ReturnStatement {
 }
 
 func (p *Parser) parseExpressionStatement() ast.Statement {
-	if p.currToken.Type == tokens.TokenTypeSemicolon {
+	if p.currToken.Type == tokens.TypeSemicolon {
 		return nil
 	}
 
@@ -230,7 +230,7 @@ func (p *Parser) parseExpression(precedence int) ast.Expression {
 	// if the peek token is a semicolon, then we have reached the end of the expression and we can return the left expression
 	// if the precedence of the peek token is higher than the current precedence, then we enter the loop
 	// we continue to parse infix expressions until we reach a semicolon or a token with lower precedence than the current precedence
-	for p.peekToken.Type != tokens.TokenTypeSemicolon && precedence < p.peekPrecedence() {
+	for p.peekToken.Type != tokens.TypeSemicolon && precedence < p.peekPrecedence() {
 		infixFunc, ok := p.parseFuncsInfix[p.peekToken.Type]
 		if !ok {
 			// TODO should this not be an error instead of just returning the left expression?
@@ -253,7 +253,7 @@ func (p *Parser) parseExpression(precedence int) ast.Expression {
 	return leftExp
 }
 
-func (p *Parser) noPrefixParseFuncError(tokType tokens.TokenType) {
+func (p *Parser) noPrefixParseFuncError(tokType tokens.Type) {
 	msg := fmt.Sprintf("no prefix parse function for %s found", tokType)
 	p.Errors = append(p.Errors, msg)
 }
@@ -266,14 +266,14 @@ func (p *Parser) parseExpressionIdentifier() ast.Expression {
 }
 
 // peekError adds an error message to the parser's Errors slice indicating that the next token was not of the expected type.
-func (p *Parser) peekError(tokType tokens.TokenType) {
+func (p *Parser) peekError(tokType tokens.Type) {
 	errMsg := fmt.Sprintf("expected next token type to be %s, got %s", tokType, p.peekToken.Type)
 	p.Errors = append(p.Errors, errMsg)
 }
 
 // expectPeek checks if the peek token is of the expected type, and if so advances the parser's tokens.
 // it returns true if the peek token is of the expected type, and false otherwise.
-func (p *Parser) expectPeek(tokType tokens.TokenType) bool {
+func (p *Parser) expectPeek(tokType tokens.Type) bool {
 	if p.peekToken.Type != tokType {
 		p.peekError(tokType)
 		return false
@@ -301,7 +301,7 @@ func (p *Parser) parseExpressionLiteralInteger() ast.Expression {
 func (p *Parser) parseExpressionLiteralBoolean() ast.Expression {
 	lit := &ast.ExpressionLiteralBoolean{Token: p.currToken}
 
-	value := p.currToken.Type == tokens.TokenTypeTrue
+	value := p.currToken.Type == tokens.TypeTrue
 
 	lit.Value = value
 
@@ -363,7 +363,7 @@ func (p *Parser) parseExpressionGrouped() ast.Expression {
 	p.nextToken()
 
 	expr := p.parseExpression(precedenceLowest)
-	if !p.expectPeek(tokens.TokenTypeRParen) {
+	if !p.expectPeek(tokens.TypeRParen) {
 		return nil
 	}
 
@@ -380,18 +380,18 @@ func (p *Parser) parseExpressionIf() ast.Expression {
 			Token: p.currToken,
 		}
 
-		if !p.expectPeek(tokens.TokenTypeLParen) {
+		if !p.expectPeek(tokens.TypeLParen) {
 			return nil
 		}
 
 		p.nextToken()
 		branch.Condition = p.parseExpression(precedenceLowest)
 
-		if !p.expectPeek(tokens.TokenTypeRParen) {
+		if !p.expectPeek(tokens.TypeRParen) {
 			return nil
 		}
 
-		if !p.expectPeek(tokens.TokenTypeLBrace) {
+		if !p.expectPeek(tokens.TypeLBrace) {
 			return nil
 		}
 
@@ -399,17 +399,17 @@ func (p *Parser) parseExpressionIf() ast.Expression {
 
 		expr.Branches = append(expr.Branches, branch)
 
-		if p.peekToken.Type != tokens.TokenTypeElif {
+		if p.peekToken.Type != tokens.TypeElif {
 			break
 		}
 
 		p.nextToken()
 	}
 
-	if p.peekToken.Type == tokens.TokenTypeElse {
+	if p.peekToken.Type == tokens.TypeElse {
 		p.nextToken()
 
-		if !p.expectPeek(tokens.TokenTypeLBrace) {
+		if !p.expectPeek(tokens.TypeLBrace) {
 			return nil
 		}
 
@@ -423,7 +423,7 @@ func (p *Parser) parseBlockStatement() *ast.StatementBlock {
 	block := &ast.StatementBlock{Statements: make([]ast.Statement, 0)}
 
 	p.nextToken()
-	for p.currToken.Type != tokens.TokenTypeRBrace && p.currToken.Type != tokens.TokenTypeEOF {
+	for p.currToken.Type != tokens.TypeRBrace && p.currToken.Type != tokens.TypeEOF {
 		stmt := p.parseStatement()
 		if stmt != nil {
 			block.Statements = append(block.Statements, stmt)

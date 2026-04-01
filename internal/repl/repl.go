@@ -39,7 +39,7 @@ func (r *Repl) Start() {
 		line := scanner.Text()
 		l := lexer.New(line)
 
-		for tok := l.NextToken(); tok.Type != tokens.TokenTypeEOF; tok = l.NextToken() {
+		for tok := l.NextToken(); tok.Type != tokens.TypeEOF; tok = l.NextToken() {
 			if _, err := r.out.Write([]byte(tok.Lexeme + "\n")); err != nil {
 				return
 			}

@@ -14,7 +14,7 @@ const stringFmtLetStatement = "var %s = %s;"
 // For example, in the var statement "var x = 5;", the token would be the "var" token, the Name would be an ExpressionIdentifier representing "x", and the Value would be an ExpressionLiteralInteger representing "5".
 // Or we might have var x = y; in which case the Value would be an ExpressionIdentifier representing "y".
 type StatementBind struct {
-	// Token is the token associated with the var statement, which is typically a token.TokenTypeVar token.
+	// Token is the token associated with the var statement, which is typically a token.TypeVar token.
 	Token tokens.Token
 	// Name is the identifier for the variable name being declared in the var statement.
 	// LHS of the var statement, which is the variable name being declared.

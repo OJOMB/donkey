@@ -36,64 +36,64 @@ func (l *Lexer) NextToken() tokens.Token {
 	case '=':
 		if l.peekChar() == '=' {
 			l.readChar()
-			tok = tokens.New(tokens.TokenTypeEq, "==")
+			tok = tokens.New(tokens.TypeEq, "==")
 			break
 		}
 
-		tok = tokens.New(tokens.TokenTypeAssign, "=")
+		tok = tokens.New(tokens.TypeAssign, "=")
 	case ';':
-		tok = tokens.New(tokens.TokenTypeSemicolon, ";")
+		tok = tokens.New(tokens.TypeSemicolon, ";")
 	case '(':
-		tok = tokens.New(tokens.TokenTypeLParen, "(")
+		tok = tokens.New(tokens.TypeLParen, "(")
 	case ')':
-		tok = tokens.New(tokens.TokenTypeRParen, ")")
+		tok = tokens.New(tokens.TypeRParen, ")")
 	case ',':
-		tok = tokens.New(tokens.TokenTypeComma, ",")
+		tok = tokens.New(tokens.TypeComma, ",")
 	case '+':
-		tok = tokens.New(tokens.TokenTypePlus, "+")
+		tok = tokens.New(tokens.TypePlus, "+")
 	case '-':
-		tok = tokens.New(tokens.TokenTypeMinus, "-")
+		tok = tokens.New(tokens.TypeMinus, "-")
 	case '<':
 		if l.peekChar() == '=' {
 			l.readChar()
-			tok = tokens.New(tokens.TokenTypeLTEQ, "<=")
+			tok = tokens.New(tokens.TypeLTEQ, "<=")
 			break
 		}
 
-		tok = tokens.New(tokens.TokenTypeLT, "<")
+		tok = tokens.New(tokens.TypeLT, "<")
 	case '>':
 		if l.peekChar() == '=' {
 			l.readChar()
-			tok = tokens.New(tokens.TokenTypeGTEQ, ">=")
+			tok = tokens.New(tokens.TypeGTEQ, ">=")
 			break
 		}
 
-		tok = tokens.New(tokens.TokenTypeGT, ">")
+		tok = tokens.New(tokens.TypeGT, ">")
 	case '*':
-		tok = tokens.New(tokens.TokenTypeAsterisk, "*")
+		tok = tokens.New(tokens.TypeAsterisk, "*")
 	case '/':
-		tok = tokens.New(tokens.TokenTypeForwardSlash, "/")
+		tok = tokens.New(tokens.TypeForwardSlash, "/")
 	case '!':
 		if l.peekChar() == '=' {
 			l.readChar()
-			tok = tokens.New(tokens.TokenTypeNotEq, "!=")
+			tok = tokens.New(tokens.TypeNotEq, "!=")
 			break
 		}
 
-		tok = tokens.New(tokens.TokenTypeBang, "!")
+		tok = tokens.New(tokens.TypeBang, "!")
 	case '{':
-		tok = tokens.New(tokens.TokenTypeLBrace, "{")
+		tok = tokens.New(tokens.TypeLBrace, "{")
 	case '}':
-		tok = tokens.New(tokens.TokenTypeRBrace, "}")
+		tok = tokens.New(tokens.TypeRBrace, "}")
 	case '"':
 		// we have encountered the opening speech marks of a string literal, so we want to read the whole string literal and return it as a token
-		tok.Type = tokens.TokenTypeString
+		tok.Type = tokens.TypeString
 		tok.Lexeme = l.readString()
 		return tok
 
 	case 0:
 		// if the current char is ASCII NUL then we have reached the end of the input and we return an EOF token
-		tok = tokens.New(tokens.TokenTypeEOF, "")
+		tok = tokens.New(tokens.TypeEOF, "")
 	default:
 		if l.isLetter(l.ch) {
 			// if the current char is a letter then we want to read the whole identifier and return it as a token
@@ -103,11 +103,11 @@ func (l *Lexer) NextToken() tokens.Token {
 			return tok
 		} else if l.isDigit(l.ch) {
 			// if the current char is a digit then we want to read the whole number and return it as a token
-			tok.Type = tokens.TokenTypeInt
+			tok.Type = tokens.TypeInt
 			tok.Lexeme = l.readNumber()
 			return tok
 		} else {
-			tok = tokens.New(tokens.TokenTypeIllegal, string(l.ch))
+			tok = tokens.New(tokens.TypeIllegal, string(l.ch))
 		}
 	}
 
