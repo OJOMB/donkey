@@ -363,7 +363,6 @@ func (p *Parser) parseExpressionGrouped() ast.Expression {
 	p.nextToken()
 
 	expr := p.parseExpression(precedenceLowest)
-
 	if !p.expectPeek(tokens.TokenTypeRParen) {
 		return nil
 	}
@@ -372,24 +371,40 @@ func (p *Parser) parseExpressionGrouped() ast.Expression {
 }
 
 func (p *Parser) parseExpressionIf() ast.Expression {
-	expr := &ast.ExpressionIf{Token: p.currToken}
-
-	if !p.expectPeek(tokens.TokenTypeLParen) {
-		return nil
+	expr := &ast.ExpressionIf{
+		Branches: make([]ast.ConditionalBranch, 0),
 	}
 
-	p.nextToken()
-	expr.Condition = p.parseExpression(precedenceLowest)
+	for {
+		branch := ast.ConditionalBranch{
+			Token: p.currToken,
+		}
 
-	if !p.expectPeek(tokens.TokenTypeRParen) {
-		return nil
+		if !p.expectPeek(tokens.TokenTypeLParen) {
+			return nil
+		}
+
+		p.nextToken()
+		branch.Condition = p.parseExpression(precedenceLowest)
+
+		if !p.expectPeek(tokens.TokenTypeRParen) {
+			return nil
+		}
+
+		if !p.expectPeek(tokens.TokenTypeLBrace) {
+			return nil
+		}
+
+		branch.Consequence = p.parseBlockStatement()
+
+		expr.Branches = append(expr.Branches, branch)
+
+		if p.peekToken.Type != tokens.TokenTypeElif {
+			break
+		}
+
+		p.nextToken()
 	}
-
-	if !p.expectPeek(tokens.TokenTypeLBrace) {
-		return nil
-	}
-
-	expr.Consequence = p.parseBlockStatement()
 
 	if p.peekToken.Type == tokens.TokenTypeElse {
 		p.nextToken()
@@ -408,12 +423,12 @@ func (p *Parser) parseBlockStatement() *ast.StatementBlock {
 	block := &ast.StatementBlock{Statements: make([]ast.Statement, 0)}
 
 	p.nextToken()
-
 	for p.currToken.Type != tokens.TokenTypeRBrace && p.currToken.Type != tokens.TokenTypeEOF {
 		stmt := p.parseStatement()
 		if stmt != nil {
 			block.Statements = append(block.Statements, stmt)
 		}
+
 		p.nextToken()
 	}
 

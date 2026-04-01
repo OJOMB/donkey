@@ -6,15 +6,19 @@ import (
 	"github.com/OJOMB/donkey/internal/tokens"
 )
 
-type ExpressionIf struct {
+type ConditionalBranch struct {
 	Token       tokens.Token
 	Condition   Expression
 	Consequence *StatementBlock
-	Alternative *StatementBlock
+}
+
+type ExpressionIf struct {
+	Branches    []ConditionalBranch // first = if, rest = elif
+	Alternative *StatementBlock     // optional else
 }
 
 func (ei *ExpressionIf) expressionNode()     {}
-func (ei *ExpressionIf) TokenLexeme() string { return ei.Token.Lexeme }
+func (ei *ExpressionIf) TokenLexeme() string { return "if" }
 
 func (ei *ExpressionIf) String() string {
 	// out := "if" + ei.Condition.String() + " " + ei.Consequence.String()
@@ -23,16 +27,22 @@ func (ei *ExpressionIf) String() string {
 		return "failed to write if expression string representation"
 	}
 
-	if _, err := out.WriteString(ei.Condition.String()); err != nil {
-		return "failed to write if expression string representation"
-	}
+	for i, branch := range ei.Branches {
+		if i > 0 {
+			if _, err := out.WriteString("elif"); err != nil {
+				return "failed to write if expression string representation"
+			}
+		}
 
-	if _, err := out.WriteString(" "); err != nil {
-		return "failed to write if expression string representation"
-	}
-
-	if _, err := out.WriteString(ei.Consequence.String()); err != nil {
-		return "failed to write if expression string representation"
+		if _, err := out.WriteString(branch.Condition.String()); err != nil {
+			return "failed to write if expression string representation"
+		}
+		if _, err := out.WriteString(" "); err != nil {
+			return "failed to write if expression string representation"
+		}
+		if _, err := out.WriteString(branch.Consequence.String()); err != nil {
+			return "failed to write if expression string representation"
+		}
 	}
 
 	if ei.Alternative != nil {

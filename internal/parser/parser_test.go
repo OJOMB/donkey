@@ -467,26 +467,30 @@ func TestIfExpression(t *testing.T) {
 					&ast.StatementExpression{
 						Token: tokens.Token{Type: tokens.TokenTypeIf, Lexeme: "if"},
 						Expression: &ast.ExpressionIf{
-							Token: tokens.Token{Type: tokens.TokenTypeIf, Lexeme: "if"},
-							Condition: &ast.ExpressionInfix{
-								Token:    tokens.Token{Type: tokens.TokenTypeLT, Lexeme: "<"},
-								Operator: "<",
-								Left: &ast.ExpressionIdentifier{
-									Token: tokens.Token{Type: tokens.TokenTypeIdent, Lexeme: "x"},
-									Value: "x",
-								},
-								Right: &ast.ExpressionIdentifier{
-									Token: tokens.Token{Type: tokens.TokenTypeIdent, Lexeme: "y"},
-									Value: "y",
-								},
-							},
-							Consequence: &ast.StatementBlock{
-								Statements: []ast.Statement{
-									&ast.StatementExpression{
-										Token: tokens.Token{Type: tokens.TokenTypeIdent, Lexeme: "x"},
-										Expression: &ast.ExpressionIdentifier{
+							Branches: []ast.ConditionalBranch{
+								{
+									Token: tokens.Token{Type: tokens.TokenTypeIf, Lexeme: "if"},
+									Condition: &ast.ExpressionInfix{
+										Token:    tokens.Token{Type: tokens.TokenTypeLT, Lexeme: "<"},
+										Operator: "<",
+										Left: &ast.ExpressionIdentifier{
 											Token: tokens.Token{Type: tokens.TokenTypeIdent, Lexeme: "x"},
 											Value: "x",
+										},
+										Right: &ast.ExpressionIdentifier{
+											Token: tokens.Token{Type: tokens.TokenTypeIdent, Lexeme: "y"},
+											Value: "y",
+										},
+									},
+									Consequence: &ast.StatementBlock{
+										Statements: []ast.Statement{
+											&ast.StatementExpression{
+												Token: tokens.Token{Type: tokens.TokenTypeIdent, Lexeme: "x"},
+												Expression: &ast.ExpressionIdentifier{
+													Token: tokens.Token{Type: tokens.TokenTypeIdent, Lexeme: "x"},
+													Value: "x",
+												},
+											},
 										},
 									},
 								},
