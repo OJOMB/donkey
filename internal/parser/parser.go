@@ -138,7 +138,7 @@ func (p *Parser) ParseProgram() *ast.Program {
 func (p *Parser) parseStatement() ast.Statement {
 	var stmt ast.Statement
 	switch p.currToken.Type {
-	case tokens.TokenTypeLet:
+	case tokens.TokenTypeBinder:
 		return p.parseStatementLet()
 	case tokens.TokenTypeReturn:
 		return p.parseStatementReturn()
@@ -155,14 +155,14 @@ func (p *Parser) parseStatement() ast.Statement {
 	return stmt
 }
 
-// parseStatementLet parses a let statement and returns an ast.LetStatement node.
-func (p *Parser) parseStatementLet() *ast.StatementLet {
-	// first token must be LET
-	if p.currToken.Type != tokens.TokenTypeLet {
+// parseStatementLet parses a var statement and returns an ast.LetStatement node.
+func (p *Parser) parseStatementLet() *ast.StatementBind {
+	// first token must be var
+	if p.currToken.Type != tokens.TokenTypeBinder {
 		return nil
 	}
 
-	var ls = &ast.StatementLet{Token: p.currToken}
+	var ls = &ast.StatementBind{Token: p.currToken}
 
 	// next token must be ident
 	if !p.expectPeek(tokens.TokenTypeIdent) {

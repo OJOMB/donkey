@@ -63,8 +63,8 @@ const (
 
 	// TokenTypeFunction represents the 'fn' keyword token.
 	TokenTypeFunction TokenType = "FUNCTION"
-	// TokenTypeLet represents the 'let' keyword token.
-	TokenTypeLet TokenType = "LET"
+	// TokenTypeBinder represents the 'var' keyword token.
+	TokenTypeBinder TokenType = "VAR"
 	// TokenTypeTrue represents the boolean value true
 	TokenTypeTrue TokenType = "TRUE"
 	// TokenTypeFalse represents the boolean value false
@@ -81,7 +81,7 @@ const (
 
 var keywords = map[string]TokenType{
 	"fn":     TokenTypeFunction,
-	"let":    TokenTypeLet,
+	"var":    TokenTypeBinder,
 	"if":     TokenTypeIf,
 	"elif":   TokenTypeElif,
 	"else":   TokenTypeElse,

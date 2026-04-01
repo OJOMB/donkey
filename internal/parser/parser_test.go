@@ -20,86 +20,86 @@ func TestParseStatements(t *testing.T) {
 	}
 
 	var testCases = []testCase{
-		// {
-		// 	name: "test let statements - no errors",
-		// 	input: `
-		// 			let x = 5;
-		// 			let y = "hello";
-		// 			let __foobar__ = false;
-		// 		`,
-		// 	expectedOutput: &ast.Program{
-		// 		Statements: []ast.Statement{
-		// 			&ast.StatementLet{
-		// 				Token: tokens.Token{Type: "LET", Lexeme: "let"},
-		// 				Name: &ast.ExpressionIdentifier{
-		// 					Token: tokens.Token{Type: "IDENT", Lexeme: "x"},
-		// 					Value: "x",
-		// 				},
-		// 				Value: &ast.ExpressionLiteralInteger{
-		// 					Token: tokens.Token{Type: "INT", Lexeme: "5"},
-		// 					Value: 5,
-		// 				},
-		// 			},
-		// 			&ast.StatementLet{
-		// 				Token: tokens.Token{Type: "LET", Lexeme: "let"},
-		// 				Name: &ast.ExpressionIdentifier{
-		// 					Token: tokens.Token{Type: "IDENT", Lexeme: "y"},
-		// 					Value: "y",
-		// 				},
-		// 				Value: &ast.ExpressionLiteralString{
-		// 					Token: tokens.Token{Type: "STRING", Lexeme: "hello"},
-		// 					Value: "hello",
-		// 				},
-		// 			},
-		// 			&ast.StatementLet{
-		// 				Token: tokens.Token{Type: "LET", Lexeme: "let"},
-		// 				Name: &ast.ExpressionIdentifier{
-		// 					Token: tokens.Token{Type: "IDENT", Lexeme: "__foobar__"},
-		// 					Value: "__foobar__",
-		// 				},
-		// 				Value: &ast.ExpressionLiteralBoolean{
-		// 					Token: tokens.Token{Type: "FALSE", Lexeme: "false"},
-		// 					Value: false,
-		// 				},
-		// 			},
-		// 		},
-		// 	},
-		// 	expectedErrs: []string{},
-		// },
-		// {
-		// 	name: "test return statements",
-		// 	input: `
-		// 		return 5;
-		// 		return "kool";
-		// 		return true;
-		// 	`,
-		// 	expectedOutput: &ast.Program{
-		// 		Statements: []ast.Statement{
-		// 			&ast.ReturnStatement{
-		// 				Token: tokens.Token{Type: "RETURN", Lexeme: "return"},
-		// 				ReturnValue: &ast.ExpressionLiteralInteger{
-		// 					Token: tokens.Token{Type: "INT", Lexeme: "5"},
-		// 					Value: 5,
-		// 				},
-		// 			},
-		// 			&ast.ReturnStatement{
-		// 				Token: tokens.Token{Type: "RETURN", Lexeme: "return"},
-		// 				ReturnValue: &ast.ExpressionLiteralString{
-		// 					Token: tokens.Token{Type: "STRING", Lexeme: "kool"},
-		// 					Value: "kool",
-		// 				},
-		// 			},
-		// 			&ast.ReturnStatement{
-		// 				Token: tokens.Token{Type: "RETURN", Lexeme: "return"},
-		// 				ReturnValue: &ast.ExpressionLiteralBoolean{
-		// 					Token: tokens.Token{Type: "TRUE", Lexeme: "true"},
-		// 					Value: true,
-		// 				},
-		// 			},
-		// 		},
-		// 	},
-		// 	expectedErrs: []string{},
-		// },
+		{
+			name: "test bind statements - no errors",
+			input: `
+					var x = 5;
+					var y = "hello";
+					var __foobar__ = false;
+				`,
+			expectedOutput: &ast.Program{
+				Statements: []ast.Statement{
+					&ast.StatementBind{
+						Token: tokens.Token{Type: tokens.TokenTypeBinder, Lexeme: "var"},
+						Name: &ast.ExpressionIdentifier{
+							Token: tokens.Token{Type: "IDENT", Lexeme: "x"},
+							Value: "x",
+						},
+						Value: &ast.ExpressionLiteralInteger{
+							Token: tokens.Token{Type: "INT", Lexeme: "5"},
+							Value: 5,
+						},
+					},
+					&ast.StatementBind{
+						Token: tokens.Token{Type: tokens.TokenTypeBinder, Lexeme: "var"},
+						Name: &ast.ExpressionIdentifier{
+							Token: tokens.Token{Type: "IDENT", Lexeme: "y"},
+							Value: "y",
+						},
+						Value: &ast.ExpressionLiteralString{
+							Token: tokens.Token{Type: "STRING", Lexeme: "hello"},
+							Value: "hello",
+						},
+					},
+					&ast.StatementBind{
+						Token: tokens.Token{Type: tokens.TokenTypeBinder, Lexeme: "var"},
+						Name: &ast.ExpressionIdentifier{
+							Token: tokens.Token{Type: "IDENT", Lexeme: "__foobar__"},
+							Value: "__foobar__",
+						},
+						Value: &ast.ExpressionLiteralBoolean{
+							Token: tokens.Token{Type: "FALSE", Lexeme: "false"},
+							Value: false,
+						},
+					},
+				},
+			},
+			expectedErrs: []string{},
+		},
+		{
+			name: "test return statements",
+			input: `
+				return 5;
+				return "kool";
+				return true;
+			`,
+			expectedOutput: &ast.Program{
+				Statements: []ast.Statement{
+					&ast.ReturnStatement{
+						Token: tokens.Token{Type: "RETURN", Lexeme: "return"},
+						ReturnValue: &ast.ExpressionLiteralInteger{
+							Token: tokens.Token{Type: "INT", Lexeme: "5"},
+							Value: 5,
+						},
+					},
+					&ast.ReturnStatement{
+						Token: tokens.Token{Type: "RETURN", Lexeme: "return"},
+						ReturnValue: &ast.ExpressionLiteralString{
+							Token: tokens.Token{Type: "STRING", Lexeme: "kool"},
+							Value: "kool",
+						},
+					},
+					&ast.ReturnStatement{
+						Token: tokens.Token{Type: "RETURN", Lexeme: "return"},
+						ReturnValue: &ast.ExpressionLiteralBoolean{
+							Token: tokens.Token{Type: "TRUE", Lexeme: "true"},
+							Value: true,
+						},
+					},
+				},
+			},
+			expectedErrs: []string{},
+		},
 		{
 			name: "assignment statements",
 			input: `
@@ -290,70 +290,70 @@ func TestParsingInfixExpressions(t *testing.T) {
 	}
 
 	var testCases = []testCase{
-		// {
-		// 	name:  "simple infix expressions - no errors",
-		// 	input: `5 + 122;`,
-		// 	expectedOutput: &ast.Program{
-		// 		Statements: []ast.Statement{
-		// 			&ast.StatementExpression{
-		// 				Token: tokens.Token{Type: tokens.TokenTypeInt, Lexeme: "5"},
-		// 				Expression: &ast.ExpressionInfix{
-		// 					Token:    tokens.Token{Type: tokens.TokenTypePlus, Lexeme: "+"},
-		// 					Operator: "+",
-		// 					Left: &ast.ExpressionLiteralInteger{
-		// 						Token: tokens.Token{Type: tokens.TokenTypeInt, Lexeme: "5"},
-		// 						Value: 5,
-		// 					},
-		// 					Right: &ast.ExpressionLiteralInteger{
-		// 						Token: tokens.Token{Type: tokens.TokenTypeInt, Lexeme: "122"},
-		// 						Value: 122,
-		// 					},
-		// 				},
-		// 			},
-		// 		},
-		// 	},
-		// 	expectedErrs: []string{},
-		// },
-		// {
-		// 	name:  "slightly more complex infix expression - no errors",
-		// 	input: `5 + 5 / 10 * 4;`,
-		// 	expectedOutput: &ast.Program{
-		// 		Statements: []ast.Statement{
-		// 			&ast.StatementExpression{
-		// 				Token: tokens.Token{Type: tokens.TokenTypeInt, Lexeme: "5"},
-		// 				Expression: &ast.ExpressionInfix{
-		// 					Token:    tokens.Token{Type: tokens.TokenTypePlus, Lexeme: "+"},
-		// 					Operator: "+",
-		// 					Left: &ast.ExpressionLiteralInteger{
-		// 						Token: tokens.Token{Type: tokens.TokenTypeInt, Lexeme: "5"},
-		// 						Value: 5,
-		// 					},
-		// 					Right: &ast.ExpressionInfix{
-		// 						Token:    tokens.Token{Type: tokens.TokenTypeAsterisk, Lexeme: "*"},
-		// 						Operator: "*",
-		// 						Left: &ast.ExpressionInfix{
-		// 							Token:    tokens.Token{Type: tokens.TokenTypeForwardSlash, Lexeme: "/"},
-		// 							Operator: "/",
-		// 							Left: &ast.ExpressionLiteralInteger{
-		// 								Token: tokens.Token{Type: tokens.TokenTypeInt, Lexeme: "5"},
-		// 								Value: 5,
-		// 							},
-		// 							Right: &ast.ExpressionLiteralInteger{
-		// 								Token: tokens.Token{Type: tokens.TokenTypeInt, Lexeme: "10"},
-		// 								Value: 10,
-		// 							},
-		// 						},
-		// 						Right: &ast.ExpressionLiteralInteger{
-		// 							Token: tokens.Token{Type: tokens.TokenTypeInt, Lexeme: "4"},
-		// 							Value: 4,
-		// 						},
-		// 					},
-		// 				},
-		// 			},
-		// 		},
-		// 	},
-		// 	expectedErrs: []string{},
-		// },
+		{
+			name:  "simple infix expressions - no errors",
+			input: `5 + 122;`,
+			expectedOutput: &ast.Program{
+				Statements: []ast.Statement{
+					&ast.StatementExpression{
+						Token: tokens.Token{Type: tokens.TokenTypeInt, Lexeme: "5"},
+						Expression: &ast.ExpressionInfix{
+							Token:    tokens.Token{Type: tokens.TokenTypePlus, Lexeme: "+"},
+							Operator: "+",
+							Left: &ast.ExpressionLiteralInteger{
+								Token: tokens.Token{Type: tokens.TokenTypeInt, Lexeme: "5"},
+								Value: 5,
+							},
+							Right: &ast.ExpressionLiteralInteger{
+								Token: tokens.Token{Type: tokens.TokenTypeInt, Lexeme: "122"},
+								Value: 122,
+							},
+						},
+					},
+				},
+			},
+			expectedErrs: []string{},
+		},
+		{
+			name:  "slightly more complex infix expression - no errors",
+			input: `5 + 5 / 10 * 4;`,
+			expectedOutput: &ast.Program{
+				Statements: []ast.Statement{
+					&ast.StatementExpression{
+						Token: tokens.Token{Type: tokens.TokenTypeInt, Lexeme: "5"},
+						Expression: &ast.ExpressionInfix{
+							Token:    tokens.Token{Type: tokens.TokenTypePlus, Lexeme: "+"},
+							Operator: "+",
+							Left: &ast.ExpressionLiteralInteger{
+								Token: tokens.Token{Type: tokens.TokenTypeInt, Lexeme: "5"},
+								Value: 5,
+							},
+							Right: &ast.ExpressionInfix{
+								Token:    tokens.Token{Type: tokens.TokenTypeAsterisk, Lexeme: "*"},
+								Operator: "*",
+								Left: &ast.ExpressionInfix{
+									Token:    tokens.Token{Type: tokens.TokenTypeForwardSlash, Lexeme: "/"},
+									Operator: "/",
+									Left: &ast.ExpressionLiteralInteger{
+										Token: tokens.Token{Type: tokens.TokenTypeInt, Lexeme: "5"},
+										Value: 5,
+									},
+									Right: &ast.ExpressionLiteralInteger{
+										Token: tokens.Token{Type: tokens.TokenTypeInt, Lexeme: "10"},
+										Value: 10,
+									},
+								},
+								Right: &ast.ExpressionLiteralInteger{
+									Token: tokens.Token{Type: tokens.TokenTypeInt, Lexeme: "4"},
+									Value: 4,
+								},
+							},
+						},
+					},
+				},
+			},
+			expectedErrs: []string{},
+		},
 		{
 			name:  "slightly more complex infix expression - no errors",
 			input: `5 * 5 + 10 / 4;`,
