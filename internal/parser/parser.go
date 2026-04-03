@@ -91,6 +91,7 @@ func New(l *lexer.Lexer, logger logs.Logger) (*Parser, error) {
 	p.RegisterPrefix(tokens.TypeMinus, p.parseExpressionPrefix)
 	p.RegisterPrefix(tokens.TypeLParen, p.parseExpressionGrouped)
 	p.RegisterPrefix(tokens.TypeIf, p.parseExpressionIf)
+	p.RegisterPrefix(tokens.TypeFunction, p.parseExpressionLiteralFunction)
 
 	// register infix parse functions for different token types
 	p.RegisterInfix(tokens.TypePlus, p.parseExpressionInfix)
@@ -299,19 +300,37 @@ func (p *Parser) parseExpressionLiteralInteger() ast.Expression {
 }
 
 func (p *Parser) parseExpressionLiteralBoolean() ast.Expression {
-	lit := &ast.ExpressionLiteralBoolean{Token: p.currToken}
-
-	value := p.currToken.Type == tokens.TypeTrue
-
-	lit.Value = value
-
-	return lit
+	return &ast.ExpressionLiteralBoolean{
+		Token: p.currToken,
+		Value: p.currToken.Type == tokens.TypeTrue,
+	}
 }
 
+// parseExpressionLiteralString parses a string literal expression and returns an ast.ExpressionLiteralString node representing the parsed string literal.
+// It expects the current token to be a string token, and it will set the Value field of the ExpressionLiteralString node to the lexeme of the current token.
 func (p *Parser) parseExpressionLiteralString() ast.Expression {
-	lit := &ast.ExpressionLiteralString{Token: p.currToken}
+	return &ast.ExpressionLiteralString{
+		Token: p.currToken,
+		Value: p.currToken.Lexeme,
+	}
+}
 
-	lit.Value = p.currToken.Lexeme
+// parseExpressionLiteralFunction parses a function literal expression and returns an ast.ExpressionLiteralFunction node representing the parsed function literal.
+// It expects the current token to be the "fn" keyword, followed by a parameter list enclosed in parentheses, and a function body enclosed in braces.
+func (p *Parser) parseExpressionLiteralFunction() ast.Expression {
+	lit := &ast.ExpressionLiteralFunction{Token: p.currToken}
+
+	if !p.expectPeek(tokens.TypeLParen) {
+		return nil
+	}
+
+	lit.Parameters = p.parseFunctionParameters()
+
+	if !p.expectPeek(tokens.TypeLBrace) {
+		return nil
+	}
+
+	lit.Body = p.parseBlockStatement()
 
 	return lit
 }
@@ -433,4 +452,50 @@ func (p *Parser) parseBlockStatement() *ast.StatementBlock {
 	}
 
 	return block
+}
+
+// parseFunctionParameters parses the parameters of a function literal and returns a slice of ExpressionIdentifier nodes representing the parameters.
+// It expects the current token to be the opening parenthesis of the parameter list, and it will advance the parser's tokens as it parses the parameters.
+func (p *Parser) parseFunctionParameters() []*ast.ExpressionIdentifier {
+	identifiers := make([]*ast.ExpressionIdentifier, 0)
+
+	// in the case of no params
+	if p.peekToken.Type == tokens.TypeRParen {
+		p.nextToken()
+		return identifiers
+	}
+
+	if p.peekToken.Type != tokens.TypeIdent {
+		p.peekError(tokens.TypeIdent)
+		return nil
+	}
+
+	// we're now at the first parameter, so we can start parsing
+	p.nextToken()
+
+	ident := &ast.ExpressionIdentifier{
+		Token: p.currToken,
+		Value: p.currToken.Lexeme,
+	}
+	identifiers = append(identifiers, ident)
+
+	// fn(param1, param2, param3) {	<statements> }
+	for p.peekToken.Type == tokens.TypeComma {
+		// advances to the comma
+		p.nextToken()
+		// advances to the next parameter after the comma
+		p.nextToken()
+
+		ident := &ast.ExpressionIdentifier{
+			Token: p.currToken,
+			Value: p.currToken.Lexeme,
+		}
+		identifiers = append(identifiers, ident)
+	}
+
+	if !p.expectPeek(tokens.TypeRParen) {
+		return nil
+	}
+
+	return identifiers
 }

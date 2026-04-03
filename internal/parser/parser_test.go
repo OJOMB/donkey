@@ -596,3 +596,95 @@ func TestIfExpression(t *testing.T) {
 		})
 	}
 }
+
+func TestFunctionLiteral(t *testing.T) {
+	type testCase struct {
+		name           string
+		input          string
+		expectedOutput *ast.Program
+		expectedErrs   []string
+	}
+
+	var testCases = []testCase{
+		{
+			name:  "function literal with no parameters - no errors",
+			input: `fn() { return 5; }`,
+			expectedOutput: &ast.Program{
+				Statements: []ast.Statement{
+					&ast.StatementExpression{
+						Token: tokens.Token{Type: tokens.TypeFunction, Lexeme: "fn"},
+						Expression: &ast.ExpressionLiteralFunction{
+							Token:      tokens.Token{Type: tokens.TypeFunction, Lexeme: "fn"},
+							Parameters: []*ast.ExpressionIdentifier{},
+							Body: &ast.StatementBlock{Statements: []ast.Statement{
+								&ast.ReturnStatement{
+									Token: tokens.Token{Type: tokens.TypeReturn, Lexeme: "return"},
+									ReturnValue: &ast.ExpressionLiteralInteger{
+										Token: tokens.Token{Type: tokens.TypeInt, Lexeme: "5"},
+										Value: 5,
+									},
+								},
+							}},
+						},
+					},
+				},
+			},
+			expectedErrs: []string{},
+		},
+		{
+			name:  "function literal with parameters - no errors",
+			input: `fn(x, y) { return x + y; }`,
+			expectedOutput: &ast.Program{
+				Statements: []ast.Statement{
+					&ast.StatementExpression{
+						Token: tokens.Token{Type: tokens.TypeFunction, Lexeme: "fn"},
+						Expression: &ast.ExpressionLiteralFunction{
+							Token: tokens.Token{Type: tokens.TypeFunction, Lexeme: "fn"},
+							Parameters: []*ast.ExpressionIdentifier{
+								{
+									Token: tokens.Token{Type: tokens.TypeIdent, Lexeme: "x"},
+									Value: "x",
+								},
+								{
+									Token: tokens.Token{Type: tokens.TypeIdent, Lexeme: "y"},
+									Value: "y",
+								},
+							},
+							Body: &ast.StatementBlock{Statements: []ast.Statement{
+								&ast.ReturnStatement{
+									Token: tokens.Token{Type: tokens.TypeReturn, Lexeme: "return"},
+									ReturnValue: &ast.ExpressionInfix{
+										Token:    tokens.Token{Type: tokens.TypePlus, Lexeme: "+"},
+										Operator: "+",
+										Left: &ast.ExpressionIdentifier{
+											Token: tokens.Token{Type: tokens.TypeIdent, Lexeme: "x"},
+											Value: "x",
+										},
+										Right: &ast.ExpressionIdentifier{
+											Token: tokens.Token{Type: tokens.TypeIdent, Lexeme: "y"},
+											Value: "y",
+										},
+									},
+								},
+							}},
+						},
+					},
+				},
+			},
+			expectedErrs: []string{},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			p, err := New(lexer.New(tc.input), nil)
+			require.NoError(t, err)
+
+			program := p.ParseProgram()
+			assert.NotNil(t, program)
+
+			assert.Equal(t, tc.expectedOutput, program)
+			assert.Equal(t, tc.expectedErrs, p.Errors)
+		})
+	}
+}
