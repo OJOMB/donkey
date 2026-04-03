@@ -502,6 +502,85 @@ func TestIfExpression(t *testing.T) {
 			},
 			expectedErrs: []string{},
 		},
+		{
+			name:  "if expression with elif and else - no errors",
+			input: `if (x < y) { x } elif (x > y) { y } else { 5 }`,
+			expectedOutput: &ast.Program{
+				Statements: []ast.Statement{
+					&ast.StatementExpression{
+						Token: tokens.Token{Type: tokens.TypeIf, Lexeme: "if"},
+						Expression: &ast.ExpressionIf{
+							Branches: []ast.ConditionalBranch{
+								{
+									Token: tokens.Token{Type: tokens.TypeIf, Lexeme: "if"},
+									Condition: &ast.ExpressionInfix{
+										Token:    tokens.Token{Type: tokens.TypeLT, Lexeme: "<"},
+										Operator: "<",
+										Left: &ast.ExpressionIdentifier{
+											Token: tokens.Token{Type: tokens.TypeIdent, Lexeme: "x"},
+											Value: "x",
+										},
+										Right: &ast.ExpressionIdentifier{
+											Token: tokens.Token{Type: tokens.TypeIdent, Lexeme: "y"},
+											Value: "y",
+										},
+									},
+									Consequence: &ast.StatementBlock{
+										Statements: []ast.Statement{
+											&ast.StatementExpression{
+												Token: tokens.Token{Type: tokens.TypeIdent, Lexeme: "x"},
+												Expression: &ast.ExpressionIdentifier{
+													Token: tokens.Token{Type: tokens.TypeIdent, Lexeme: "x"},
+													Value: "x",
+												},
+											},
+										},
+									},
+								},
+								{
+									Token: tokens.Token{Type: tokens.TypeElif, Lexeme: "elif"},
+									Condition: &ast.ExpressionInfix{
+										Token:    tokens.Token{Type: tokens.TypeGT, Lexeme: ">"},
+										Operator: ">",
+										Left: &ast.ExpressionIdentifier{
+											Token: tokens.Token{Type: tokens.TypeIdent, Lexeme: "x"},
+											Value: "x",
+										},
+										Right: &ast.ExpressionIdentifier{
+											Token: tokens.Token{Type: tokens.TypeIdent, Lexeme: "y"},
+											Value: "y",
+										},
+									},
+									Consequence: &ast.StatementBlock{
+										Statements: []ast.Statement{
+											&ast.StatementExpression{
+												Token: tokens.Token{Type: tokens.TypeIdent, Lexeme: "y"},
+												Expression: &ast.ExpressionIdentifier{
+													Token: tokens.Token{Type: tokens.TypeIdent, Lexeme: "y"},
+													Value: "y",
+												},
+											},
+										},
+									},
+								},
+							},
+							Alternative: &ast.StatementBlock{
+								Statements: []ast.Statement{
+									&ast.StatementExpression{
+										Token: tokens.Token{Type: tokens.TypeInt, Lexeme: "5"},
+										Expression: &ast.ExpressionLiteralInteger{
+											Token: tokens.Token{Type: tokens.TypeInt, Lexeme: "5"},
+											Value: 5,
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			expectedErrs: []string{},
+		},
 	}
 
 	for _, tc := range testCases {
