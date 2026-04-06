@@ -9,6 +9,29 @@ import (
 	"github.com/OJOMB/donkey/pkg/logs"
 )
 
+const donkeyASCII = `
+                          /\          /\
+                         ( \\        // )
+                          \ \\      // /
+                           \_\\||||//_/
+                            \/ _  _ \
+                           \/|(O)(O)|
+                          \/ |      |
+      ___________________\/  \      /
+     //                //     |____|
+    //                ||     /      \
+   //|                \|     \ 0  0 /
+  // \       )         V    / \____/
+ //   \     /        (     /
+""     \   /_________|  |_/
+       /  /\   /     |  ||
+      /  / /  /      \  ||
+      | |  | |        | ||
+      | |  | |        | ||
+      |_|  |_|        |_||
+       \_\  \_\        \_\\
+`
+
 const Prompt = ">> "
 
 type Repl struct {
@@ -30,9 +53,8 @@ func (r *Repl) Start() {
 	// create a new scanner to read input from the user
 	scanner := bufio.NewScanner(r.in)
 
-	if _, err := r.out.Write([]byte("Welcome to the Donkey programming language!\n")); err != nil {
-		return
-	}
+	_, _ = r.out.Write([]byte(donkeyASCII))
+	_, _ = r.out.Write([]byte("Welcome to the Donkey programming language!\n"))
 
 	// loop indefinitely, reading input from the user and processing it until we encounter a SIGINT (Ctrl+C)
 	for {
