@@ -29,6 +29,10 @@ const (
 	TypeAsterisk Type = "*"
 	// TypeForwardSlash represents the division operator token.
 	TypeForwardSlash Type = "/"
+	// TypePercent represents the modulus operator token.
+	TypePercent Type = "%"
+	// TypeCaret represents the exponentiation operator token.
+	TypeCaret Type = "^"
 	// TypeComma represents the comma token.
 	TypeComma Type = ","
 	// TypeSemicolon represents the semicolon token.

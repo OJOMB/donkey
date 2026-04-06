@@ -72,6 +72,8 @@ func New(l *lexer.Lexer, logger logs.Logger) (*Parser, error) {
 	p.RegisterInfix(tokens.TypeLT, p.parseExpressionInfix)
 	p.RegisterInfix(tokens.TypeGT, p.parseExpressionInfix)
 	p.RegisterInfix(tokens.TypeLParen, p.parseExpressionCall)
+	p.RegisterInfix(tokens.TypePercent, p.parseExpressionInfix)
+	p.RegisterInfix(tokens.TypeCaret, p.parseExpressionInfix)
 
 	// Read two tokens, so currToken and peekToken are both set
 	p.nextToken()

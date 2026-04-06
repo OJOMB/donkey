@@ -91,6 +91,10 @@ func (l *Lexer) NextToken() tokens.Token {
 		}
 
 		tok = tokens.New(tokens.TypeBang, "!")
+	case '%':
+		tok = tokens.New(tokens.TypePercent, "%")
+	case '^':
+		tok = tokens.New(tokens.TypeCaret, "^")
 	case '{':
 		tok = tokens.New(tokens.TypeLBrace, "{")
 	case '}':

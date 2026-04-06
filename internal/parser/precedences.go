@@ -15,6 +15,8 @@ const (
 	precedenceAdditive
 	// precedenceMultiplicative is the precedence level for multiplication and division operators (* and /).
 	precedenceMultiplicative
+	// precedenceExponentiation is the precedence level for the exponentiation operator (^).
+	precedenceExponentiation
 	// precedencePrefix is the precedence level for prefix operators, such as -X or !X.
 	precedencePrefix
 	// precedenceCall is the precedence level for function call expressions, such as myFunction(X).
@@ -31,5 +33,7 @@ var precedences = map[tokens.Type]int{
 	tokens.TypeMinus:        precedenceAdditive,
 	tokens.TypeForwardSlash: precedenceMultiplicative,
 	tokens.TypeAsterisk:     precedenceMultiplicative,
+	tokens.TypePercent:      precedenceMultiplicative,
+	tokens.TypeCaret:        precedenceExponentiation,
 	tokens.TypeLParen:       precedenceCall,
 }
