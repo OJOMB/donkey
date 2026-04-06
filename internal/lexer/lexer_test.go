@@ -8,7 +8,7 @@ import (
 	"github.com/OJOMB/donkey/internal/tokens"
 )
 
-func TestNextToken1(t *testing.T) {
+func TestNextToken(t *testing.T) {
 	type testCase struct {
 		name           string
 		input          string
@@ -19,46 +19,46 @@ func TestNextToken1(t *testing.T) {
 		{
 			name: "test next token with all token types",
 			input: `
-				let five = 5;
-				let ten10 = 10;
+				var five = 5;
+				var ten10 = 10;
 
-				let add = fn(x, y) {
-					let sum = x + y;
+				var add = fn(x, y) {
+					var sum = x + y;
 
 					return sum;
 				};
 
 				if (five < 10) {
-					let __one = false;
+					var __one = false;
 				} elif (ten10 > 10) {
-				 	let __two = true;
+				 	var __two = true;
 				} elif (ten10 >= 10) {
-					let __twoPointFive = true;
+					var __twoPointFive = true;
 				} elif (ten10 <= 10) {
-					let __twoPointSix = true;
+					var __twoPointSix = true;
 				} elif (ten10 == 10) {
-					let __three = false;
+					var __three = false;
 				} elif (ten10 != 10) {
-					let __four = true;
+					var __four = true;
 				} else {
-					let __five = false;
+					var __five = false;
 				}
 
-				let result = add(five, ten);`,
+				var result = add(five, ten);`,
 			expectedOutput: []tokens.Token{
-				{Type: tokens.TypeBinder, Lexeme: "let"},
+				{Type: tokens.TypeBinder, Lexeme: "var"},
 				{Type: tokens.TypeIdent, Lexeme: "five"},
 				{Type: tokens.TypeAssign, Lexeme: "="},
 				{Type: tokens.TypeInt, Lexeme: "5"},
 				{Type: tokens.TypeSemicolon, Lexeme: ";"},
 
-				{Type: tokens.TypeBinder, Lexeme: "let"},
+				{Type: tokens.TypeBinder, Lexeme: "var"},
 				{Type: tokens.TypeIdent, Lexeme: "ten10"},
 				{Type: tokens.TypeAssign, Lexeme: "="},
 				{Type: tokens.TypeInt, Lexeme: "10"},
 				{Type: tokens.TypeSemicolon, Lexeme: ";"},
 
-				{Type: tokens.TypeBinder, Lexeme: "let"},
+				{Type: tokens.TypeBinder, Lexeme: "var"},
 				{Type: tokens.TypeIdent, Lexeme: "add"},
 				{Type: tokens.TypeAssign, Lexeme: "="},
 				{Type: tokens.TypeFunction, Lexeme: "fn"},
@@ -68,7 +68,7 @@ func TestNextToken1(t *testing.T) {
 				{Type: tokens.TypeIdent, Lexeme: "y"},
 				{Type: tokens.TypeRParen, Lexeme: ")"},
 				{Type: tokens.TypeLBrace, Lexeme: "{"},
-				{Type: tokens.TypeBinder, Lexeme: "let"},
+				{Type: tokens.TypeBinder, Lexeme: "var"},
 				{Type: tokens.TypeIdent, Lexeme: "sum"},
 				{Type: tokens.TypeAssign, Lexeme: "="},
 				{Type: tokens.TypeIdent, Lexeme: "x"},
@@ -88,7 +88,7 @@ func TestNextToken1(t *testing.T) {
 				{Type: tokens.TypeInt, Lexeme: "10"},
 				{Type: tokens.TypeRParen, Lexeme: ")"},
 				{Type: tokens.TypeLBrace, Lexeme: "{"},
-				{Type: tokens.TypeBinder, Lexeme: "let"},
+				{Type: tokens.TypeBinder, Lexeme: "var"},
 				{Type: tokens.TypeIdent, Lexeme: "__one"},
 				{Type: tokens.TypeAssign, Lexeme: "="},
 				{Type: tokens.TypeFalse, Lexeme: "false"},
@@ -101,7 +101,7 @@ func TestNextToken1(t *testing.T) {
 				{Type: tokens.TypeInt, Lexeme: "10"},
 				{Type: tokens.TypeRParen, Lexeme: ")"},
 				{Type: tokens.TypeLBrace, Lexeme: "{"},
-				{Type: tokens.TypeBinder, Lexeme: "let"},
+				{Type: tokens.TypeBinder, Lexeme: "var"},
 				{Type: tokens.TypeIdent, Lexeme: "__two"},
 				{Type: tokens.TypeAssign, Lexeme: "="},
 				{Type: tokens.TypeTrue, Lexeme: "true"},
@@ -114,7 +114,7 @@ func TestNextToken1(t *testing.T) {
 				{Type: tokens.TypeInt, Lexeme: "10"},
 				{Type: tokens.TypeRParen, Lexeme: ")"},
 				{Type: tokens.TypeLBrace, Lexeme: "{"},
-				{Type: tokens.TypeBinder, Lexeme: "let"},
+				{Type: tokens.TypeBinder, Lexeme: "var"},
 				{Type: tokens.TypeIdent, Lexeme: "__twoPointFive"},
 				{Type: tokens.TypeAssign, Lexeme: "="},
 				{Type: tokens.TypeTrue, Lexeme: "true"},
@@ -127,7 +127,7 @@ func TestNextToken1(t *testing.T) {
 				{Type: tokens.TypeInt, Lexeme: "10"},
 				{Type: tokens.TypeRParen, Lexeme: ")"},
 				{Type: tokens.TypeLBrace, Lexeme: "{"},
-				{Type: tokens.TypeBinder, Lexeme: "let"},
+				{Type: tokens.TypeBinder, Lexeme: "var"},
 				{Type: tokens.TypeIdent, Lexeme: "__twoPointSix"},
 				{Type: tokens.TypeAssign, Lexeme: "="},
 				{Type: tokens.TypeTrue, Lexeme: "true"},
@@ -140,7 +140,7 @@ func TestNextToken1(t *testing.T) {
 				{Type: tokens.TypeInt, Lexeme: "10"},
 				{Type: tokens.TypeRParen, Lexeme: ")"},
 				{Type: tokens.TypeLBrace, Lexeme: "{"},
-				{Type: tokens.TypeBinder, Lexeme: "let"},
+				{Type: tokens.TypeBinder, Lexeme: "var"},
 				{Type: tokens.TypeIdent, Lexeme: "__three"},
 				{Type: tokens.TypeAssign, Lexeme: "="},
 				{Type: tokens.TypeFalse, Lexeme: "false"},
@@ -153,7 +153,7 @@ func TestNextToken1(t *testing.T) {
 				{Type: tokens.TypeInt, Lexeme: "10"},
 				{Type: tokens.TypeRParen, Lexeme: ")"},
 				{Type: tokens.TypeLBrace, Lexeme: "{"},
-				{Type: tokens.TypeBinder, Lexeme: "let"},
+				{Type: tokens.TypeBinder, Lexeme: "var"},
 				{Type: tokens.TypeIdent, Lexeme: "__four"},
 				{Type: tokens.TypeAssign, Lexeme: "="},
 				{Type: tokens.TypeTrue, Lexeme: "true"},
@@ -161,14 +161,14 @@ func TestNextToken1(t *testing.T) {
 				{Type: tokens.TypeRBrace, Lexeme: "}"},
 				{Type: tokens.TypeElse, Lexeme: "else"},
 				{Type: tokens.TypeLBrace, Lexeme: "{"},
-				{Type: tokens.TypeBinder, Lexeme: "let"},
+				{Type: tokens.TypeBinder, Lexeme: "var"},
 				{Type: tokens.TypeIdent, Lexeme: "__five"},
 				{Type: tokens.TypeAssign, Lexeme: "="},
 				{Type: tokens.TypeFalse, Lexeme: "false"},
 				{Type: tokens.TypeSemicolon, Lexeme: ";"},
 				{Type: tokens.TypeRBrace, Lexeme: "}"},
 
-				{Type: tokens.TypeBinder, Lexeme: "let"},
+				{Type: tokens.TypeBinder, Lexeme: "var"},
 				{Type: tokens.TypeIdent, Lexeme: "result"},
 				{Type: tokens.TypeAssign, Lexeme: "="},
 				{Type: tokens.TypeIdent, Lexeme: "add"},
@@ -178,6 +178,29 @@ func TestNextToken1(t *testing.T) {
 				{Type: tokens.TypeIdent, Lexeme: "ten"},
 				{Type: tokens.TypeRParen, Lexeme: ")"},
 				{Type: tokens.TypeSemicolon, Lexeme: ";"},
+				{Type: tokens.TypeEOF, Lexeme: ""},
+			},
+		},
+		{
+			name:  "test simple expression",
+			input: `-a * b;`,
+			expectedOutput: []tokens.Token{
+				{Type: tokens.TypeMinus, Lexeme: "-"},
+				{Type: tokens.TypeIdent, Lexeme: "a"},
+				{Type: tokens.TypeAsterisk, Lexeme: "*"},
+				{Type: tokens.TypeIdent, Lexeme: "b"},
+				{Type: tokens.TypeSemicolon, Lexeme: ";"},
+				{Type: tokens.TypeEOF, Lexeme: ""},
+			},
+		},
+		{
+			name:  "test simple expression without halting semicolon",
+			input: `-a * b`,
+			expectedOutput: []tokens.Token{
+				{Type: tokens.TypeMinus, Lexeme: "-"},
+				{Type: tokens.TypeIdent, Lexeme: "a"},
+				{Type: tokens.TypeAsterisk, Lexeme: "*"},
+				{Type: tokens.TypeIdent, Lexeme: "b"},
 				{Type: tokens.TypeEOF, Lexeme: ""},
 			},
 		},
@@ -213,7 +236,7 @@ func TestStringLiteral(t *testing.T) {
 			name:  "test string literal token",
 			input: `let myString = "foobar";`,
 			expectedOutput: []tokens.Token{
-				{Type: tokens.TypeBinder, Lexeme: "let"},
+				{Type: tokens.TypeBinder, Lexeme: "var"},
 				{Type: tokens.TypeIdent, Lexeme: "myString"},
 				{Type: tokens.TypeAssign, Lexeme: "="},
 				{Type: tokens.TypeString, Lexeme: "foobar"},

@@ -123,6 +123,7 @@ func (l *Lexer) readChar() {
 		// if the read position has gone past the final input position we have finished lexing
 		// we set the current char to ASCII NUL and return
 		l.ch = 0
+		l.position = l.readPosition
 		return
 	}
 
