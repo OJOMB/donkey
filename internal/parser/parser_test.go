@@ -789,3 +789,62 @@ func TestParsingFunctionCalls(t *testing.T) {
 		})
 	}
 }
+
+func TestOperatorPrecedenceParsing(t *testing.T) {
+	type testCase struct {
+		name           string
+		input          string
+		expectedOutput string
+	}
+
+	var testCases = []testCase{
+		{
+			name:           "operator precedence parsing 1",
+			input:          `-a * b`,
+			expectedOutput: `((-a) * b)`,
+		},
+		{
+			name:           "operator precedence parsing 2",
+			input:          `!-a`,
+			expectedOutput: `(!(-a))`,
+		},
+		{
+			name:           "operator precedence parsing 3",
+			input:          `a + b + c`,
+			expectedOutput: `((a + b) + c)`,
+		},
+		{
+			name:           "operator precedence parsing 4",
+			input:          `a + b - c;`,
+			expectedOutput: `((a + b) - c)`,
+		},
+		{
+			name:           "operator precedence parsing 5",
+			input:          `a * b / c`,
+			expectedOutput: `((a * b) / c)`,
+		},
+		{
+			name:           "operator precedence parsing 6",
+			input:          `a + b * c + d / e - f`,
+			expectedOutput: `(((a + (b * c)) + (d / e)) - f)`,
+		},
+		{
+			name:           "operator precedence parsing 7",
+			input:          `3 + 4; -5 * 5`,
+			expectedOutput: "(3 + 4)\n((-5) * 5)",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			p, err := New(lexer.New(tc.input), nil)
+			require.NoError(t, err)
+
+			program := p.ParseProgram()
+			assert.NotNil(t, program)
+
+			prgrmStr := program.String()
+			assert.Equal(t, tc.expectedOutput, prgrmStr)
+		})
+	}
+}

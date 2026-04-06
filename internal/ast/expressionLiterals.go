@@ -73,6 +73,7 @@ func (lf *ExpressionLiteralFunction) String() string {
 		if i > 0 {
 			_, _ = out.WriteString(", ")
 		}
+
 		_, _ = out.WriteString(param.String())
 	}
 	_, _ = out.WriteString(") ")

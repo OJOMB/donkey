@@ -25,8 +25,11 @@ func (p *Program) TokenLexeme() string {
 // String returns a string representation of the program by concatenating the string representations of all its statements.
 func (p *Program) String() string {
 	var out = strings.Builder{}
-	for _, stmt := range p.Statements {
+	for i, stmt := range p.Statements {
 		_, _ = out.WriteString(stmt.String())
+		if i < len(p.Statements)-1 {
+			_, _ = out.WriteString("\n")
+		}
 	}
 
 	return out.String()
