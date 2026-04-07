@@ -1,5 +1,6 @@
 package object
 
+// ObjectType is a string that represents the type of an object in the Donkey programming language.
 type ObjectType string
 
 const (
@@ -13,6 +14,8 @@ const (
 	TypeNowt = "NOWT"
 )
 
+// Object is the interface that all objects in the Donkey programming language must implement.
+// It defines two methods: Type, which returns the type of the object, and Inspect, which returns a string representation of the object.
 type Object interface {
 	Type() ObjectType
 	Inspect() string
