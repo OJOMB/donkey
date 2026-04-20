@@ -10,7 +10,7 @@ type Evaluator struct {
 	logger logs.Logger
 }
 
-func NewEvaluator(l logs.Logger) *Evaluator {
+func New(l logs.Logger) *Evaluator {
 	if l == nil {
 		l = logs.NewNullLogger()
 	}
@@ -23,6 +23,8 @@ func (e *Evaluator) Eval(node ast.Node) objects.Object {
 	switch nt := node.(type) {
 	case *ast.Program:
 		return e.evalStatements(nt)
+	case *ast.StatementExpression:
+		return e.Eval(nt.Expression)
 	case *ast.ExpressionLiteralInteger:
 		return &objects.Integer{Value: nt.Value}
 	case *ast.ExpressionLiteralBoolean:
