@@ -162,3 +162,54 @@ func TestEvaluatorEvalProgram(t *testing.T) {
 		})
 	}
 }
+
+func TestBangOperator(t *testing.T) {
+	type testCase struct {
+		name     string
+		input    *ast.Program
+		expected objects.Object
+	}
+
+	tests := []testCase{
+		{
+			name: "bang operator on true",
+			input: &ast.Program{
+				Statements: []ast.Statement{
+					&ast.StatementExpression{
+						Token: tokens.New(tokens.TypeBang, "!"),
+						Expression: &ast.ExpressionPrefix{
+							Token: tokens.New(tokens.TypeBang, "!"),
+							Right: &ast.ExpressionLiteralBoolean{Value: true},
+						},
+					},
+				},
+			},
+			expected: False,
+		},
+		{
+			name: "bang operator on false",
+			input: &ast.Program{
+				Statements: []ast.Statement{
+					&ast.StatementExpression{
+						Token: tokens.New(tokens.TypeBang, "!"),
+						Expression: &ast.ExpressionPrefix{
+							Token: tokens.New(tokens.TypeBang, "!"),
+							Right: &ast.ExpressionLiteralBoolean{Value: false},
+						},
+					},
+				},
+			},
+			expected: True,
+		},
+	}
+
+	for i, tc := range tests {
+		t.Run(fmt.Sprintf("test %d: %s", i, tc.name), func(t *testing.T) {
+			evaluator := New(nil)
+			result := evaluator.Eval(tc.input)
+
+			assert.Equal(t, tc.expected.Type(), result.Type())
+			assert.Equal(t, tc.expected.Inspect(), result.Inspect())
+		})
+	}
+}

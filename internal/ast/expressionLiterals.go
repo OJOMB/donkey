@@ -38,6 +38,7 @@ func (ls *ExpressionLiteralString) String() string {
 // For example, in the expression "let isValid = true;", the "true" is a boolean literal expression that represents the value being assigned to the variable "isValid" in the let statement.
 type ExpressionLiteralBoolean struct {
 	Token tokens.Token
+	// Value is the boolean value of the expression, which can be either true or false.
 	Value bool
 }
 
