@@ -163,7 +163,7 @@ func TestEvaluatorEvalProgram(t *testing.T) {
 	}
 }
 
-func TestBangOperator(t *testing.T) {
+func TestEvaluatorEvalPrefixExpressions(t *testing.T) {
 	type testCase struct {
 		name     string
 		input    *ast.Program
@@ -200,6 +200,36 @@ func TestBangOperator(t *testing.T) {
 				},
 			},
 			expected: True,
+		},
+		{
+			name: "minus operator on positive integer",
+			input: &ast.Program{
+				Statements: []ast.Statement{
+					&ast.StatementExpression{
+						Token: tokens.New(tokens.TypeMinus, "-"),
+						Expression: &ast.ExpressionPrefix{
+							Token: tokens.New(tokens.TypeMinus, "-"),
+							Right: &ast.ExpressionLiteralInteger{Value: 5},
+						},
+					},
+				},
+			},
+			expected: &objects.Integer{Value: -5},
+		},
+		{
+			name: "minus operator on negative integer",
+			input: &ast.Program{
+				Statements: []ast.Statement{
+					&ast.StatementExpression{
+						Token: tokens.New(tokens.TypeMinus, "-"),
+						Expression: &ast.ExpressionPrefix{
+							Token: tokens.New(tokens.TypeMinus, "-"),
+							Right: &ast.ExpressionLiteralInteger{Value: -6},
+						},
+					},
+				},
+			},
+			expected: &objects.Integer{Value: 6},
 		},
 	}
 

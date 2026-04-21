@@ -44,6 +44,14 @@ func (e *Evaluator) Eval(node ast.Node) objects.Object {
 		switch nt.Token.Type {
 		case tokens.TypeBang:
 			return e.evalBangOperatorExpression(right)
+		case tokens.TypeMinus:
+			if right.Type() != objects.TypeInteger {
+				e.logger.Warn("unsupported operand type for - operator", "type", right.Type())
+				return Nowt
+			}
+
+			value := right.(*objects.Integer).Value
+			return &objects.Integer{Value: -value}
 		default:
 			e.logger.Warn("unsupported prefix operator", "operator", nt.Token.Lexeme)
 			return Nowt
