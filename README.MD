@@ -2,15 +2,42 @@
 
 Writing an interpreter (and eventually compiler) closely based on the Monkey programming language, as described in the book [Writing An Interpreter In Go](https://interpreterbook.com/).
 
+```donkey
+                          /\          /\
+                         ( \\        // )
+                          \ \\      // /
+                           \_\\||||//_/
+                            \/ _  _ \
+                           \/|(O)(O)|
+                          \/ |      |
+      ___________________\/  \      /
+     //                //     |____|
+    //                ||     /      \
+   //|                \|     \ 0  0 /
+  // \       )         V    / \____/
+ //   \     /        (     /
+""     \   /_________|  |_/
+       /  /\   /     |  ||
+      /  / /  /      \  ||
+      | |  | |        | ||
+      | |  | |        | ||
+      |_|  |_|        |_||
+       \_\  \_\        \_\\
+Welcome to the Donkey programming language!
+>>
+```
+
+
+
 variable binding:
-```monkey
+```donkey
 var foo = 5;
 var bar = "hello world";
 var baz = true;
 ```
 
 control flow:
-```monkey
+```donkey
 if (x < y) {
     return x;
 } elif (x > y) {
@@ -21,7 +48,7 @@ if (x < y) {
 ```
 
 function literals and calls:
-```monkey
+```donkey
 var add = fn(x, y) { return x + y; };
 add(2, 3); // returns 5
 
