@@ -573,6 +573,23 @@ func TestEvaluatorEvalExpressionInfixNumerical(t *testing.T) {
 			},
 			expected: True,
 		},
+		{
+			name: "2 ^ 3",
+			input: &ast.Program{
+				Statements: []ast.Statement{
+					&ast.StatementExpression{
+						Token: tokens.New(tokens.TypeCaret, "^"),
+						Expression: &ast.ExpressionInfix{
+							Token:    tokens.New(tokens.TypeCaret, "^"),
+							Left:     &ast.ExpressionLiteralInteger{Value: 2},
+							Right:    &ast.ExpressionLiteralInteger{Value: 3},
+							Operator: "^",
+						},
+					},
+				},
+			},
+			expected: &objects.Integer{Value: 8},
+		},
 	}
 
 	for i, tc := range tests {

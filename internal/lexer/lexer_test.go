@@ -44,7 +44,9 @@ func TestNextToken(t *testing.T) {
 					var __five = false;
 				}
 
-				var result = add(five, ten);`,
+				var result = add(five, ten);
+
+				var exponent = 2 ^ 3;`,
 			expectedOutput: []tokens.Token{
 				{Type: tokens.TypeBinder, Lexeme: "var"},
 				{Type: tokens.TypeIdent, Lexeme: "five"},
@@ -178,6 +180,15 @@ func TestNextToken(t *testing.T) {
 				{Type: tokens.TypeIdent, Lexeme: "ten"},
 				{Type: tokens.TypeRParen, Lexeme: ")"},
 				{Type: tokens.TypeSemicolon, Lexeme: ";"},
+
+				{Type: tokens.TypeBinder, Lexeme: "var"},
+				{Type: tokens.TypeIdent, Lexeme: "exponent"},
+				{Type: tokens.TypeAssign, Lexeme: "="},
+				{Type: tokens.TypeInt, Lexeme: "2"},
+				{Type: tokens.TypeCaret, Lexeme: "^"},
+				{Type: tokens.TypeInt, Lexeme: "3"},
+				{Type: tokens.TypeSemicolon, Lexeme: ";"},
+
 				{Type: tokens.TypeEOF, Lexeme: ""},
 			},
 		},

@@ -166,6 +166,17 @@ func (e *Evaluator) evalExpressionInfixInteger(operator string, left, right *obj
 		}
 
 		return &objects.Integer{Value: left.Value % right.Value}
+	case "^":
+		if right.Value == 0 {
+			return &objects.Integer{Value: 1}
+		}
+
+		result := 1
+		for i := 0; i < right.Value; i++ {
+			result *= left.Value
+		}
+
+		return &objects.Integer{Value: result}
 	case "==":
 		return &objects.Boolean{Value: left.Value == right.Value}
 	case "!=":
