@@ -38,22 +38,17 @@ func (e *Evaluator) Eval(node ast.Node) objects.Object {
 	case *ast.ExpressionPrefix:
 		right := e.Eval(nt.Right)
 		if right == nil {
+			e.logger.Error("prefix operator right-hand side evaluated to nil", "operator", nt.Token.Lexeme)
 			return Nowt
 		}
 
 		switch nt.Token.Type {
 		case tokens.TypeBang:
-			return e.evalBangOperatorExpression(right)
+			return e.evalExpressionPrefixBang(right)
 		case tokens.TypeMinus:
-			if right.Type() != objects.TypeInteger {
-				e.logger.Warn("unsupported operand type for - operator", "type", right.Type())
-				return Nowt
-			}
-
-			value := right.(*objects.Integer).Value
-			return &objects.Integer{Value: -value}
+			return evalExpressionPrefixMinus(right, e)
 		default:
-			e.logger.Warn("unsupported prefix operator", "operator", nt.Token.Lexeme)
+			e.logger.Error("unsupported prefix operator", "operator", nt.Token.Lexeme)
 			return Nowt
 		}
 	case *ast.ExpressionLiteralInteger:
@@ -84,7 +79,12 @@ func (e *Evaluator) evalStatements(program *ast.Program) objects.Object {
 	return result
 }
 
-func (e *Evaluator) evalBangOperatorExpression(right objects.Object) objects.Object {
+func (e *Evaluator) evalExpressionPrefixBang(right objects.Object) objects.Object {
+	if right.Type() != objects.TypeBoolean {
+		e.logger.Warn("unsupported operand type for ! operator", "type", right.Type())
+		return Nowt
+	}
+
 	switch right {
 	case True:
 		return False
@@ -93,4 +93,14 @@ func (e *Evaluator) evalBangOperatorExpression(right objects.Object) objects.Obj
 	default:
 		return Nowt
 	}
+}
+
+func evalExpressionPrefixMinus(right objects.Object, e *Evaluator) objects.Object {
+	if right.Type() != objects.TypeInteger {
+		e.logger.Warn("unsupported operand type for - operator", "type", right.Type())
+		return Nowt
+	}
+
+	value := right.(*objects.Integer).Value
+	return &objects.Integer{Value: -value}
 }
