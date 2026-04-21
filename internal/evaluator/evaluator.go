@@ -12,8 +12,10 @@ import (
 
 var (
 	// Nowt is the singleton Nowt object that represents the absence of a value in the Donkey programming language.
-	Nowt  = &objects.Nowt{}
-	True  = &objects.Boolean{Value: true}
+	Nowt = &objects.Nowt{}
+	// True is the singleton Boolean object that represents the boolean value true in the Donkey programming language.
+	True = &objects.Boolean{Value: true}
+	// False is the singleton Boolean object that represents the boolean value false in the Donkey programming language.
 	False = &objects.Boolean{Value: false}
 )
 
