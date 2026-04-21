@@ -46,23 +46,13 @@ func (e *Evaluator) Eval(node ast.Node) objects.Object {
 		case tokens.TypeBang:
 			return e.evalExpressionPrefixBang(right)
 		case tokens.TypeMinus:
-			return evalExpressionPrefixMinus(right, e)
+			return e.evalExpressionPrefixMinus(right)
 		default:
 			e.logger.Error("unsupported prefix operator", "operator", nt.Token.Lexeme)
 			return Nowt
 		}
-	case *ast.ExpressionLiteralInteger:
-		return &objects.Integer{Value: nt.Value}
-	case *ast.ExpressionLiteralBoolean:
-		if nt.Value {
-			return True
-		}
-		return False
-	case *ast.ExpressionLiteralString:
-		return &objects.String{Value: nt.Value}
-	case *ast.ExpressionLiteralFunction:
-		// function literals are not evaluated to a value until they are called, so we return a Nowt object for now
-		return Nowt
+	case *ast.ExpressionLiteralInteger, *ast.ExpressionLiteralBoolean, *ast.ExpressionLiteralString, *ast.ExpressionLiteralFunction:
+		return e.evalLiteral(nt)
 	default:
 		e.logger.Warn("unsupported AST node type", "type", fmt.Sprintf("%T", nt))
 		return Nowt
@@ -95,7 +85,7 @@ func (e *Evaluator) evalExpressionPrefixBang(right objects.Object) objects.Objec
 	}
 }
 
-func evalExpressionPrefixMinus(right objects.Object, e *Evaluator) objects.Object {
+func (e *Evaluator) evalExpressionPrefixMinus(right objects.Object) objects.Object {
 	if right.Type() != objects.TypeInteger {
 		e.logger.Warn("unsupported operand type for - operator", "type", right.Type())
 		return Nowt
@@ -103,4 +93,24 @@ func evalExpressionPrefixMinus(right objects.Object, e *Evaluator) objects.Objec
 
 	value := right.(*objects.Integer).Value
 	return &objects.Integer{Value: -value}
+}
+
+func (e *Evaluator) evalLiteral(node ast.Node) objects.Object {
+	switch nt := node.(type) {
+	case *ast.ExpressionLiteralInteger:
+		return &objects.Integer{Value: nt.Value}
+	case *ast.ExpressionLiteralBoolean:
+		if nt.Value {
+			return True
+		}
+		return False
+	case *ast.ExpressionLiteralString:
+		return &objects.String{Value: nt.Value}
+	case *ast.ExpressionLiteralFunction:
+		// function literals are not evaluated to a value until they are called, so we return a Nowt object for now
+		return Nowt
+	default:
+		e.logger.Warn("unsupported literal type", "type", fmt.Sprintf("%T", nt))
+		return Nowt
+	}
 }

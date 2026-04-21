@@ -243,3 +243,88 @@ func TestEvaluatorEvalPrefixExpressions(t *testing.T) {
 		})
 	}
 }
+
+func TestEvaluatorEvalExpressionInfixNumerical(t *testing.T) {
+	type testCase struct {
+		name     string
+		input    *ast.Program
+		expected objects.Object
+	}
+
+	tests := []testCase{
+		{
+			name: "1 + 2",
+			input: &ast.Program{
+				Statements: []ast.Statement{
+					&ast.StatementExpression{
+						Token: tokens.New(tokens.TypePlus, "+"),
+						Expression: &ast.ExpressionInfix{
+							Token: tokens.New(tokens.TypePlus, "+"),
+							Left:  &ast.ExpressionLiteralInteger{Value: 1},
+							Right: &ast.ExpressionLiteralInteger{Value: 2},
+						},
+					},
+				},
+			},
+			expected: &objects.Integer{Value: 3},
+		},
+		{
+			name: "1 - 2",
+			input: &ast.Program{
+				Statements: []ast.Statement{
+					&ast.StatementExpression{
+						Token: tokens.New(tokens.TypeMinus, "-"),
+						Expression: &ast.ExpressionInfix{
+							Token: tokens.New(tokens.TypeMinus, "-"),
+							Left:  &ast.ExpressionLiteralInteger{Value: 1},
+							Right: &ast.ExpressionLiteralInteger{Value: 2},
+						},
+					},
+				},
+			},
+			expected: &objects.Integer{Value: -1},
+		},
+		{
+			name: "3 * 2",
+			input: &ast.Program{
+				Statements: []ast.Statement{
+					&ast.StatementExpression{
+						Token: tokens.New(tokens.TypeAsterisk, "*"),
+						Expression: &ast.ExpressionInfix{
+							Token: tokens.New(tokens.TypeAsterisk, "*"),
+							Left:  &ast.ExpressionLiteralInteger{Value: 3},
+							Right: &ast.ExpressionLiteralInteger{Value: 2},
+						},
+					},
+				},
+			},
+			expected: &objects.Integer{Value: 6},
+		},
+		{
+			name: "4 / 2",
+			input: &ast.Program{
+				Statements: []ast.Statement{
+					&ast.StatementExpression{
+						Token: tokens.New(tokens.TypeForwardSlash, "/"),
+						Expression: &ast.ExpressionInfix{
+							Token: tokens.New(tokens.TypeForwardSlash, "/"),
+							Left:  &ast.ExpressionLiteralInteger{Value: 4},
+							Right: &ast.ExpressionLiteralInteger{Value: 2},
+						},
+					},
+				},
+			},
+			expected: &objects.Integer{Value: 2},
+		},
+	}
+
+	for i, tc := range tests {
+		t.Run(fmt.Sprintf("test %d: %s", i, tc.name), func(t *testing.T) {
+			evaluator := New(nil)
+			result := evaluator.Eval(tc.input)
+
+			assert.Equal(t, tc.expected.Type(), result.Type())
+			assert.Equal(t, tc.expected.Inspect(), result.Inspect())
+		})
+	}
+}
