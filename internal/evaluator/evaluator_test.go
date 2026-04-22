@@ -832,3 +832,319 @@ func TestEvaluatorEvalExpressionInfixString(t *testing.T) {
 		})
 	}
 }
+
+func TestEvaluatorEvalConditionals(t *testing.T) {
+	type testCase struct {
+		name     string
+		input    *ast.Program
+		expected objects.Object
+	}
+
+	tests := []testCase{
+		{
+			name: "if condition true, elif is also true but should not be evaluated, neither should else",
+			input: &ast.Program{
+				Statements: []ast.Statement{
+					&ast.StatementExpression{
+						Token: tokens.New(tokens.TypeIf, "if"),
+						Expression: &ast.ExpressionIf{
+							Branches: []ast.ConditionalBranch{
+								{
+									Token: tokens.Token{Type: tokens.TypeIf, Lexeme: "if"},
+									Condition: &ast.ExpressionInfix{
+										Token:    tokens.New(tokens.TypeEq, "=="),
+										Left:     &ast.ExpressionLiteralInteger{Value: 1},
+										Right:    &ast.ExpressionLiteralInteger{Value: 1},
+										Operator: "==",
+									},
+									Consequence: &ast.StatementBlock{
+										Statements: []ast.Statement{
+											&ast.StatementExpression{
+												Token:      tokens.New(tokens.TypeReturn, "return"),
+												Expression: &ast.ExpressionLiteralString{Value: "if condition was true"},
+											},
+										},
+									},
+								},
+								{
+									Token: tokens.Token{Type: tokens.TypeElif, Lexeme: "elif"},
+									Condition: &ast.ExpressionInfix{
+										Token:    tokens.New(tokens.TypeEq, "=="),
+										Left:     &ast.ExpressionLiteralInteger{Value: 2},
+										Right:    &ast.ExpressionLiteralInteger{Value: 2},
+										Operator: "==",
+									},
+									Consequence: &ast.StatementBlock{
+										Statements: []ast.Statement{
+											&ast.StatementExpression{
+												Token:      tokens.New(tokens.TypeReturn, "return"),
+												Expression: &ast.ExpressionLiteralString{Value: "elif condition 1 was true"},
+											},
+										},
+									},
+								},
+							},
+							Alternative: &ast.StatementBlock{
+								Statements: []ast.Statement{
+									&ast.StatementExpression{
+										Token:      tokens.New(tokens.TypeReturn, "return"),
+										Expression: &ast.ExpressionLiteralString{Value: "else evaluated"},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			expected: &objects.String{Value: "if condition was true"},
+		},
+		{
+			name: "if condition false, 1st elif is true, else should not be evaluated",
+			input: &ast.Program{
+				Statements: []ast.Statement{
+					&ast.StatementExpression{
+						Token: tokens.New(tokens.TypeIf, "if"),
+						Expression: &ast.ExpressionIf{
+							Branches: []ast.ConditionalBranch{
+								{
+									Token: tokens.Token{Type: tokens.TypeIf, Lexeme: "if"},
+									Condition: &ast.ExpressionInfix{
+										Token:    tokens.New(tokens.TypeEq, "=="),
+										Left:     &ast.ExpressionLiteralInteger{Value: 1},
+										Right:    &ast.ExpressionLiteralInteger{Value: 42},
+										Operator: "==",
+									},
+									Consequence: &ast.StatementBlock{
+										Statements: []ast.Statement{
+											&ast.StatementExpression{
+												Token:      tokens.New(tokens.TypeReturn, "return"),
+												Expression: &ast.ExpressionLiteralString{Value: "if condition was true"},
+											},
+										},
+									},
+								},
+								{
+									Token: tokens.Token{Type: tokens.TypeElif, Lexeme: "elif"},
+									Condition: &ast.ExpressionInfix{
+										Token:    tokens.New(tokens.TypeEq, "=="),
+										Left:     &ast.ExpressionLiteralInteger{Value: 2},
+										Right:    &ast.ExpressionLiteralInteger{Value: 2},
+										Operator: "==",
+									},
+									Consequence: &ast.StatementBlock{
+										Statements: []ast.Statement{
+											&ast.StatementExpression{
+												Token:      tokens.New(tokens.TypeReturn, "return"),
+												Expression: &ast.ExpressionLiteralString{Value: "elif condition 1 was true"},
+											},
+										},
+									},
+								},
+							},
+							Alternative: &ast.StatementBlock{
+								Statements: []ast.Statement{
+									&ast.StatementExpression{
+										Token:      tokens.New(tokens.TypeReturn, "return"),
+										Expression: &ast.ExpressionLiteralString{Value: "else evaluated"},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			expected: &objects.String{Value: "elif condition 1 was true"},
+		},
+		{
+			name: "if condition false, 2nd elif is true, else should not be evaluated",
+			input: &ast.Program{
+				Statements: []ast.Statement{
+					&ast.StatementExpression{
+						Token: tokens.New(tokens.TypeIf, "if"),
+						Expression: &ast.ExpressionIf{
+							Branches: []ast.ConditionalBranch{
+								{
+									Token: tokens.Token{Type: tokens.TypeIf, Lexeme: "if"},
+									Condition: &ast.ExpressionInfix{
+										Token:    tokens.New(tokens.TypeEq, "=="),
+										Left:     &ast.ExpressionLiteralInteger{Value: 1},
+										Right:    &ast.ExpressionLiteralInteger{Value: 42},
+										Operator: "==",
+									},
+									Consequence: &ast.StatementBlock{
+										Statements: []ast.Statement{
+											&ast.StatementExpression{
+												Token:      tokens.New(tokens.TypeReturn, "return"),
+												Expression: &ast.ExpressionLiteralString{Value: "if condition was true"},
+											},
+										},
+									},
+								},
+								{
+									Token: tokens.Token{Type: tokens.TypeElif, Lexeme: "elif"},
+									Condition: &ast.ExpressionInfix{
+										Token:    tokens.New(tokens.TypeEq, "=="),
+										Left:     &ast.ExpressionLiteralString{Value: "two"},
+										Right:    &ast.ExpressionLiteralString{Value: "three"},
+										Operator: "==",
+									},
+									Consequence: &ast.StatementBlock{
+										Statements: []ast.Statement{
+											&ast.StatementExpression{
+												Token:      tokens.New(tokens.TypeReturn, "return"),
+												Expression: &ast.ExpressionLiteralString{Value: "elif condition 1 was true"},
+											},
+										},
+									},
+								},
+								{
+									Token: tokens.Token{Type: tokens.TypeElif, Lexeme: "elif"},
+									Condition: &ast.ExpressionInfix{
+										Token:    tokens.New(tokens.TypeEq, "=="),
+										Left:     &ast.ExpressionLiteralInteger{Value: 3},
+										Right:    &ast.ExpressionLiteralInteger{Value: 3},
+										Operator: "==",
+									},
+									Consequence: &ast.StatementBlock{
+										Statements: []ast.Statement{
+											&ast.StatementExpression{
+												Token:      tokens.New(tokens.TypeReturn, "return"),
+												Expression: &ast.ExpressionLiteralString{Value: "elif condition 2 was true"},
+											},
+										},
+									},
+								},
+							},
+							Alternative: &ast.StatementBlock{
+								Statements: []ast.Statement{
+									&ast.StatementExpression{
+										Token:      tokens.New(tokens.TypeReturn, "return"),
+										Expression: &ast.ExpressionLiteralString{Value: "else evaluated"},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			expected: &objects.String{Value: "elif condition 2 was true"},
+		},
+		{
+			name: "if condition false, elif is false, else should be evaluated",
+			input: &ast.Program{
+				Statements: []ast.Statement{
+					&ast.StatementExpression{
+						Token: tokens.New(tokens.TypeIf, "if"),
+						Expression: &ast.ExpressionIf{
+							Branches: []ast.ConditionalBranch{
+								{
+									Token: tokens.Token{Type: tokens.TypeIf, Lexeme: "if"},
+									Condition: &ast.ExpressionInfix{
+										Token:    tokens.New(tokens.TypeEq, "=="),
+										Left:     &ast.ExpressionLiteralInteger{Value: 1},
+										Right:    &ast.ExpressionLiteralInteger{Value: 42},
+										Operator: "==",
+									},
+									Consequence: &ast.StatementBlock{
+										Statements: []ast.Statement{
+											&ast.StatementExpression{
+												Token:      tokens.New(tokens.TypeReturn, "return"),
+												Expression: &ast.ExpressionLiteralString{Value: "if condition was true"},
+											},
+										},
+									},
+								},
+								{
+									Token: tokens.Token{Type: tokens.TypeElif, Lexeme: "elif"},
+									Condition: &ast.ExpressionInfix{
+										Token:    tokens.New(tokens.TypeEq, "=="),
+										Left:     &ast.ExpressionLiteralInteger{Value: 2},
+										Right:    &ast.ExpressionLiteralInteger{Value: 3},
+										Operator: "==",
+									},
+									Consequence: &ast.StatementBlock{
+										Statements: []ast.Statement{
+											&ast.StatementExpression{
+												Token:      tokens.New(tokens.TypeReturn, "return"),
+												Expression: &ast.ExpressionLiteralString{Value: "elif condition 1 was true"},
+											},
+										},
+									},
+								},
+							},
+							Alternative: &ast.StatementBlock{
+								Statements: []ast.Statement{
+									&ast.StatementExpression{
+										Token:      tokens.New(tokens.TypeReturn, "return"),
+										Expression: &ast.ExpressionLiteralString{Value: "else evaluated"},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			expected: &objects.String{Value: "else evaluated"},
+		},
+		{
+			name: "if condition false, elif is false, no else block, should return Nowt",
+			input: &ast.Program{
+				Statements: []ast.Statement{
+					&ast.StatementExpression{
+						Token: tokens.New(tokens.TypeIf, "if"),
+						Expression: &ast.ExpressionIf{
+							Branches: []ast.ConditionalBranch{
+								{
+									Token: tokens.Token{Type: tokens.TypeIf, Lexeme: "if"},
+									Condition: &ast.ExpressionInfix{
+										Token:    tokens.New(tokens.TypeEq, "=="),
+										Left:     &ast.ExpressionLiteralInteger{Value: 1},
+										Right:    &ast.ExpressionLiteralInteger{Value: 42},
+										Operator: "==",
+									},
+									Consequence: &ast.StatementBlock{
+										Statements: []ast.Statement{
+											&ast.StatementExpression{
+												Token:      tokens.New(tokens.TypeReturn, "return"),
+												Expression: &ast.ExpressionLiteralString{Value: "if condition was true"},
+											},
+										},
+									},
+								},
+								{
+									Token: tokens.Token{Type: tokens.TypeElif, Lexeme: "elif"},
+									Condition: &ast.ExpressionInfix{
+										Token:    tokens.New(tokens.TypeEq, "=="),
+										Left:     &ast.ExpressionLiteralInteger{Value: 2},
+										Right:    &ast.ExpressionLiteralInteger{Value: 3},
+										Operator: "==",
+									},
+									Consequence: &ast.StatementBlock{
+										Statements: []ast.Statement{
+											&ast.StatementExpression{
+												Token:      tokens.New(tokens.TypeReturn, "return"),
+												Expression: &ast.ExpressionLiteralString{Value: "elif condition 1 was true"},
+											},
+										},
+									},
+								},
+							},
+							Alternative: nil,
+						},
+					},
+				},
+			},
+			expected: Nowt,
+		},
+	}
+
+	for i, tc := range tests {
+		t.Run(fmt.Sprintf("test %d: %s", i, tc.name), func(t *testing.T) {
+			evaluator := New(nil)
+			result := evaluator.Eval(tc.input)
+
+			assert.Equal(t, tc.expected.Type(), result.Type())
+			assert.Equal(t, tc.expected.Inspect(), result.Inspect())
+		})
+	}
+}

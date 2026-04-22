@@ -19,10 +19,12 @@ var (
 	False = &objects.Boolean{Value: false}
 )
 
+// Evaluator is responsible for evaluating input AST nodes and producing the corresponding objects in the Donkey programming language.
 type Evaluator struct {
 	logger logs.Logger
 }
 
+// New creates a new Evaluator instance with the provided logger. If the logger is nil, a null logger will be used.
 func New(l logs.Logger) *Evaluator {
 	if l == nil {
 		l = logs.NewNullLogger()
@@ -70,6 +72,10 @@ func (e *Evaluator) Eval(node ast.Node) objects.Object {
 		}
 
 		return e.evalExpressionInfix(nt.Operator, l, r)
+	case *ast.ExpressionIf:
+		return e.evalExpressionIf(nt)
+	case *ast.StatementBlock:
+		return e.evalStatementBlock(nt)
 	default:
 		e.logger.Warn("unsupported AST node type", "type", fmt.Sprintf("%T", nt))
 		return Nowt
@@ -232,4 +238,39 @@ func (e *Evaluator) evalExpressionInfixString(operator string, left, right *obje
 		e.logger.Warn("unsupported infix operator for strings", "operator", operator)
 		return Nowt
 	}
+}
+
+func (e *Evaluator) evalExpressionIf(node *ast.ExpressionIf) objects.Object {
+	for _, branch := range node.Branches {
+		condition := e.Eval(branch.Condition)
+		if condition == nil {
+			e.logger.Error("if condition evaluated to nil")
+			return Nowt
+		}
+
+		if condition.Type() != objects.TypeBoolean {
+			e.logger.Warn("if condition did not evaluate to a boolean", "type", condition.Type())
+			return Nowt
+		}
+
+		if condition.(*objects.Boolean).Value {
+			return e.evalStatementBlock(branch.Consequence)
+		}
+	}
+
+	if node.Alternative != nil {
+		return e.evalStatementBlock(node.Alternative)
+	}
+
+	return Nowt
+}
+
+func (e *Evaluator) evalStatementBlock(block *ast.StatementBlock) objects.Object {
+	var result objects.Object
+	for i, stmt := range block.Statements {
+		e.logger.Debug("evaluating statement in block", "index", i, "statement", stmt.String())
+		result = e.Eval(stmt)
+	}
+
+	return result
 }
