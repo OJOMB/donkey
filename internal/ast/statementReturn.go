@@ -8,21 +8,21 @@ import (
 
 const stringFmtReturnStatement = "return %s;"
 
-// ReturnStatement represents a return statement in the AST. It contains a token and an expression for the return value.
-type ReturnStatement struct {
+// StatementReturn represents a return statement in the AST. It contains a token and an expression for the return value.
+type StatementReturn struct {
 	// Token is the token associated with the return statement, which is typically a token.TypeReturn token.
 	Token tokens.Token
-	// ReturnValue is the expression that represents the value being returned by the return statement.
-	ReturnValue Expression
+	// Value is the expression that represents the value being returned by the return statement.
+	Value Expression
 }
 
-func (rs *ReturnStatement) statementNode() {}
+func (rs *StatementReturn) statementNode() {}
 
 // TokenLexeme returns the lexeme of the token associated with the return statement.
-func (rs *ReturnStatement) TokenLexeme() string {
+func (rs *StatementReturn) TokenLexeme() string {
 	return rs.Token.Lexeme
 }
 
-func (rs *ReturnStatement) String() string {
-	return fmt.Sprintf(stringFmtReturnStatement, rs.ReturnValue.String())
+func (rs *StatementReturn) String() string {
+	return fmt.Sprintf(stringFmtReturnStatement, rs.Value.String())
 }

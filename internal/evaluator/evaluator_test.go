@@ -1148,3 +1148,209 @@ func TestEvaluatorEvalConditionals(t *testing.T) {
 		})
 	}
 }
+
+func TestEvaluatorEvalReturnStatements(t *testing.T) {
+	type testCase struct {
+		name     string
+		input    *ast.Program
+		expected objects.Object
+	}
+
+	tests := []testCase{
+		{
+			name: "return 5;",
+			input: &ast.Program{
+				Statements: []ast.Statement{
+					&ast.StatementReturn{
+						Token: tokens.New(tokens.TypeReturn, "return"),
+						Value: &ast.ExpressionLiteralInteger{Value: 5},
+					},
+				},
+			},
+			expected: &objects.Integer{Value: 5},
+		},
+		{
+			name: "do not eval after return statement",
+			input: &ast.Program{
+				Statements: []ast.Statement{
+					&ast.StatementReturn{
+						Token: tokens.New(tokens.TypeReturn, "return"),
+						Value: &ast.ExpressionLiteralInteger{Value: 5},
+					},
+					&ast.StatementExpression{
+						Token: tokens.New(tokens.TypePlus, "+"),
+						Expression: &ast.ExpressionInfix{
+							Token:    tokens.New(tokens.TypePlus, "+"),
+							Left:     &ast.ExpressionLiteralInteger{Value: 10},
+							Right:    &ast.ExpressionLiteralInteger{Value: 20},
+							Operator: "+",
+						},
+					},
+				},
+			},
+			expected: &objects.Integer{Value: 5},
+		},
+		{
+			name: "return in if consequence",
+			// if (10 > 1) {
+			//  if (10 > 1) {
+			//    return 10
+			//  }
+			//  return 1
+			// } else {
+			//  return -1
+			// }
+			input: &ast.Program{
+				Statements: []ast.Statement{
+					&ast.StatementExpression{
+						Token: tokens.New(tokens.TypeIf, "if"),
+						Expression: &ast.ExpressionIf{
+							Branches: []ast.ConditionalBranch{
+								{
+									Token: tokens.Token{Type: tokens.TypeIf, Lexeme: "if"},
+									Condition: &ast.ExpressionInfix{
+										Token:    tokens.New(tokens.TypeGT, ">"),
+										Left:     &ast.ExpressionLiteralInteger{Value: 10},
+										Right:    &ast.ExpressionLiteralInteger{Value: 1},
+										Operator: ">",
+									},
+									Consequence: &ast.StatementBlock{
+										Statements: []ast.Statement{
+											&ast.StatementExpression{
+												Token: tokens.New(tokens.TypeIf, "if"),
+												Expression: &ast.ExpressionIf{
+													Branches: []ast.ConditionalBranch{
+														{
+															Token: tokens.Token{Type: tokens.TypeIf, Lexeme: "if"},
+															Condition: &ast.ExpressionInfix{
+																Token:    tokens.New(tokens.TypeGT, ">"),
+																Left:     &ast.ExpressionLiteralInteger{Value: 10},
+																Right:    &ast.ExpressionLiteralInteger{Value: 1},
+																Operator: ">",
+															},
+															Consequence: &ast.StatementBlock{
+																Statements: []ast.Statement{
+																	&ast.StatementReturn{
+																		Token: tokens.New(tokens.TypeReturn, "return"),
+																		Value: &ast.ExpressionLiteralInteger{Value: 10},
+																	},
+																},
+															},
+														},
+													},
+													Alternative: &ast.StatementBlock{
+														Statements: []ast.Statement{
+															&ast.StatementReturn{
+																Token: tokens.New(tokens.TypeReturn, "return"),
+																Value: &ast.ExpressionLiteralInteger{Value: 1},
+															},
+														},
+													},
+												},
+											},
+										},
+									},
+								},
+							},
+							Alternative: &ast.StatementBlock{
+								Statements: []ast.Statement{
+									&ast.StatementReturn{
+										Token: tokens.New(tokens.TypeReturn, "return"),
+										Value: &ast.ExpressionLiteralInteger{Value: -1},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			expected: &objects.Integer{Value: 10},
+		},
+		{
+			name: "return in if consequence",
+			// if (1 > 10) {
+			//  if (10 > 1) {
+			//    return 10
+			//  }
+			//  return 1
+			// } else {
+			//  return -1
+			// }
+			input: &ast.Program{
+				Statements: []ast.Statement{
+					&ast.StatementExpression{
+						Token: tokens.New(tokens.TypeIf, "if"),
+						Expression: &ast.ExpressionIf{
+							Branches: []ast.ConditionalBranch{
+								{
+									Token: tokens.Token{Type: tokens.TypeIf, Lexeme: "if"},
+									Condition: &ast.ExpressionInfix{
+										Token:    tokens.New(tokens.TypeGT, ">"),
+										Left:     &ast.ExpressionLiteralInteger{Value: 1},
+										Right:    &ast.ExpressionLiteralInteger{Value: 10},
+										Operator: ">",
+									},
+									Consequence: &ast.StatementBlock{
+										Statements: []ast.Statement{
+											&ast.StatementExpression{
+												Token: tokens.New(tokens.TypeIf, "if"),
+												Expression: &ast.ExpressionIf{
+													Branches: []ast.ConditionalBranch{
+														{
+															Token: tokens.Token{Type: tokens.TypeIf, Lexeme: "if"},
+															Condition: &ast.ExpressionInfix{
+																Token:    tokens.New(tokens.TypeGT, ">"),
+																Left:     &ast.ExpressionLiteralInteger{Value: 10},
+																Right:    &ast.ExpressionLiteralInteger{Value: 1},
+																Operator: ">",
+															},
+															Consequence: &ast.StatementBlock{
+																Statements: []ast.Statement{
+																	&ast.StatementReturn{
+																		Token: tokens.New(tokens.TypeReturn, "return"),
+																		Value: &ast.ExpressionLiteralInteger{Value: 10},
+																	},
+																},
+															},
+														},
+													},
+													Alternative: &ast.StatementBlock{
+														Statements: []ast.Statement{
+															&ast.StatementReturn{
+																Token: tokens.New(tokens.TypeReturn, "return"),
+																Value: &ast.ExpressionLiteralInteger{Value: 1},
+															},
+														},
+													},
+												},
+											},
+										},
+									},
+								},
+							},
+							Alternative: &ast.StatementBlock{
+								Statements: []ast.Statement{
+									&ast.StatementReturn{
+										Token: tokens.New(tokens.TypeReturn, "return"),
+										Value: &ast.ExpressionLiteralInteger{Value: -1},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			expected: &objects.Integer{Value: -1},
+		},
+	}
+
+	for i, tc := range tests {
+		t.Run(fmt.Sprintf("test %d: %s", i, tc.name), func(t *testing.T) {
+			evaluator := New(nil)
+			result := evaluator.Eval(tc.input)
+
+			assert.Equal(t, tc.expected.Type(), result.Type())
+			assert.Equal(t, tc.expected.Inspect(), result.Inspect())
+		})
+	}
+}

@@ -167,16 +167,16 @@ func (p *Parser) parseStatementLet() *ast.StatementBind {
 }
 
 // parseStatementReturn parses a return statement and returns an ast.ReturnStatement node.
-func (p *Parser) parseStatementReturn() *ast.ReturnStatement {
+func (p *Parser) parseStatementReturn() *ast.StatementReturn {
 	if p.currToken.Type != tokens.TypeReturn {
 		return nil
 	}
 
-	rs := &ast.ReturnStatement{Token: p.currToken}
+	rs := &ast.StatementReturn{Token: p.currToken}
 
 	p.nextToken()
 
-	rs.ReturnValue = p.parseExpression(precedenceLowest)
+	rs.Value = p.parseExpression(precedenceLowest)
 
 	return rs
 }

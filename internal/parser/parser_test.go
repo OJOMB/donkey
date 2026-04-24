@@ -78,9 +78,9 @@ func TestParseStatements(t *testing.T) {
 								},
 							},
 							Body: &ast.StatementBlock{Statements: []ast.Statement{
-								&ast.ReturnStatement{
+								&ast.StatementReturn{
 									Token: tokens.Token{Type: tokens.TypeReturn, Lexeme: "return"},
-									ReturnValue: &ast.ExpressionInfix{
+									Value: &ast.ExpressionInfix{
 										Token:    tokens.Token{Type: tokens.TypePlus, Lexeme: "+"},
 										Operator: "+",
 										Left: &ast.ExpressionIdentifier{
@@ -109,23 +109,23 @@ func TestParseStatements(t *testing.T) {
 			`,
 			expectedOutput: &ast.Program{
 				Statements: []ast.Statement{
-					&ast.ReturnStatement{
+					&ast.StatementReturn{
 						Token: tokens.Token{Type: "RETURN", Lexeme: "return"},
-						ReturnValue: &ast.ExpressionLiteralInteger{
+						Value: &ast.ExpressionLiteralInteger{
 							Token: tokens.Token{Type: "INT", Lexeme: "5"},
 							Value: 5,
 						},
 					},
-					&ast.ReturnStatement{
+					&ast.StatementReturn{
 						Token: tokens.Token{Type: "RETURN", Lexeme: "return"},
-						ReturnValue: &ast.ExpressionLiteralString{
+						Value: &ast.ExpressionLiteralString{
 							Token: tokens.Token{Type: "STRING", Lexeme: "kool"},
 							Value: "kool",
 						},
 					},
-					&ast.ReturnStatement{
+					&ast.StatementReturn{
 						Token: tokens.Token{Type: "RETURN", Lexeme: "return"},
-						ReturnValue: &ast.ExpressionLiteralBoolean{
+						Value: &ast.ExpressionLiteralBoolean{
 							Token: tokens.Token{Type: "TRUE", Lexeme: "true"},
 							Value: true,
 						},
@@ -652,9 +652,9 @@ func TestFunctionLiterals(t *testing.T) {
 							Token:      tokens.Token{Type: tokens.TypeFunction, Lexeme: "fn"},
 							Parameters: []*ast.ExpressionIdentifier{},
 							Body: &ast.StatementBlock{Statements: []ast.Statement{
-								&ast.ReturnStatement{
+								&ast.StatementReturn{
 									Token: tokens.Token{Type: tokens.TypeReturn, Lexeme: "return"},
-									ReturnValue: &ast.ExpressionLiteralInteger{
+									Value: &ast.ExpressionLiteralInteger{
 										Token: tokens.Token{Type: tokens.TypeInt, Lexeme: "5"},
 										Value: 5,
 									},
@@ -686,9 +686,9 @@ func TestFunctionLiterals(t *testing.T) {
 								},
 							},
 							Body: &ast.StatementBlock{Statements: []ast.Statement{
-								&ast.ReturnStatement{
+								&ast.StatementReturn{
 									Token: tokens.Token{Type: tokens.TypeReturn, Lexeme: "return"},
-									ReturnValue: &ast.ExpressionInfix{
+									Value: &ast.ExpressionInfix{
 										Token:    tokens.Token{Type: tokens.TypePlus, Lexeme: "+"},
 										Operator: "+",
 										Left: &ast.ExpressionIdentifier{

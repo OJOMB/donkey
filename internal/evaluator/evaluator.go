@@ -76,6 +76,14 @@ func (e *Evaluator) Eval(node ast.Node) objects.Object {
 		return e.evalExpressionIf(nt)
 	case *ast.StatementBlock:
 		return e.evalStatementBlock(nt)
+	case *ast.StatementReturn:
+		value := e.Eval(nt.Value)
+		if value == nil {
+			e.logger.Error("return statement value evaluated to nil")
+			return Nowt
+		}
+
+		return &objects.ReturnValue{Value: value}
 	default:
 		e.logger.Warn("unsupported AST node type", "type", fmt.Sprintf("%T", nt))
 		return Nowt
@@ -87,6 +95,10 @@ func (e *Evaluator) evalStatements(program *ast.Program) objects.Object {
 	for i, stmt := range program.Statements {
 		e.logger.Debug("evaluating statement", "index", i, "statement", stmt.String())
 		result = e.Eval(stmt)
+
+		if returnValue, ok := result.(*objects.ReturnValue); ok {
+			return returnValue.Value
+		}
 	}
 
 	return result
@@ -270,6 +282,10 @@ func (e *Evaluator) evalStatementBlock(block *ast.StatementBlock) objects.Object
 	for i, stmt := range block.Statements {
 		e.logger.Debug("evaluating statement in block", "index", i, "statement", stmt.String())
 		result = e.Eval(stmt)
+
+		if returnValue, ok := result.(*objects.ReturnValue); ok {
+			return returnValue
+		}
 	}
 
 	return result

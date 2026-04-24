@@ -16,6 +16,8 @@ const (
 	TypeFunction Type = "FUNCTION"
 	// TypeNowt represents the type of a nowt object (the equivalent of null or nil)
 	TypeNowt Type = "NOWT"
+	// TypeReturnValue represents the type of a return value object
+	TypeReturnValue Type = "RETURN_VALUE"
 )
 
 // Object is the interface that all objects in the Donkey programming language must implement.
