@@ -17,9 +17,13 @@ func NewEnvironment() *Environment {
 // NewEnclosedEnvironment creates a new Environment that is enclosed within an outer environment.
 // This is used for creating new scopes when evaluating functions or blocks.
 func NewEnclosedEnvironment(outer *Environment) *Environment {
-	env := NewEnvironment()
-	env.outer = outer
-	return env
+	newEnv := NewEnvironment()
+	if outer == nil {
+		return newEnv
+	}
+
+	newEnv.outer = outer
+	return newEnv
 }
 
 // Get retrieves the object associated with the given name from the environment.
