@@ -74,8 +74,8 @@ const (
 
 	// TypeFunction represents the 'fn' keyword token.
 	TypeFunction Type = "FUNCTION"
-	// TypeBinder represents the 'var' keyword token.
-	TypeBinder Type = "VAR"
+	// TypeBind represents the 'var' keyword token.
+	TypeBind Type = "VAR"
 	// TypeTrue represents the boolean value true
 	TypeTrue Type = "TRUE"
 	// TypeFalse represents the boolean value false
@@ -92,7 +92,7 @@ const (
 
 var keywords = map[string]Type{
 	"fn":     TypeFunction,
-	"var":    TypeBinder,
+	"var":    TypeBind,
 	"if":     TypeIf,
 	"elif":   TypeElif,
 	"else":   TypeElse,

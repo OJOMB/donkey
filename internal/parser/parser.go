@@ -115,7 +115,7 @@ func (p *Parser) ParseProgram() *ast.Program {
 func (p *Parser) parseStatement() ast.Statement {
 	var stmt ast.Statement
 	switch p.currToken.Type {
-	case tokens.TypeBinder:
+	case tokens.TypeBind:
 		return p.parseStatementLet()
 	case tokens.TypeReturn:
 		return p.parseStatementReturn()
@@ -123,6 +123,8 @@ func (p *Parser) parseStatement() ast.Statement {
 		return p.parseBlockStatement()
 	default:
 		if p.peekToken.Type == tokens.TypeAssign {
+			// here we have an identifier followed by an assign token
+			// so we can assume this is a rebind statement like foo = 5; or bar = "hello";
 			return p.parseStatementReBind()
 		}
 
@@ -137,7 +139,7 @@ func (p *Parser) parseStatement() ast.Statement {
 // parseStatementLet parses a var statement and returns an ast.LetStatement node.
 func (p *Parser) parseStatementLet() *ast.StatementBind {
 	// first token must be var
-	if p.currToken.Type != tokens.TypeBinder {
+	if p.currToken.Type != tokens.TypeBind {
 		return nil
 	}
 

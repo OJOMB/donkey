@@ -35,7 +35,7 @@ func TestParseStatements(t *testing.T) {
 			expectedOutput: &ast.Program{
 				Statements: []ast.Statement{
 					&ast.StatementBind{
-						Token: tokens.Token{Type: tokens.TypeBinder, Lexeme: "var"},
+						Token: tokens.Token{Type: tokens.TypeBind, Lexeme: "var"},
 						Name: &ast.ExpressionIdentifier{
 							Token: tokens.Token{Type: "IDENT", Lexeme: "x"},
 							Value: "x",
@@ -46,7 +46,7 @@ func TestParseStatements(t *testing.T) {
 						},
 					},
 					&ast.StatementBind{
-						Token: tokens.Token{Type: tokens.TypeBinder, Lexeme: "var"},
+						Token: tokens.Token{Type: tokens.TypeBind, Lexeme: "var"},
 						Name: &ast.ExpressionIdentifier{
 							Token: tokens.Token{Type: "IDENT", Lexeme: "y"},
 							Value: "y",
@@ -57,7 +57,7 @@ func TestParseStatements(t *testing.T) {
 						},
 					},
 					&ast.StatementBind{
-						Token: tokens.Token{Type: tokens.TypeBinder, Lexeme: "var"},
+						Token: tokens.Token{Type: tokens.TypeBind, Lexeme: "var"},
 						Name: &ast.ExpressionIdentifier{
 							Token: tokens.Token{Type: "IDENT", Lexeme: "__foobar__"},
 							Value: "__foobar__",
@@ -68,7 +68,7 @@ func TestParseStatements(t *testing.T) {
 						},
 					},
 					&ast.StatementBind{
-						Token: tokens.Token{Type: tokens.TypeBinder, Lexeme: "var"},
+						Token: tokens.Token{Type: tokens.TypeBind, Lexeme: "var"},
 						Name: &ast.ExpressionIdentifier{
 							Token: tokens.Token{Type: "IDENT", Lexeme: "myFunction"},
 							Value: "myFunction",

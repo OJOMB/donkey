@@ -93,6 +93,19 @@ func (e *Evaluator) Eval(node ast.Node, env *objects.Environment) objects.Object
 		}
 
 		return env.Bind(nt.Name.Value, value)
+	case *ast.StatementRebind:
+		value := e.Eval(nt.Value, env)
+		if value == nil {
+			e.logger.Error("rebind statement value evaluated to nil", "name", nt.Name.Value)
+			return newError("rebind statement value evaluated to nil: name:%s v:%v", nt.Name.Value, value)
+		}
+
+		if _, err := env.Set(nt.Name.Value, value); err != nil {
+			e.logger.Warn("failed to rebind variable in environment", "name", nt.Name.Value, "error", err)
+			return newError("uninitialized variable: %s", nt.Name.Value)
+		}
+
+		return value
 	case *ast.StatementReturn:
 		value := e.Eval(nt.Value, env)
 		if value == nil {

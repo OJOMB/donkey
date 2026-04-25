@@ -1408,7 +1408,7 @@ func TestEvaluatorEvalErrorHandling(t *testing.T) {
 	}
 }
 
-func TestEvaluatorEvalBindtatements(t *testing.T) {
+func TestEvaluatorEvalBindStatements(t *testing.T) {
 	type testCase struct {
 		name     string
 		input    *ast.Program
@@ -1421,7 +1421,7 @@ func TestEvaluatorEvalBindtatements(t *testing.T) {
 			input: &ast.Program{
 				Statements: []ast.Statement{
 					&ast.StatementBind{
-						Token: tokens.New(tokens.TypeBinder, "let"),
+						Token: tokens.New(tokens.TypeBind, "let"),
 						Name: &ast.ExpressionIdentifier{
 							Token: tokens.New(tokens.TypeIdent, "a"),
 							Value: "a",
@@ -1444,7 +1444,7 @@ func TestEvaluatorEvalBindtatements(t *testing.T) {
 			input: &ast.Program{
 				Statements: []ast.Statement{
 					&ast.StatementBind{
-						Token: tokens.New(tokens.TypeBinder, "let"),
+						Token: tokens.New(tokens.TypeBind, "let"),
 						Name: &ast.ExpressionIdentifier{
 							Token: tokens.New(tokens.TypeIdent, "a"),
 							Value: "a",
@@ -1452,7 +1452,7 @@ func TestEvaluatorEvalBindtatements(t *testing.T) {
 						Value: &ast.ExpressionLiteralInteger{Value: 5},
 					},
 					&ast.StatementBind{
-						Token: tokens.New(tokens.TypeBinder, "let"),
+						Token: tokens.New(tokens.TypeBind, "let"),
 						Name: &ast.ExpressionIdentifier{
 							Token: tokens.New(tokens.TypeIdent, "b"),
 							Value: "b",
@@ -1472,6 +1472,107 @@ func TestEvaluatorEvalBindtatements(t *testing.T) {
 				},
 			},
 			expected: &objects.Integer{Value: 5},
+		},
+	}
+
+	for i, tc := range tests {
+		t.Run(fmt.Sprintf("test %d: %s", i, tc.name), func(t *testing.T) {
+			evaluator := New(nil)
+			result := evaluator.Eval(tc.input, objects.NewEnvironment())
+
+			assert.Equal(t, tc.expected.Type(), result.Type())
+			assert.Equal(t, tc.expected.Inspect(), result.Inspect())
+		})
+	}
+}
+
+func TestEvaluatorEvalRebindStatements(t *testing.T) {
+	type testCase struct {
+		name     string
+		input    *ast.Program
+		expected objects.Object
+	}
+
+	tests := []testCase{
+		{
+			name: `
+				let a = 5;
+				a = 13;
+				a;`,
+			input: &ast.Program{
+				Statements: []ast.Statement{
+					&ast.StatementBind{
+						Token: tokens.New(tokens.TypeBind, "let"),
+						Name: &ast.ExpressionIdentifier{
+							Token: tokens.New(tokens.TypeIdent, "a"),
+							Value: "a",
+						},
+						Value: &ast.ExpressionLiteralInteger{Value: 5},
+					},
+					&ast.StatementRebind{
+						Token: tokens.New(tokens.TypeIdent, "a"),
+						Name: &ast.ExpressionIdentifier{
+							Token: tokens.New(tokens.TypeIdent, "a"),
+							Value: "a",
+						},
+						Value: &ast.ExpressionLiteralInteger{Value: 13},
+					},
+					&ast.StatementExpression{
+						Token: tokens.New(tokens.TypeIdent, "a"),
+						Expression: &ast.ExpressionIdentifier{
+							Token: tokens.New(tokens.TypeIdent, "a"),
+							Value: "a",
+						},
+					},
+				},
+			},
+			expected: &objects.Integer{Value: 13},
+		},
+		{
+			name: `
+			let a = 5;
+			let b = a;
+			b = 109;
+			b;`,
+			input: &ast.Program{
+				Statements: []ast.Statement{
+					&ast.StatementBind{
+						Token: tokens.New(tokens.TypeBind, "let"),
+						Name: &ast.ExpressionIdentifier{
+							Token: tokens.New(tokens.TypeIdent, "a"),
+							Value: "a",
+						},
+						Value: &ast.ExpressionLiteralInteger{Value: 5},
+					},
+					&ast.StatementBind{
+						Token: tokens.New(tokens.TypeBind, "let"),
+						Name: &ast.ExpressionIdentifier{
+							Token: tokens.New(tokens.TypeIdent, "b"),
+							Value: "b",
+						},
+						Value: &ast.ExpressionIdentifier{
+							Token: tokens.New(tokens.TypeIdent, "a"),
+							Value: "a",
+						},
+					},
+					&ast.StatementRebind{
+						Token: tokens.New(tokens.TypeIdent, "b"),
+						Name: &ast.ExpressionIdentifier{
+							Token: tokens.New(tokens.TypeIdent, "b"),
+							Value: "b",
+						},
+						Value: &ast.ExpressionLiteralInteger{Value: 109},
+					},
+					&ast.StatementExpression{
+						Token: tokens.New(tokens.TypeIdent, "b"),
+						Expression: &ast.ExpressionIdentifier{
+							Token: tokens.New(tokens.TypeIdent, "b"),
+							Value: "b",
+						},
+					},
+				},
+			},
+			expected: &objects.Integer{Value: 109},
 		},
 	}
 
