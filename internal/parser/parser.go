@@ -60,7 +60,10 @@ func New(l *lexer.Lexer, logger logs.Logger) (*Parser, error) {
 	p.RegisterPrefix(tokens.TypeMinus, p.parseExpressionPrefix)
 	p.RegisterPrefix(tokens.TypeLParen, p.parseExpressionGrouped)
 	p.RegisterPrefix(tokens.TypeIf, p.parseExpressionIf)
+	p.RegisterPrefix(tokens.TypeWhile, p.parseExpressionWhile)
 	p.RegisterPrefix(tokens.TypeFunction, p.parseExpressionLiteralFunction)
+	p.RegisterPrefix(tokens.TypeContinue, p.parseExpressionKeyword)
+	p.RegisterPrefix(tokens.TypeBreak, p.parseExpressionKeyword)
 
 	// register infix parse functions for different token types
 	p.RegisterInfix(tokens.TypePlus, p.parseExpressionInfix)
@@ -542,4 +545,40 @@ func (p *Parser) parseStatementReBind() *ast.StatementRebind {
 	}
 
 	return reBind
+}
+
+func (p *Parser) parseExpressionWhile() ast.Expression {
+	expr := &ast.ExpressionWhile{
+		Token: p.currToken,
+	}
+
+	if !p.expectPeek(tokens.TypeLParen) {
+		p.logger.Debug("expected ( after while, got %s instead", p.peekToken.Type)
+		return nil
+	}
+
+	p.nextToken()
+
+	expr.Condition = p.parseExpression(precedenceLowest)
+
+	if !p.expectPeek(tokens.TypeRParen) {
+		p.logger.Debug("expected ) after while condition, got %s instead", p.peekToken.Type)
+		return nil
+	}
+
+	if !p.expectPeek(tokens.TypeLBrace) {
+		p.logger.Debug("expected { after while condition, got %s instead", p.peekToken.Type)
+		return nil
+	}
+
+	expr.Body = p.parseBlockStatement()
+
+	return expr
+}
+
+func (p *Parser) parseExpressionKeyword() ast.Expression {
+	return &ast.ExpressionKeyword{
+		Token:   p.currToken,
+		Keyword: p.currToken.Lexeme,
+	}
 }

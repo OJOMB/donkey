@@ -88,17 +88,26 @@ const (
 	TypeElse Type = "ELSE"
 	// TypeReturn represents the control flow keyword return.
 	TypeReturn Type = "RETURN"
+	// TypeBreak represents the control flow keyword break.
+	TypeBreak Type = "BREAK"
+	// TypeContinue represents the control flow keyword continue.
+	TypeContinue Type = "CONTINUE"
+	// TypeWhile represents the control flow keyword while.
+	TypeWhile Type = "WHILE"
 )
 
 var keywords = map[string]Type{
-	"fn":     TypeFunction,
-	"var":    TypeBind,
-	"if":     TypeIf,
-	"elif":   TypeElif,
-	"else":   TypeElse,
-	"return": TypeReturn,
-	"true":   TypeTrue,
-	"false":  TypeFalse,
+	"fn":       TypeFunction,
+	"var":      TypeBind,
+	"if":       TypeIf,
+	"elif":     TypeElif,
+	"else":     TypeElse,
+	"return":   TypeReturn,
+	"true":     TypeTrue,
+	"false":    TypeFalse,
+	"while":    TypeWhile,
+	"break":    TypeBreak,
+	"continue": TypeContinue,
 }
 
 // LookupIdent checks if the given identifier is a keyword and returns the appropriate token type.

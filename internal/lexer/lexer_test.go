@@ -53,6 +53,16 @@ func TestNextToken(t *testing.T) {
 				var logicalAnd = true && false;
 				var logicalOr = true || false;
 
+				while (result > 10) {
+					result = result - 1;
+
+					if (result == 10) {
+						break;
+					}
+
+					continue;
+				}
+
 				`,
 			expectedOutput: []tokens.Token{
 				{Type: tokens.TypeBind, Lexeme: "var"},
@@ -227,6 +237,33 @@ func TestNextToken(t *testing.T) {
 				{Type: tokens.TypeLogicalOr, Lexeme: "||"},
 				{Type: tokens.TypeFalse, Lexeme: "false"},
 				{Type: tokens.TypeSemicolon, Lexeme: ";"},
+
+				{Type: tokens.TypeWhile, Lexeme: "while"},
+				{Type: tokens.TypeLParen, Lexeme: "("},
+				{Type: tokens.TypeIdent, Lexeme: "result"},
+				{Type: tokens.TypeGT, Lexeme: ">"},
+				{Type: tokens.TypeInt, Lexeme: "10"},
+				{Type: tokens.TypeRParen, Lexeme: ")"},
+				{Type: tokens.TypeLBrace, Lexeme: "{"},
+				{Type: tokens.TypeIdent, Lexeme: "result"},
+				{Type: tokens.TypeAssign, Lexeme: "="},
+				{Type: tokens.TypeIdent, Lexeme: "result"},
+				{Type: tokens.TypeMinus, Lexeme: "-"},
+				{Type: tokens.TypeInt, Lexeme: "1"},
+				{Type: tokens.TypeSemicolon, Lexeme: ";"},
+				{Type: tokens.TypeIf, Lexeme: "if"},
+				{Type: tokens.TypeLParen, Lexeme: "("},
+				{Type: tokens.TypeIdent, Lexeme: "result"},
+				{Type: tokens.TypeEq, Lexeme: "=="},
+				{Type: tokens.TypeInt, Lexeme: "10"},
+				{Type: tokens.TypeRParen, Lexeme: ")"},
+				{Type: tokens.TypeLBrace, Lexeme: "{"},
+				{Type: tokens.TypeBreak, Lexeme: "break"},
+				{Type: tokens.TypeSemicolon, Lexeme: ";"},
+				{Type: tokens.TypeRBrace, Lexeme: "}"},
+				{Type: tokens.TypeContinue, Lexeme: "continue"},
+				{Type: tokens.TypeSemicolon, Lexeme: ";"},
+				{Type: tokens.TypeRBrace, Lexeme: "}"},
 
 				{Type: tokens.TypeEOF, Lexeme: ""},
 			},
