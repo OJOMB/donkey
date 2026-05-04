@@ -1,7 +1,6 @@
 package ast
 
 import (
-	"github.com/OJOMB/donkey/internal/objects"
 	"github.com/OJOMB/donkey/internal/tokens"
 )
 
@@ -44,31 +43,4 @@ func (s *StatementFor) String() string {
 	}
 
 	return result + s.Body.String()
-}
-
-func (s *StatementFor) EvalInitializer(env *objects.Environment, evaluator Evaluator) error {
-	if s.Initializer == nil {
-		return ErrInvalidForLoopInitializer
-	}
-
-	result := evaluator.Eval(s.Initializer, env)
-	if result == nil {
-		return ErrInvalidForLoopInitializer
-	}
-
-	return nil
-}
-
-func (s *StatementFor) EvalCondition(env *objects.Environment, evaluator Evaluator) (bool, error) {
-	if s.Condition == nil {
-		return true, ErrInvalidLoopCondition
-	}
-
-	conditionValue := evaluator.Eval(s.Condition, env)
-	conditionBool, ok := conditionValue.(*objects.Boolean)
-	if !ok {
-		return false, ErrInvalidLoopConditionType
-	}
-
-	return conditionBool.Value, nil
 }

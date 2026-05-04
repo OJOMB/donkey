@@ -385,14 +385,14 @@ func (e *Evaluator) evalStatementFor(node *ast.StatementFor, env *objects.Enviro
 	loopEnv := objects.NewEnclosedEnvironment(env)
 
 	// evaluate the initializer statement
-	if err := node.EvalInitializer(loopEnv, e); err != nil {
+	if err := e.EvalInitializer(node, loopEnv); err != nil {
 		e.logger.Warn("failed to evaluate for loop initializer", "error", err)
 		return newError("failed to evaluate for loop initializer: %s", err)
 	}
 
 	for {
 		// evaluate the condition expression if it is present, otherwise treat the loop as infinite
-		if truthy, _ := node.EvalCondition(loopEnv, e); !truthy {
+		if truthy, _ := e.EvalCondition(node, loopEnv); !truthy {
 			break
 		}
 
@@ -437,4 +437,31 @@ func (e *Evaluator) evalExpressionKeyword(node *ast.ExpressionKeyword, env *obje
 		e.logger.Warn("unsupported keyword", "keyword", node.Keyword)
 		return newError("unsupported keyword: %s", node.Keyword)
 	}
+}
+
+func (e *Evaluator) EvalInitializer(node *ast.StatementFor, env *objects.Environment) error {
+	if node.Initializer == nil {
+		return ErrInvalidForLoopInitializer
+	}
+
+	result := e.Eval(node.Initializer, env)
+	if result == nil {
+		return ErrInvalidForLoopInitializer
+	}
+
+	return nil
+}
+
+func (e *Evaluator) EvalCondition(node *ast.StatementFor, env *objects.Environment) (bool, error) {
+	if node.Condition == nil {
+		return true, ErrInvalidLoopCondition
+	}
+
+	conditionValue := e.Eval(node.Condition, env)
+	conditionBool, ok := conditionValue.(*objects.Boolean)
+	if !ok {
+		return false, ErrInvalidLoopConditionType
+	}
+
+	return conditionBool.Value, nil
 }
