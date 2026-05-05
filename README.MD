@@ -1,7 +1,6 @@
 ![Donkey Image](img/donkey.png)
 
-Writing an interpreter (and eventually compiler) closely based on the Monkey programming language, as described in the book [Writing An Interpreter In Go](https://interpreterbook.com/).
-
+An interpreter (and eventually compiler) that is closely based on the Monkey programming language, as described in the book [Writing An Interpreter In Go](https://interpreterbook.com/). Donkey expands on Monkey with additional features such as for/while loops and function statements.
 
 install the donkey repl with:
 ```bash
