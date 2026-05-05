@@ -37,11 +37,51 @@ func New(l logs.Logger) *Evaluator {
 func (e *Evaluator) Eval(node ast.Node, env *objects.Environment) objects.Object {
 	switch nt := node.(type) {
 	case *ast.ExpressionLiteralInteger, *ast.ExpressionLiteralBoolean, *ast.ExpressionLiteralString, *ast.ExpressionLiteralFunction:
-		return e.evalLiteral(nt)
+		return e.evalLiteral(nt, env)
 	case *ast.Program:
 		return e.evalStatements(nt, env)
 	case *ast.StatementExpression:
 		return e.Eval(nt.Expression, env)
+	case *ast.StatementBlock:
+		return e.evalStatementBlock(nt, env)
+	case *ast.StatementBind:
+		value := e.Eval(nt.Value, env)
+		if value == nil {
+			e.logger.Error("bind statement value evaluated to nil", "name", nt.Name.Value)
+			return newError("bind statement value evaluated to nil: name:%s v:%v", nt.Name.Value, value)
+		}
+
+		return env.Bind(nt.Name.Value, value)
+	case *ast.StatementFunctionBind:
+		return env.Bind(nt.Name.Value, &objects.Function{
+			Parameters: nt.Value.Parameters,
+			Body:       nt.Value.Body,
+		})
+	case *ast.StatementRebind:
+		value := e.Eval(nt.Value, env)
+		if value == nil {
+			e.logger.Error("rebind statement value evaluated to nil", "name", nt.Name.Value)
+			return newError("rebind statement value evaluated to nil: name:%s v:%v", nt.Name.Value, value)
+		}
+
+		if _, err := env.Set(nt.Name.Value, value); err != nil {
+			e.logger.Warn("failed to rebind variable in environment", "name", nt.Name.Value, "error", err)
+			return newError("uninitialized variable: %s", nt.Name.Value)
+		}
+
+		return value
+	case *ast.StatementReturn:
+		value := e.Eval(nt.Value, env)
+		if value == nil {
+			e.logger.Error("return statement value evaluated to nil")
+			return Nowt
+		}
+
+		return &objects.ReturnValue{Value: value}
+	case *ast.StatementWhile:
+		return e.evalStatementWhile(nt, env)
+	case *ast.StatementFor:
+		return e.evalStatementFor(nt, env)
 	case *ast.ExpressionPrefix:
 		right := e.Eval(nt.Right, env)
 		if right == nil {
@@ -84,41 +124,31 @@ func (e *Evaluator) Eval(node ast.Node, env *objects.Environment) objects.Object
 		return e.evalExpressionIf(nt, env)
 	case *ast.ExpressionKeyword:
 		return e.evalExpressionKeyword(nt, env)
-	case *ast.StatementBlock:
-		return e.evalStatementBlock(nt, env)
-	case *ast.StatementBind:
-		value := e.Eval(nt.Value, env)
-		if value == nil {
-			e.logger.Error("bind statement value evaluated to nil", "name", nt.Name.Value)
-			return newError("bind statement value evaluated to nil: name:%s v:%v", nt.Name.Value, value)
+	case *ast.ExpressionCall:
+		functionObj := e.Eval(nt.Function, env)
+		if functionObj == nil {
+			e.logger.Error("call expression function evaluated to nil", "function", nt.Function.String())
+			return newError("call expression function evaluated to nil: fn:%s", nt.Function.String())
 		}
 
-		return env.Bind(nt.Name.Value, value)
-	case *ast.StatementRebind:
-		value := e.Eval(nt.Value, env)
-		if value == nil {
-			e.logger.Error("rebind statement value evaluated to nil", "name", nt.Name.Value)
-			return newError("rebind statement value evaluated to nil: name:%s v:%v", nt.Name.Value, value)
+		function, ok := functionObj.(*objects.Function)
+		if !ok {
+			e.logger.Warn("call expression function did not evaluate to a function object", "function", nt.Function.String(), "type", functionObj.Type())
+			return newError("call expression function did not evaluate to a function object: fn:%s got:%s", nt.Function.String(), functionObj.Type())
 		}
 
-		if _, err := env.Set(nt.Name.Value, value); err != nil {
-			e.logger.Warn("failed to rebind variable in environment", "name", nt.Name.Value, "error", err)
-			return newError("uninitialized variable: %s", nt.Name.Value)
+		args := make([]objects.Object, len(nt.Arguments))
+		for i, arg := range nt.Arguments {
+			evaluatedArg := e.Eval(arg, env)
+			if evaluatedArg == nil {
+				e.logger.Error("call expression argument evaluated to nil", "index", i, "argument", arg.String())
+				return newError("call expression argument evaluated to nil: index:%d arg:%s", i, arg.String())
+			}
+
+			args[i] = evaluatedArg
 		}
 
-		return value
-	case *ast.StatementReturn:
-		value := e.Eval(nt.Value, env)
-		if value == nil {
-			e.logger.Error("return statement value evaluated to nil")
-			return Nowt
-		}
-
-		return &objects.ReturnValue{Value: value}
-	case *ast.StatementWhile:
-		return e.evalStatementWhile(nt, env)
-	case *ast.StatementFor:
-		return e.evalStatementFor(nt, env)
+		return e.applyFunction(function, args)
 	default:
 		e.logger.Error("unsupported AST node type", "type", fmt.Sprintf("%T", nt))
 		return newError("unsupported AST node type: %T", nt)
@@ -169,7 +199,7 @@ func (e *Evaluator) evalExpressionPrefixMinus(right objects.Object) objects.Obje
 	return &objects.Integer{Value: -value}
 }
 
-func (e *Evaluator) evalLiteral(node ast.Node) objects.Object {
+func (e *Evaluator) evalLiteral(node ast.Node, env *objects.Environment) objects.Object {
 	switch nt := node.(type) {
 	case *ast.ExpressionLiteralInteger:
 		return &objects.Integer{Value: nt.Value}
@@ -181,8 +211,11 @@ func (e *Evaluator) evalLiteral(node ast.Node) objects.Object {
 	case *ast.ExpressionLiteralString:
 		return &objects.String{Value: nt.Value}
 	case *ast.ExpressionLiteralFunction:
-		// function literals are not evaluated to a value until they are called, so we return a Nowt object for now
-		return Nowt
+		return &objects.Function{
+			Parameters: nt.Parameters,
+			Body:       nt.Body,
+			Env:        env,
+		}
 	default:
 		e.logger.Warn("unsupported literal type", "type", fmt.Sprintf("%T", nt))
 		return Nowt
@@ -464,4 +497,28 @@ func (e *Evaluator) EvalCondition(node *ast.StatementFor, env *objects.Environme
 	}
 
 	return conditionBool.Value, nil
+}
+
+func (e *Evaluator) applyFunction(function *objects.Function, args []objects.Object) objects.Object {
+	// create a new environment for the function execution that is enclosed by the function's defining environment
+	env := objects.NewEnclosedEnvironment(function.Env)
+
+	// bind the function parameters to the argument values in the new environment
+	for i, param := range function.Parameters {
+		if i >= len(args) {
+			e.logger.Warn("not enough arguments provided for function call", "expected", len(function.Parameters), "provided", len(args))
+			return newError("not enough arguments provided for function call: expected %d, got %d", len(function.Parameters), len(args))
+		}
+
+		env.Bind(param.Value, args[i])
+	}
+
+	// evaluate the function body in the new environment
+	result := e.evalStatementBlock(function.Body, env)
+	if returnValue, ok := result.(*objects.ReturnValue); ok {
+		return returnValue.Value
+	}
+
+	// if the function body does not contain a return statement, we return Nowt to indicate the absence of a value
+	return Nowt
 }

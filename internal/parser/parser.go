@@ -118,7 +118,7 @@ func (p *Parser) parseStatement() ast.Statement {
 	var stmt ast.Statement
 	switch p.currToken.Type {
 	case tokens.TypeBind:
-		return p.parseStatementLet()
+		return p.parseStatementBind()
 	case tokens.TypeReturn:
 		return p.parseStatementReturn()
 	case tokens.TypeLBrace:
@@ -127,6 +127,8 @@ func (p *Parser) parseStatement() ast.Statement {
 		return p.parseStatementWhile()
 	case tokens.TypeFor:
 		return p.parseStatementFor()
+	case tokens.TypeFunction:
+		return p.parseStatementFunction()
 	default:
 		// <IDENT><INCREMENT> or <IDENT><DECREMENT>
 		if p.isIncrementOrDecrement() {
@@ -153,8 +155,8 @@ func (p *Parser) isIncrementOrDecrement() bool {
 		(p.currToken.Type == tokens.TypeIdent && p.peekToken.Type == tokens.TypeDecrement)
 }
 
-// parseStatementLet parses a var statement and returns an ast.LetStatement node.
-func (p *Parser) parseStatementLet() *ast.StatementBind {
+// parseStatementBind parses a var statement and returns an ast.LetStatement node.
+func (p *Parser) parseStatementBind() *ast.StatementBind {
 	// first token must be var
 	if p.currToken.Type != tokens.TypeBind {
 		return nil
@@ -277,6 +279,8 @@ func (p *Parser) expectPeek(tokType tokens.Type) bool {
 		return false
 	}
 
+	// I really don't like this, but it saves us from having to write p.nextToken() every time we want to check for a specific token type
+	// the name expectPeek does not imply the fn will advance the tokens, but it does.
 	p.nextToken()
 	return true
 }
@@ -556,9 +560,12 @@ func (p *Parser) parseStatementReBind() *ast.StatementRebind {
 		return nil
 	}
 
-	if !p.expectPeek(tokens.TypeSemicolon) {
-		p.logger.Debug("expected ; after rebind expression, got %s instead", p.peekToken.Type)
-		return nil
+	// when we rebind in the step of a for loop we don't have a semicolon after the expression, but in all other cases we do, so we need to check for that
+	if p.peekToken.Type == tokens.TypeSemicolon {
+		if !p.expectPeek(tokens.TypeSemicolon) {
+			p.logger.Debug("expected ; after rebind expression, got %s instead", p.peekToken.Type)
+			return nil
+		}
 	}
 
 	return reBind
@@ -658,7 +665,7 @@ func (p *Parser) parseStatementFor() ast.Statement {
 		return nil
 	}
 
-	stmt.Initializer = p.parseStatementLet()
+	stmt.Initializer = p.parseStatementBind()
 
 	// next we need to parse the condition expression, which is not optional in for loops
 	if !p.expectPeek(tokens.TypeSemicolon) {
@@ -698,4 +705,52 @@ func (p *Parser) parseExpressionKeyword() ast.Expression {
 		Token:   p.currToken,
 		Keyword: p.currToken.Lexeme,
 	}
+}
+
+// parseStatementFunction parses a function declaration statement and returns an ast.StatementFunctionBind node representing the parsed function declaration.
+// THIS IS A NAMED FUNCTION, NOT AN ANONYMOUS FUNCTION LITERAL. The syntax for a function declaration is fn <name>(<parameters>) { <body> }.
+func (p *Parser) parseStatementFunction() ast.Statement {
+	fn := &ast.StatementFunctionBind{
+		Token: p.currToken,
+		Value: &ast.ExpressionLiteralFunction{
+			Token: p.currToken,
+		},
+	}
+
+	if p.peekToken.Type != tokens.TypeIdent {
+		// we can try to parse this as an anonymous function literal
+		expr := p.parseExpressionLiteralFunction()
+		if expr == nil {
+			p.logger.Debug("expected function name identifier after fn, got %s instead", p.peekToken.Type)
+			return nil
+		}
+
+		return &ast.StatementExpression{
+			Token:      tokens.Token{Type: tokens.TypeFunction, Lexeme: "fn"},
+			Expression: expr,
+		}
+	}
+
+	p.nextToken() // advance to the function name identifier
+
+	fn.Name = &ast.ExpressionIdentifier{
+		Token: p.currToken,
+		Value: p.currToken.Lexeme,
+	}
+
+	if !p.expectPeek(tokens.TypeLParen) {
+		p.logger.Debug("expected ( after function name in function declaration, got %s instead", p.peekToken.Type)
+		return nil
+	}
+
+	fn.Value.Parameters = p.parseFunctionParameters()
+
+	if !p.expectPeek(tokens.TypeLBrace) {
+		p.logger.Debug("expected { after function parameters in function declaration, got %s instead", p.peekToken.Type)
+		return nil
+	}
+
+	fn.Value.Body = p.parseBlockStatement()
+
+	return fn
 }

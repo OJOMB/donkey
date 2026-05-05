@@ -8,7 +8,7 @@ import (
 
 // ExpressionCall represents a function call expression in the AST. It contains a token for the call, an expression for the function being called, and a slice of expressions for the arguments passed to the function.
 type ExpressionCall struct {
-	// Token is the token associated with the call expression, which is typically a token.TypeLParen token representing the opening parenthesis of the function call.
+	// Token is the token associated with the call expression.
 	Token tokens.Token
 	// Function is an expression representing the function being called. It can be an identifier (for calling a named function) or a function literal (for calling an anonymous function).
 	Function Expression

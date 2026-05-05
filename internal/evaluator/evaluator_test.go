@@ -8,9 +8,45 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/OJOMB/donkey/internal/ast"
+	"github.com/OJOMB/donkey/internal/lexer"
 	"github.com/OJOMB/donkey/internal/objects"
+	"github.com/OJOMB/donkey/internal/parser"
 	"github.com/OJOMB/donkey/internal/tokens"
 )
+
+func TestLexParseEval(t *testing.T) {
+	type testCase struct {
+		name     string
+		input    string
+		expected objects.Object
+	}
+
+	tests := []testCase{
+		{
+			name: "statementBind function definition and call",
+			input: `
+			var addOne = fn(x) { return x + 1; };
+			addOne(5);`,
+			expected: &objects.Integer{Value: 6},
+		},
+	}
+
+	evaluator := New(nil)
+
+	for i, tc := range tests {
+		t.Run(fmt.Sprintf("test %d: %s", i, tc.name), func(t *testing.T) {
+			l := lexer.New(tc.input, nil)
+			p, err := parser.New(l, nil)
+			require.NoError(t, err)
+			program := p.ParseProgram()
+
+			result := evaluator.Eval(program, objects.NewEnvironment())
+
+			assert.Equal(t, tc.expected.Type(), result.Type())
+			assert.Equal(t, tc.expected.Inspect(), result.Inspect())
+		})
+	}
+}
 
 func TestEvaluatorEvalIntegerExpression(t *testing.T) {
 	type testCase struct {
@@ -2121,6 +2157,105 @@ func TestEvaluastorEvalForLoops(t *testing.T) {
 				},
 			},
 			expected: &objects.Integer{Value: 3},
+		},
+	}
+
+	for i, tc := range tests {
+		t.Run(fmt.Sprintf("test %d: %s", i, tc.name), func(t *testing.T) {
+			evaluator := New(nil)
+			result := evaluator.Eval(tc.input, objects.NewEnvironment())
+
+			assert.Equal(t, tc.expected.Type(), result.Type())
+			assert.Equal(t, tc.expected.Inspect(), result.Inspect())
+		})
+	}
+}
+
+func TestEvalatorEvalFunctions(t *testing.T) {
+	type testCase struct {
+		name     string
+		input    *ast.Program
+		expected objects.Object
+	}
+
+	tests := []testCase{
+		{
+			name: "function application with return in if consequence",
+			// fn isGTFive(x) {
+			//     if (x > 5) {
+			//        return true;
+			//      }
+			//
+			//  	return false;
+			// }
+			//
+			// isGTFive(10);
+			input: &ast.Program{
+				Statements: []ast.Statement{
+					&ast.StatementFunctionBind{
+						Token: tokens.New(tokens.TypeFunction, "fn"),
+						Name: &ast.ExpressionIdentifier{
+							Token: tokens.New(tokens.TypeIdent, "isGTFive"),
+							Value: "isGTFive",
+						},
+						Value: &ast.ExpressionLiteralFunction{
+							Token: tokens.New(tokens.TypeFunction, "fn"),
+							Parameters: []*ast.ExpressionIdentifier{
+								{
+									Token: tokens.New(tokens.TypeIdent, "x"),
+									Value: "x",
+								},
+							},
+							Body: &ast.StatementBlock{
+								Statements: []ast.Statement{
+									&ast.StatementExpression{
+										Token: tokens.New(tokens.TypeIf, "if"),
+										Expression: &ast.ExpressionIf{
+											Branches: []ast.ConditionalBranch{
+												{
+													Token: tokens.Token{Type: tokens.TypeIf, Lexeme: "if"},
+													Condition: &ast.ExpressionInfix{
+														Token:    tokens.New(tokens.TypeGT, ">"),
+														Left:     &ast.ExpressionIdentifier{Token: tokens.New(tokens.TypeIdent, "x"), Value: "x"},
+														Right:    &ast.ExpressionLiteralInteger{Value: 5},
+														Operator: ">",
+													},
+													Consequence: &ast.StatementBlock{
+														Statements: []ast.Statement{
+															&ast.StatementReturn{
+																Token: tokens.New(tokens.TypeReturn, "return"),
+																Value: &ast.ExpressionLiteralBoolean{Value: true},
+															},
+														},
+													},
+												},
+											},
+										},
+									},
+									&ast.StatementReturn{
+										Token: tokens.New(tokens.TypeReturn, "return"),
+										Value: &ast.ExpressionLiteralBoolean{Value: false},
+									},
+								},
+							},
+						},
+					},
+					&ast.StatementExpression{
+						Token: tokens.New(tokens.TypeIdent, "isGTFive"),
+						Expression: &ast.ExpressionCall{
+							Token: tokens.New(tokens.TypeIdent, "isGTFive"),
+							Function: &ast.ExpressionIdentifier{
+								Token: tokens.New(tokens.TypeIdent, "isGTFive"),
+								Value: "isGTFive",
+							},
+							Arguments: []ast.Expression{
+								&ast.ExpressionLiteralInteger{Value: 10},
+							},
+						},
+					},
+				},
+			},
+			expected: &objects.Boolean{Value: true},
 		},
 	}
 

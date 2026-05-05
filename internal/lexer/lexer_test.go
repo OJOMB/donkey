@@ -62,6 +62,10 @@ func TestNextToken(t *testing.T) {
 
 				x++;
 				y--;
+
+				fn test(x, y) {
+					return x + y;
+				}
 				`,
 			expectedOutput: []tokens.Token{
 				{Type: tokens.TypeBind, Lexeme: "var"},
@@ -270,6 +274,21 @@ func TestNextToken(t *testing.T) {
 				{Type: tokens.TypeIdent, Lexeme: "y"},
 				{Type: tokens.TypeDecrement, Lexeme: "--"},
 				{Type: tokens.TypeSemicolon, Lexeme: ";"},
+
+				{Type: tokens.TypeFunction, Lexeme: "fn"},
+				{Type: tokens.TypeIdent, Lexeme: "test"},
+				{Type: tokens.TypeLParen, Lexeme: "("},
+				{Type: tokens.TypeIdent, Lexeme: "x"},
+				{Type: tokens.TypeComma, Lexeme: ","},
+				{Type: tokens.TypeIdent, Lexeme: "y"},
+				{Type: tokens.TypeRParen, Lexeme: ")"},
+				{Type: tokens.TypeLBrace, Lexeme: "{"},
+				{Type: tokens.TypeReturn, Lexeme: "return"},
+				{Type: tokens.TypeIdent, Lexeme: "x"},
+				{Type: tokens.TypePlus, Lexeme: "+"},
+				{Type: tokens.TypeIdent, Lexeme: "y"},
+				{Type: tokens.TypeSemicolon, Lexeme: ";"},
+				{Type: tokens.TypeRBrace, Lexeme: "}"},
 
 				{Type: tokens.TypeEOF, Lexeme: ""},
 			},

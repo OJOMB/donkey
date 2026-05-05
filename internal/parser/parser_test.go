@@ -444,6 +444,53 @@ func TestParseStatements(t *testing.T) {
 			},
 			expectedErrs: []string{},
 		},
+		{
+			name:  "test function binding statement - no errors",
+			input: `fn add(x, y) { return x + y; }`,
+			expectedOutput: &ast.Program{
+				Statements: []ast.Statement{
+					&ast.StatementFunctionBind{
+						Token: tokens.Token{Type: tokens.TypeFunction, Lexeme: "fn"},
+						Name: &ast.ExpressionIdentifier{
+							Token: tokens.Token{Type: tokens.TypeIdent, Lexeme: "add"},
+							Value: "add",
+						},
+						Value: &ast.ExpressionLiteralFunction{
+							Token: tokens.Token{Type: tokens.TypeFunction, Lexeme: "fn"},
+							Parameters: []*ast.ExpressionIdentifier{
+								{
+									Token: tokens.Token{Type: tokens.TypeIdent, Lexeme: "x"},
+									Value: "x",
+								},
+								{
+									Token: tokens.Token{Type: tokens.TypeIdent, Lexeme: "y"},
+									Value: "y",
+								},
+							},
+							Body: &ast.StatementBlock{Statements: []ast.Statement{
+								&ast.StatementReturn{
+									Token: tokens.Token{Type: tokens.TypeReturn, Lexeme: "return"},
+									Value: &ast.ExpressionInfix{
+										Token:    tokens.Token{Type: tokens.TypePlus, Lexeme: "+"},
+										Operator: "+",
+										Left: &ast.ExpressionIdentifier{
+											Token: tokens.Token{Type: tokens.TypeIdent, Lexeme: "x"},
+											Value: "x",
+										},
+										Right: &ast.ExpressionIdentifier{
+											Token: tokens.Token{Type: tokens.TypeIdent, Lexeme: "y"},
+											Value: "y",
+										},
+									},
+								},
+							},
+							},
+						},
+					},
+				},
+			},
+			expectedErrs: []string{},
+		},
 	}
 
 	for _, tc := range testCases {
@@ -962,6 +1009,7 @@ func TestFunctionLiterals(t *testing.T) {
 		{
 			name:  "function literal with parameters - no errors",
 			input: `fn(x, y) { return x + y; }`,
+			// this program is possible but functionally makes no sense - it would onbly make sense as the RHS of a StatementBind/StatementRebind.
 			expectedOutput: &ast.Program{
 				Statements: []ast.Statement{
 					&ast.StatementExpression{
