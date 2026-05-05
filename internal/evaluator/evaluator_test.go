@@ -2269,3 +2269,128 @@ func TestEvalatorEvalFunctions(t *testing.T) {
 		})
 	}
 }
+
+func TestEvaluatorEvalClosures(t *testing.T) {
+	type testCase struct {
+		name     string
+		input    *ast.Program
+		expected objects.Object
+	}
+
+	tests := []testCase{
+		{
+			name: "simple adder closure",
+			// fn newAdder(x) {
+			//     fn adder(y) {
+			//         return x + y;
+			//     }
+			//
+			//     return adder;
+			// }
+			//
+			// var addTwo = newAdder(2);
+			// addTwo(3);
+			input: &ast.Program{
+				Statements: []ast.Statement{
+					&ast.StatementFunctionBind{
+						Token: tokens.New(tokens.TypeFunction, "fn"),
+						Name: &ast.ExpressionIdentifier{
+							Token: tokens.New(tokens.TypeIdent, "newAdder"),
+							Value: "newAdder",
+						},
+						Value: &ast.ExpressionLiteralFunction{
+							Token: tokens.New(tokens.TypeFunction, "fn"),
+							Parameters: []*ast.ExpressionIdentifier{
+								{
+									Token: tokens.New(tokens.TypeIdent, "x"),
+									Value: "x",
+								},
+							},
+							Body: &ast.StatementBlock{
+								Statements: []ast.Statement{
+									&ast.StatementFunctionBind{
+										Token: tokens.New(tokens.TypeFunction, "fn"),
+										Name: &ast.ExpressionIdentifier{
+											Token: tokens.New(tokens.TypeIdent, "adder"),
+											Value: "adder",
+										},
+										Value: &ast.ExpressionLiteralFunction{
+											Token: tokens.New(tokens.TypeFunction, "fn"),
+											Parameters: []*ast.ExpressionIdentifier{
+												{
+													Token: tokens.New(tokens.TypeIdent, "y"),
+													Value: "y",
+												},
+											},
+											Body: &ast.StatementBlock{
+												Statements: []ast.Statement{
+													&ast.StatementReturn{
+														Token: tokens.New(tokens.TypeReturn, "return"),
+														Value: &ast.ExpressionInfix{
+															Token:    tokens.New(tokens.TypePlus, "+"),
+															Left:     &ast.ExpressionIdentifier{Token: tokens.New(tokens.TypeIdent, "x"), Value: "x"},
+															Right:    &ast.ExpressionIdentifier{Token: tokens.New(tokens.TypeIdent, "y"), Value: "y"},
+															Operator: "+",
+														},
+													},
+												},
+											},
+										},
+									},
+									&ast.StatementReturn{
+										Token: tokens.New(tokens.TypeReturn, "return"),
+										Value: &ast.ExpressionIdentifier{
+											Token: tokens.New(tokens.TypeIdent, "adder"),
+											Value: "adder",
+										},
+									},
+								},
+							},
+						},
+					},
+					&ast.StatementBind{
+						Token: tokens.New(tokens.TypeBind, "var"),
+						Name: &ast.ExpressionIdentifier{
+							Token: tokens.New(tokens.TypeIdent, "addTwo"),
+							Value: "addTwo",
+						},
+						Value: &ast.ExpressionCall{
+							Token: tokens.New(tokens.TypeIdent, "newAdder"),
+							Function: &ast.ExpressionIdentifier{
+								Token: tokens.New(tokens.TypeIdent, "newAdder"),
+								Value: "newAdder",
+							},
+							Arguments: []ast.Expression{
+								&ast.ExpressionLiteralInteger{Value: 2},
+							},
+						},
+					},
+					&ast.StatementExpression{
+						Token: tokens.New(tokens.TypeIdent, "addTwo"),
+						Expression: &ast.ExpressionCall{
+							Token: tokens.New(tokens.TypeIdent, "addTwo"),
+							Function: &ast.ExpressionIdentifier{
+								Token: tokens.New(tokens.TypeIdent, "addTwo"),
+								Value: "addTwo",
+							},
+							Arguments: []ast.Expression{
+								&ast.ExpressionLiteralInteger{Value: 3},
+							},
+						},
+					},
+				},
+			},
+			expected: &objects.Integer{Value: 5},
+		},
+	}
+
+	for i, tc := range tests {
+		t.Run(fmt.Sprintf("test %d: %s", i, tc.name), func(t *testing.T) {
+			evaluator := New(nil)
+			result := evaluator.Eval(tc.input, objects.NewEnvironment())
+
+			assert.Equal(t, tc.expected.Type(), result.Type())
+			assert.Equal(t, tc.expected.Inspect(), result.Inspect())
+		})
+	}
+}

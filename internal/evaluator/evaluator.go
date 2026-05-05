@@ -56,6 +56,7 @@ func (e *Evaluator) Eval(node ast.Node, env *objects.Environment) objects.Object
 		return env.Bind(nt.Name.Value, &objects.Function{
 			Parameters: nt.Value.Parameters,
 			Body:       nt.Value.Body,
+			Env:        env,
 		})
 	case *ast.StatementRebind:
 		value := e.Eval(nt.Value, env)
