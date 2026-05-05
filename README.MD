@@ -70,6 +70,16 @@ fn factorial(n) {
 factorial(5); // returns 120
 ```
 
+closures:
+```donkey
+fn makeAdder(x) {
+    return fn(y) { return x + y; };
+}
+
+var add5 = makeAdder(5);
+add5(3); // returns 8
+```
+
 loops:
 ```donkey
 var i = 0;
