@@ -84,6 +84,12 @@ func (l *Lexer) NextToken() tokens.Token {
 			break
 		}
 
+		if l.peekChar() == '<' {
+			l.readChar()
+			tok = tokens.New(tokens.TypeBitwiseShiftLeft, "<<")
+			break
+		}
+
 		tok = tokens.New(tokens.TypeLT, "<")
 	case '>':
 		if l.peekChar() == '=' {
@@ -92,8 +98,21 @@ func (l *Lexer) NextToken() tokens.Token {
 			break
 		}
 
+		if l.peekChar() == '>' {
+			l.readChar()
+			tok = tokens.New(tokens.TypeBitwiseShiftRight, ">>")
+			break
+		}
+
 		tok = tokens.New(tokens.TypeGT, ">")
 	case '*':
+		// check if we have an exponent operator
+		if l.peekChar() == '*' {
+			l.readChar()
+			tok = tokens.New(tokens.TypeExponent, "**")
+			break
+		}
+
 		tok = tokens.New(tokens.TypeAsterisk, "*")
 	case '/':
 		tok = tokens.New(tokens.TypeForwardSlash, "/")
@@ -124,7 +143,7 @@ func (l *Lexer) NextToken() tokens.Token {
 	case '%':
 		tok = tokens.New(tokens.TypePercent, "%")
 	case '^':
-		tok = tokens.New(tokens.TypeCaret, "^")
+		tok = tokens.New(tokens.TypeBitwiseXor, "^")
 	case '{':
 		tok = tokens.New(tokens.TypeLBrace, "{")
 	case '}':

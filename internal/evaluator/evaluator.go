@@ -249,27 +249,27 @@ func (e *Evaluator) evalExpressionInfix(operator string, left, right objects.Obj
 
 func (e *Evaluator) evalExpressionInfixInteger(operator string, left, right *objects.Integer) objects.Object {
 	switch operator {
-	case "+":
+	case tokens.TypePlus.String():
 		return &objects.Integer{Value: left.Value + right.Value}
-	case "-":
+	case tokens.TypeMinus.String():
 		return &objects.Integer{Value: left.Value - right.Value}
-	case "*":
+	case tokens.TypeAsterisk.String():
 		return &objects.Integer{Value: left.Value * right.Value}
-	case "/":
+	case tokens.TypeForwardSlash.String():
 		if right.Value == 0 {
 			e.logger.Warn("division by zero")
 			return newError("division by zero")
 		}
 
 		return &objects.Integer{Value: left.Value / right.Value}
-	case "%":
+	case tokens.TypePercent.String():
 		if right.Value == 0 {
 			e.logger.Warn("modulo by zero")
 			return newError("modulo by zero")
 		}
 
 		return &objects.Integer{Value: left.Value % right.Value}
-	case "^":
+	case tokens.TypeExponent.String():
 		if right.Value == 0 {
 			return &objects.Integer{Value: 1}
 		}
@@ -280,22 +280,28 @@ func (e *Evaluator) evalExpressionInfixInteger(operator string, left, right *obj
 		}
 
 		return &objects.Integer{Value: result}
-	case "==":
+	case tokens.TypeEq.String():
 		return &objects.Boolean{Value: left.Value == right.Value}
-	case "!=":
+	case tokens.TypeNotEq.String():
 		return &objects.Boolean{Value: left.Value != right.Value}
-	case "<":
+	case tokens.TypeLT.String():
 		return &objects.Boolean{Value: left.Value < right.Value}
-	case ">":
+	case tokens.TypeGT.String():
 		return &objects.Boolean{Value: left.Value > right.Value}
-	case "<=":
+	case tokens.TypeLTEQ.String():
 		return &objects.Boolean{Value: left.Value <= right.Value}
-	case ">=":
+	case tokens.TypeGTEQ.String():
 		return &objects.Boolean{Value: left.Value >= right.Value}
-	case "&":
+	case tokens.TypeBitwiseAnd.String():
 		return &objects.Integer{Value: left.Value & right.Value}
-	case "|":
+	case tokens.TypeBitwiseOr.String():
 		return &objects.Integer{Value: left.Value | right.Value}
+	case tokens.TypeBitwiseXor.String():
+		return &objects.Integer{Value: left.Value ^ right.Value}
+	case tokens.TypeBitwiseShiftLeft.String():
+		return &objects.Integer{Value: left.Value << right.Value}
+	case tokens.TypeBitwiseShiftRight.String():
+		return &objects.Integer{Value: left.Value >> right.Value}
 	default:
 		e.logger.Warn("unsupported infix operator for integers", "operator", operator)
 		return newError("unsupported infix operator for integers: %s", operator)
@@ -304,13 +310,13 @@ func (e *Evaluator) evalExpressionInfixInteger(operator string, left, right *obj
 
 func (e *Evaluator) evalExpressionInfixBoolean(operator string, left, right *objects.Boolean) objects.Object {
 	switch operator {
-	case "==":
+	case tokens.TypeEq.String():
 		return &objects.Boolean{Value: left.Value == right.Value}
-	case "!=":
+	case tokens.TypeNotEq.String():
 		return &objects.Boolean{Value: left.Value != right.Value}
-	case "&&":
+	case tokens.TypeLogicalAnd.String():
 		return &objects.Boolean{Value: left.Value && right.Value}
-	case "||":
+	case tokens.TypeLogicalOr.String():
 		return &objects.Boolean{Value: left.Value || right.Value}
 	default:
 		e.logger.Warn("unsupported infix operator for booleans", "operator", operator)
@@ -320,14 +326,14 @@ func (e *Evaluator) evalExpressionInfixBoolean(operator string, left, right *obj
 
 func (e *Evaluator) evalExpressionInfixString(operator string, left, right *objects.String) objects.Object {
 	switch operator {
-	case "+":
+	case tokens.TypePlus.String():
 		return &objects.String{Value: left.Value + right.Value}
-	case "-":
+	case tokens.TypeMinus.String():
 		// TODO: not overly convinced about this one
 		return &objects.String{Value: strings.TrimSuffix(left.Value, right.Value)}
-	case "==":
+	case tokens.TypeEq.String():
 		return &objects.Boolean{Value: left.Value == right.Value}
-	case "!=":
+	case tokens.TypeNotEq.String():
 		return &objects.Boolean{Value: left.Value != right.Value}
 	default:
 		e.logger.Warn("unsupported infix operator for strings", "operator", operator)

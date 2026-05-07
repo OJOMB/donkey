@@ -45,9 +45,15 @@ func TestNextToken(t *testing.T) {
 				}
 
 				var result = add(five, ten);
-				var exponent = 2 ^ 3;
+
+				var exponent = 2 ** 3;
 				var bitwiseAnd = 5 & 3;
 				var bitwiseOr = 5 | 3;
+				var bitwiseXor = 5 ^ 3;
+
+				3 << 2;
+				2 >> 1;
+
 				var logicalAnd = true && false;
 				var logicalOr = true || false;
 
@@ -205,7 +211,7 @@ func TestNextToken(t *testing.T) {
 				{Type: tokens.TypeIdent, Lexeme: "exponent"},
 				{Type: tokens.TypeAssign, Lexeme: "="},
 				{Type: tokens.TypeInt, Lexeme: "2"},
-				{Type: tokens.TypeCaret, Lexeme: "^"},
+				{Type: tokens.TypeExponent, Lexeme: "**"},
 				{Type: tokens.TypeInt, Lexeme: "3"},
 				{Type: tokens.TypeSemicolon, Lexeme: ";"},
 
@@ -223,6 +229,24 @@ func TestNextToken(t *testing.T) {
 				{Type: tokens.TypeInt, Lexeme: "5"},
 				{Type: tokens.TypeBitwiseOr, Lexeme: "|"},
 				{Type: tokens.TypeInt, Lexeme: "3"},
+				{Type: tokens.TypeSemicolon, Lexeme: ";"},
+
+				{Type: tokens.TypeBind, Lexeme: "var"},
+				{Type: tokens.TypeIdent, Lexeme: "bitwiseXor"},
+				{Type: tokens.TypeAssign, Lexeme: "="},
+				{Type: tokens.TypeInt, Lexeme: "5"},
+				{Type: tokens.TypeBitwiseXor, Lexeme: "^"},
+				{Type: tokens.TypeInt, Lexeme: "3"},
+				{Type: tokens.TypeSemicolon, Lexeme: ";"},
+
+				{Type: tokens.TypeInt, Lexeme: "3"},
+				{Type: tokens.TypeBitwiseShiftLeft, Lexeme: "<<"},
+				{Type: tokens.TypeInt, Lexeme: "2"},
+				{Type: tokens.TypeSemicolon, Lexeme: ";"},
+
+				{Type: tokens.TypeInt, Lexeme: "2"},
+				{Type: tokens.TypeBitwiseShiftRight, Lexeme: ">>"},
+				{Type: tokens.TypeInt, Lexeme: "1"},
 				{Type: tokens.TypeSemicolon, Lexeme: ";"},
 
 				{Type: tokens.TypeBind, Lexeme: "var"},

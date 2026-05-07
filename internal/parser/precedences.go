@@ -2,43 +2,39 @@ package parser
 
 import "github.com/OJOMB/donkey/internal/tokens"
 
+// I have simply copied the precedences used in the C programming language.
 const (
-	// Precedence levels for parsing expressions
-
-	// precedenceLowest is the lowest precedence level, used for expressions that don't have any operators.
-	precedenceLowest int = iota
-
-	precedenceLogicalOr  // ||
-	precedenceLogicalAnd // &&
-	precedenceBitwiseOr  // |
-	precedenceBitwiseAnd // &
-
-	// precedenceEquals is the precedence level for the equality operator (==).
-	precedenceEquals
-	// precedenceLessGreater is the precedence level for the less than and greater than operators (< and >).
-	precedenceLessGreater
-	// precedenceAdditive is the precedence level for addition and subtraction operators (+ and -).
-	precedenceAdditive
-	// precedenceMultiplicative is the precedence level for multiplication and division operators (* and /).
-	precedenceMultiplicative
-	// precedenceExponentiation is the precedence level for the exponentiation operator (^).
-	precedenceExponentiation
-	// precedencePrefix is the precedence level for prefix operators, such as -X or !X.
-	precedencePrefix
-	// precedenceCall is the precedence level for function call expressions, such as myFunction(X).
-	precedenceCall
+	precedenceLowest         int = iota
+	precedenceLogicalOr          // ||
+	precedenceLogicalAnd         // &&
+	precedenceBitwiseOr          // |
+	precedenceBitwiseXor         // ^
+	precedenceBitwiseAnd         // &
+	precedenceEquals             // == !=
+	precedenceLessGreater        // < > <= >=
+	precedenceShift              // << >>
+	precedenceAdditive           // + -
+	precedenceMultiplicative     // * / %
+	precedenceExponentiation     // **
+	precedencePrefix             // -X !X ~X
+	precedenceCall               // myFunc(X)
 )
 
 var precedences = map[tokens.Type]int{
 	tokens.TypeLogicalOr:  precedenceLogicalOr,
 	tokens.TypeLogicalAnd: precedenceLogicalAnd,
+
 	tokens.TypeBitwiseOr:  precedenceBitwiseOr,
+	tokens.TypeBitwiseXor: precedenceBitwiseXor,
 	tokens.TypeBitwiseAnd: precedenceBitwiseAnd,
 
 	tokens.TypeEq:    precedenceEquals,
 	tokens.TypeNotEq: precedenceEquals,
-	tokens.TypeLT:    precedenceLessGreater,
-	tokens.TypeGT:    precedenceLessGreater,
+
+	tokens.TypeLT:   precedenceLessGreater,
+	tokens.TypeGT:   precedenceLessGreater,
+	tokens.TypeLTEQ: precedenceLessGreater,
+	tokens.TypeGTEQ: precedenceLessGreater,
 
 	tokens.TypePlus:  precedenceAdditive,
 	tokens.TypeMinus: precedenceAdditive,
@@ -47,7 +43,7 @@ var precedences = map[tokens.Type]int{
 	tokens.TypeAsterisk:     precedenceMultiplicative,
 	tokens.TypePercent:      precedenceMultiplicative,
 
-	tokens.TypeCaret: precedenceExponentiation,
+	tokens.TypeExponent: precedenceExponentiation,
 
 	tokens.TypeBang:   precedencePrefix,
 	tokens.TypeLParen: precedenceCall,

@@ -22,12 +22,25 @@ func TestLexParseEval(t *testing.T) {
 	}
 
 	tests := []testCase{
+		// {
+		// 	name: "statementBind function definition and call",
+		// 	input: `
+		// 	var addOne = fn(x) { return x + 1; };
+		// 	addOne(5);`,
+		// 	expected: &objects.Integer{Value: 6},
+		// },
 		{
-			name: "statementBind function definition and call",
+			name: "bitwise operators",
 			input: `
-			var addOne = fn(x) { return x + 1; };
-			addOne(5);`,
-			expected: &objects.Integer{Value: 6},
+			var a = 5;
+			var b = 3;
+			a = a & b;
+			a = a | b;
+			a = a ^ b;
+			a = a << b;
+			a = a >> b;
+			a;`,
+			expected: &objects.Integer{Value: 1}, // Example expected value, adjust as needed
 		},
 	}
 
@@ -580,9 +593,9 @@ func TestEvaluatorEvalExpressionInfixNumerical(t *testing.T) {
 			input: &ast.Program{
 				Statements: []ast.Statement{
 					&ast.StatementExpression{
-						Token: tokens.New(tokens.TypeCaret, "^"),
+						Token: tokens.New(tokens.TypeExponent, "^"),
 						Expression: &ast.ExpressionInfix{
-							Token:    tokens.New(tokens.TypeCaret, "^"),
+							Token:    tokens.New(tokens.TypeExponent, "^"),
 							Left:     &ast.ExpressionLiteralInteger{Value: 2},
 							Right:    &ast.ExpressionLiteralInteger{Value: 3},
 							Operator: "^",

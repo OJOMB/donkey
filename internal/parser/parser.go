@@ -69,8 +69,6 @@ func New(l *lexer.Lexer, logger logs.Logger) (*Parser, error) {
 	p.RegisterInfix(tokens.TypeMinus, p.parseExpressionInfix)
 	p.RegisterInfix(tokens.TypeLogicalAnd, p.parseExpressionInfix)
 	p.RegisterInfix(tokens.TypeLogicalOr, p.parseExpressionInfix)
-	p.RegisterInfix(tokens.TypeBitwiseAnd, p.parseExpressionInfix)
-	p.RegisterInfix(tokens.TypeBitwiseOr, p.parseExpressionInfix)
 	p.RegisterInfix(tokens.TypeForwardSlash, p.parseExpressionInfix)
 	p.RegisterInfix(tokens.TypeAsterisk, p.parseExpressionInfix)
 	p.RegisterInfix(tokens.TypeEq, p.parseExpressionInfix)
@@ -79,7 +77,13 @@ func New(l *lexer.Lexer, logger logs.Logger) (*Parser, error) {
 	p.RegisterInfix(tokens.TypeGT, p.parseExpressionInfix)
 	p.RegisterInfix(tokens.TypeLParen, p.parseExpressionCall)
 	p.RegisterInfix(tokens.TypePercent, p.parseExpressionInfix)
-	p.RegisterInfix(tokens.TypeCaret, p.parseExpressionInfix)
+	p.RegisterInfix(tokens.TypeExponent, p.parseExpressionInfix)
+
+	p.RegisterInfix(tokens.TypeBitwiseAnd, p.parseExpressionInfix)
+	p.RegisterInfix(tokens.TypeBitwiseOr, p.parseExpressionInfix)
+	p.RegisterInfix(tokens.TypeBitwiseXor, p.parseExpressionInfix)
+	p.RegisterInfix(tokens.TypeBitwiseShiftLeft, p.parseExpressionInfix)
+	p.RegisterInfix(tokens.TypeBitwiseShiftRight, p.parseExpressionInfix)
 
 	// Read two tokens, so currToken and peekToken are both set
 	p.nextToken()
@@ -646,6 +650,7 @@ func (p *Parser) parseStatementWhile() ast.Statement {
 
 	return stmt
 }
+
 func (p *Parser) parseStatementFor() ast.Statement {
 	stmt := &ast.StatementFor{
 		Token: p.currToken,

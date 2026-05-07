@@ -30,8 +30,8 @@ const (
 	TypeForwardSlash Type = "/"
 	// TypePercent represents the modulus operator token.
 	TypePercent Type = "%"
-	// TypeCaret represents the exponentiation operator token.
-	TypeCaret Type = "^"
+	// TypeExponent represents the exponentiation operator token.
+	TypeExponent Type = "**"
 	// TypeComma represents the comma token.
 	TypeComma Type = ","
 	// TypeSemicolon represents the semicolon token.
@@ -59,10 +59,17 @@ const (
 	TypeGT Type = ">"
 	// TypeSpeechMarks represents the speech marks token used for opening string literals.
 	TypeSpeechMarks Type = `"`
+
 	// TypeBitwiseAnd represents the bitwise and operator token.
 	TypeBitwiseAnd Type = "&"
 	// TypeBitwiseOr represents the bitwise or operator token.
 	TypeBitwiseOr Type = "|"
+	// TypeBitwiseXor represents the bitwise xor operator token.
+	TypeBitwiseXor Type = "^"
+	// TypeBitwiseShiftLeft represents the left shift operator token.
+	TypeBitwiseShiftLeft Type = "<<"
+	// TypeBitwiseShiftRight represents the right shift operator token.
+	TypeBitwiseShiftRight Type = ">>"
 	// TypeLogicalAnd represents the logical and operator token.
 	TypeLogicalAnd Type = "&&"
 	// TypeLogicalOr represents the logical or operator token.
@@ -101,6 +108,10 @@ const (
 	// TypeFor represents the control flow keyword for.
 	TypeFor Type = "FOR"
 )
+
+func (t Type) String() string {
+	return string(t)
+}
 
 var keywords = map[string]Type{
 	"fn":       TypeFunction,
