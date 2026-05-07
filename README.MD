@@ -1,6 +1,13 @@
 ![Donkey Image](img/donkey.png)
 
-An interpreter (and eventually compiler) that is closely based on the Monkey programming language, as described in the book [Writing An Interpreter In Go](https://interpreterbook.com/). Donkey expands on Monkey with additional features such as for/while loops, function statements and variable rebinding.
+An interpreter (and eventually compiler) that is closely based on the Monkey programming language, as described in the book [Writing An Interpreter In Go](https://interpreterbook.com/).
+
+Donkey expands on Monkey with additional features such as:
+* for/while loops
+* function statements
+* variable rebinding
+* bitwise operators
+* statement block scoping
 
 install the donkey repl with:
 ```bash
@@ -96,4 +103,16 @@ print(i); // prints 10
 for (var j = 0; j < 10; j++) {
     print(j); // prints 0 through 9
 }
+```
+
+bitwise operators:
+```donkey
+var a = 5; // 0101 in binary
+var b = 3; // 0011 in binary
+print(a & b); // prints 1 (0001 in binary)
+
+print(a | b); // prints 7 (0111 in binary)
+print(a ^ b); // prints 6 (0110 in binary)
+print(a << 1); // prints 10 (1010 in binary)
+print(a >> 1); // prints 2 (0010 in binary)
 ```
