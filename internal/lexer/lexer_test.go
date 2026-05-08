@@ -73,7 +73,6 @@ func TestNextToken(t *testing.T) {
 					return x + y;
 				}
 
-
 				var lInt = [1, 2, 3];
 				var lStr = ["foo", "bar", "baz"];
 				`,

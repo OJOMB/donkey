@@ -63,6 +63,7 @@ func New(l *lexer.Lexer, logger logs.Logger) (*Parser, error) {
 	p.RegisterPrefix(tokens.TypeFunction, p.parseExpressionLiteralFunction)
 	p.RegisterPrefix(tokens.TypeContinue, p.parseExpressionKeyword)
 	p.RegisterPrefix(tokens.TypeBreak, p.parseExpressionKeyword)
+	p.RegisterPrefix(tokens.TypeLBracket, p.parseExpressionLiteralList)
 
 	// register infix parse functions for different token types
 	p.RegisterInfix(tokens.TypePlus, p.parseExpressionInfix)
@@ -758,4 +759,35 @@ func (p *Parser) parseStatementFunction() ast.Statement {
 	fn.Value.Body = p.parseBlockStatement()
 
 	return fn
+}
+
+func (p *Parser) parseExpressionLiteralList() ast.Expression {
+	lit := &ast.ExpressionLiteralList{Token: p.currToken}
+
+	// in the case of an empty list, we should have a right bracket immediately after the left bracket
+	if p.peekToken.Type == tokens.TypeRBracket {
+		p.nextToken()
+		return lit
+	}
+
+	p.nextToken()
+	lit.Elements = p.parseExpressionList(tokens.TypeRBracket)
+	return lit
+}
+
+func (p *Parser) parseExpressionList(end tokens.Type) []ast.Expression {
+	exprs := make([]ast.Expression, 0)
+
+	exprs = append(exprs, p.parseExpression(precedenceLowest))
+	for p.peekToken.Type == tokens.TypeComma {
+		p.nextToken()
+		p.nextToken()
+		exprs = append(exprs, p.parseExpression(precedenceLowest))
+	}
+
+	if !p.expectPeek(end) {
+		return nil
+	}
+
+	return exprs
 }

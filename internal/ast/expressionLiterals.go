@@ -83,3 +83,29 @@ func (lf *ExpressionLiteralFunction) String() string {
 
 	return out.String()
 }
+
+// ExpressionLiteralList represents a list literal expression in the Donkey programming language, such as "[1, 2, 3]" or "["foo", "bar", "baz"]".
+// For example, in the expression "var myList = [1, 2, 3];", the "[1, 2, 3]" is a list literal expression that represents the value being assigned to the variable "myList" in the var statement.
+type ExpressionLiteralList struct {
+	Token    tokens.Token
+	Elements []Expression
+}
+
+func (ll *ExpressionLiteralList) expressionNode()     {}
+func (ll *ExpressionLiteralList) TokenLexeme() string { return ll.Token.Lexeme }
+
+func (ll *ExpressionLiteralList) String() string {
+	var out = strings.Builder{}
+	_, _ = out.WriteString("[")
+	for i, elem := range ll.Elements {
+		if i > 0 {
+			_, _ = out.WriteString(", ")
+		}
+
+		_, _ = out.WriteString(elem.String())
+	}
+
+	_, _ = out.WriteString("]")
+
+	return out.String()
+}

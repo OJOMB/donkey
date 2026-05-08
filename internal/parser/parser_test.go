@@ -516,6 +516,66 @@ func TestParseStatements(t *testing.T) {
 			},
 			expectedErrs: []string{},
 		},
+		{
+			name: "test list literals - no errors",
+			input: `
+				var myList = [1, 2, 3];
+				var myStrList = ["foo", "bar", "baz"];
+			`,
+			expectedOutput: &ast.Program{
+				Statements: []ast.Statement{
+					&ast.StatementBind{
+						Token: tokens.Token{Type: tokens.TypeBind, Lexeme: "var"},
+						Name: &ast.ExpressionIdentifier{
+							Token: tokens.Token{Type: tokens.TypeIdent, Lexeme: "myList"},
+							Value: "myList",
+						},
+						Value: &ast.ExpressionLiteralList{
+							Token: tokens.Token{Type: tokens.TypeLBracket, Lexeme: "["},
+							Elements: []ast.Expression{
+								&ast.ExpressionLiteralInteger{
+									Token: tokens.Token{Type: tokens.TypeInt, Lexeme: "1"},
+									Value: 1,
+								},
+								&ast.ExpressionLiteralInteger{
+									Token: tokens.Token{Type: tokens.TypeInt, Lexeme: "2"},
+									Value: 2,
+								},
+								&ast.ExpressionLiteralInteger{
+									Token: tokens.Token{Type: tokens.TypeInt, Lexeme: "3"},
+									Value: 3,
+								},
+							},
+						},
+					},
+					&ast.StatementBind{
+						Token: tokens.Token{Type: tokens.TypeBind, Lexeme: "var"},
+						Name: &ast.ExpressionIdentifier{
+							Token: tokens.Token{Type: tokens.TypeIdent, Lexeme: "myStrList"},
+							Value: "myStrList",
+						},
+						Value: &ast.ExpressionLiteralList{
+							Token: tokens.Token{Type: tokens.TypeLBracket, Lexeme: "["},
+							Elements: []ast.Expression{
+								&ast.ExpressionLiteralString{
+									Token: tokens.Token{Type: tokens.TypeString, Lexeme: "foo"},
+									Value: "foo",
+								},
+								&ast.ExpressionLiteralString{
+									Token: tokens.Token{Type: tokens.TypeString, Lexeme: "bar"},
+									Value: "bar",
+								},
+								&ast.ExpressionLiteralString{
+									Token: tokens.Token{Type: tokens.TypeString, Lexeme: "baz"},
+									Value: "baz",
+								},
+							},
+						},
+					},
+				},
+			},
+			expectedErrs: []string{},
+		},
 	}
 
 	for _, tc := range testCases {
@@ -1588,6 +1648,77 @@ func TestParserParseForLoop(t *testing.T) {
 			require.NotNil(t, program)
 
 			assert.Equal(t, tc.expectedOutput, program)
+			assert.Equal(t, tc.expectedErrs, p.Errors)
+		})
+	}
+}
+
+func TestParserParseExpressionLiteralList(t *testing.T) {
+	type testCase struct {
+		name           string
+		input          string
+		expectedOutput ast.Expression
+		expectedErrs   []string
+	}
+
+	var testCases = []testCase{
+		{
+			name:  "test empty list",
+			input: `[]`,
+			expectedOutput: &ast.ExpressionLiteralList{
+				Token: tokens.Token{Type: tokens.TypeLBracket, Lexeme: "["},
+			},
+			expectedErrs: []string{},
+		},
+		{
+			name:  "test list with multiple elements",
+			input: `[1, 2 + 3, myFunction()]`,
+			expectedOutput: &ast.ExpressionLiteralList{
+				Token: tokens.Token{Type: tokens.TypeLBracket, Lexeme: "["},
+				Elements: []ast.Expression{
+					&ast.ExpressionLiteralInteger{
+						Token: tokens.Token{Type: tokens.TypeInt, Lexeme: "1"},
+						Value: 1,
+					},
+					&ast.ExpressionInfix{
+						Token:    tokens.Token{Type: tokens.TypePlus, Lexeme: "+"},
+						Operator: "+",
+						Left: &ast.ExpressionLiteralInteger{
+							Token: tokens.Token{Type: tokens.TypeInt, Lexeme: "2"},
+							Value: 2,
+						},
+						Right: &ast.ExpressionLiteralInteger{
+							Token: tokens.Token{Type: tokens.TypeInt, Lexeme: "3"},
+							Value: 3,
+						},
+					},
+					&ast.ExpressionCall{
+						Token: tokens.Token{Type: tokens.TypeLParen, Lexeme: "("},
+						Function: &ast.ExpressionIdentifier{
+							Token: tokens.Token{Type: tokens.TypeIdent, Lexeme: "myFunction"},
+							Value: "myFunction",
+						},
+						Arguments: []ast.Expression{},
+					},
+				},
+			},
+			expectedErrs: []string{},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			p, err := New(lexer.New(tc.input, nil), nil)
+			require.NoError(t, err)
+
+			program := p.ParseProgram()
+			require.NotNil(t, program)
+
+			// we know the program will be a single statement expression whose expression is the list literal, so we can directly access it here for ease of testing
+			stmtExpr, ok := program.Statements[0].(*ast.StatementExpression)
+			require.True(t, ok)
+
+			assert.Equal(t, tc.expectedOutput, stmtExpr.Expression)
 			assert.Equal(t, tc.expectedErrs, p.Errors)
 		})
 	}
