@@ -28,8 +28,8 @@ var precedences = map[tokens.Type]int{
 	tokens.TypeBitwiseXor: precedenceBitwiseXor,
 	tokens.TypeBitwiseAnd: precedenceBitwiseAnd,
 
-	tokens.TypeEq:    precedenceEquals,
-	tokens.TypeNotEq: precedenceEquals,
+	tokens.TypeEQ:    precedenceEquals,
+	tokens.TypeNotEQ: precedenceEquals,
 
 	tokens.TypeLT:   precedenceLessGreater,
 	tokens.TypeGT:   precedenceLessGreater,

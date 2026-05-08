@@ -46,7 +46,7 @@ func (l *Lexer) NextToken() tokens.Token {
 	case '=':
 		if l.peekChar() == '=' {
 			l.readChar()
-			tok = tokens.New(tokens.TypeEq, "==")
+			tok = tokens.New(tokens.TypeEQ, "==")
 			break
 		}
 
@@ -119,7 +119,7 @@ func (l *Lexer) NextToken() tokens.Token {
 	case '!':
 		if l.peekChar() == '=' {
 			l.readChar()
-			tok = tokens.New(tokens.TypeNotEq, "!=")
+			tok = tokens.New(tokens.TypeNotEQ, "!=")
 			break
 		}
 

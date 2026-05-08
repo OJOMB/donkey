@@ -259,7 +259,7 @@ func TestParseStatements(t *testing.T) {
 											{
 												Token: tokens.Token{Type: tokens.TypeIf, Lexeme: "if"},
 												Condition: &ast.ExpressionInfix{
-													Token:    tokens.Token{Type: tokens.TypeEq, Lexeme: "=="},
+													Token:    tokens.Token{Type: tokens.TypeEQ, Lexeme: "=="},
 													Operator: "==",
 													Left: &ast.ExpressionInfix{
 														Token:    tokens.Token{Type: tokens.TypePercent, Lexeme: "%"},
@@ -1312,7 +1312,7 @@ func TestParserParseWhileLoop(t *testing.T) {
 											{
 												Token: tokens.Token{Type: tokens.TypeIf, Lexeme: "if"},
 												Condition: &ast.ExpressionInfix{
-													Token:    tokens.Token{Type: tokens.TypeEq, Lexeme: "=="},
+													Token:    tokens.Token{Type: tokens.TypeEQ, Lexeme: "=="},
 													Operator: "==",
 													Left: &ast.ExpressionInfix{
 														Token:    tokens.Token{Type: tokens.TypePercent, Lexeme: "%"},
@@ -1516,7 +1516,7 @@ func TestParserParseForLoop(t *testing.T) {
 											{
 												Token: tokens.Token{Type: tokens.TypeIf, Lexeme: "if"},
 												Condition: &ast.ExpressionInfix{
-													Token:    tokens.Token{Type: tokens.TypeEq, Lexeme: "=="},
+													Token:    tokens.Token{Type: tokens.TypeEQ, Lexeme: "=="},
 													Operator: "==",
 													Left: &ast.ExpressionInfix{
 														Token:    tokens.Token{Type: tokens.TypePercent, Lexeme: "%"},

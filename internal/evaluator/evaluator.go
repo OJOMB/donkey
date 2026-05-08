@@ -271,9 +271,9 @@ func (e *Evaluator) evalExpressionInfixInteger(operator string, left, right *obj
 		}
 
 		return &objects.Integer{Value: result}
-	case tokens.TypeEq.String():
+	case tokens.TypeEQ.String():
 		return &objects.Boolean{Value: left.Value == right.Value}
-	case tokens.TypeNotEq.String():
+	case tokens.TypeNotEQ.String():
 		return &objects.Boolean{Value: left.Value != right.Value}
 	case tokens.TypeLT.String():
 		return &objects.Boolean{Value: left.Value < right.Value}
@@ -301,9 +301,9 @@ func (e *Evaluator) evalExpressionInfixInteger(operator string, left, right *obj
 
 func (e *Evaluator) evalExpressionInfixBoolean(operator string, left, right *objects.Boolean) objects.Object {
 	switch operator {
-	case tokens.TypeEq.String():
+	case tokens.TypeEQ.String():
 		return &objects.Boolean{Value: left.Value == right.Value}
-	case tokens.TypeNotEq.String():
+	case tokens.TypeNotEQ.String():
 		return &objects.Boolean{Value: left.Value != right.Value}
 	case tokens.TypeLogicalAnd.String():
 		return &objects.Boolean{Value: left.Value && right.Value}
@@ -322,9 +322,9 @@ func (e *Evaluator) evalExpressionInfixString(operator string, left, right *obje
 	case tokens.TypeMinus.String():
 		// TODO: not overly convinced about this one
 		return &objects.String{Value: strings.TrimSuffix(left.Value, right.Value)}
-	case tokens.TypeEq.String():
+	case tokens.TypeEQ.String():
 		return &objects.Boolean{Value: left.Value == right.Value}
-	case tokens.TypeNotEq.String():
+	case tokens.TypeNotEQ.String():
 		return &objects.Boolean{Value: left.Value != right.Value}
 	default:
 		e.logger.Warn("unsupported infix operator for strings", "operator", operator)

@@ -45,10 +45,11 @@ const (
 	TypeLBrace Type = "{"
 	// TypeRBrace represents the right brace token.
 	TypeRBrace Type = "}"
-	// TypeEq represents the equality operator token.
-	TypeEq Type = "=="
-	// TypeNotEq represents the not equal operator token.
-	TypeNotEq Type = "!="
+
+	// TypeEQ represents the equality operator token.
+	TypeEQ Type = "=="
+	// TypeNotEQ represents the not equal operator token.
+	TypeNotEQ Type = "!="
 	// TypeLT represents the less than operator token.
 	TypeLT Type = "<"
 	// TypeLTEQ represents the less than or equal to operator token.

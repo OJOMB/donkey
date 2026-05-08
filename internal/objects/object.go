@@ -26,6 +26,8 @@ const (
 	TypeBreak Type = "BREAK"
 	// TypeBuiltin represents the type of a builtin function object
 	TypeBuiltin Type = "BUILTIN"
+	// TypeList represents the type of a list object
+	TypeList Type = "LIST"
 )
 
 // Object is the interface that all objects in the Donkey programming language must implement.

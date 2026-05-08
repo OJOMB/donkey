@@ -628,9 +628,9 @@ func TestEvaluatorEvalExpressionInfixBoolean(t *testing.T) {
 			input: &ast.Program{
 				Statements: []ast.Statement{
 					&ast.StatementExpression{
-						Token: tokens.New(tokens.TypeEq, "=="),
+						Token: tokens.New(tokens.TypeEQ, "=="),
 						Expression: &ast.ExpressionInfix{
-							Token:    tokens.New(tokens.TypeEq, "=="),
+							Token:    tokens.New(tokens.TypeEQ, "=="),
 							Left:     &ast.ExpressionLiteralBoolean{Value: true},
 							Right:    &ast.ExpressionLiteralBoolean{Value: true},
 							Operator: "==",
@@ -645,9 +645,9 @@ func TestEvaluatorEvalExpressionInfixBoolean(t *testing.T) {
 			input: &ast.Program{
 				Statements: []ast.Statement{
 					&ast.StatementExpression{
-						Token: tokens.New(tokens.TypeEq, "=="),
+						Token: tokens.New(tokens.TypeEQ, "=="),
 						Expression: &ast.ExpressionInfix{
-							Token:    tokens.New(tokens.TypeEq, "=="),
+							Token:    tokens.New(tokens.TypeEQ, "=="),
 							Left:     &ast.ExpressionLiteralBoolean{Value: true},
 							Right:    &ast.ExpressionLiteralBoolean{Value: false},
 							Operator: "==",
@@ -662,9 +662,9 @@ func TestEvaluatorEvalExpressionInfixBoolean(t *testing.T) {
 			input: &ast.Program{
 				Statements: []ast.Statement{
 					&ast.StatementExpression{
-						Token: tokens.New(tokens.TypeNotEq, "!="),
+						Token: tokens.New(tokens.TypeNotEQ, "!="),
 						Expression: &ast.ExpressionInfix{
-							Token:    tokens.New(tokens.TypeNotEq, "!="),
+							Token:    tokens.New(tokens.TypeNotEQ, "!="),
 							Left:     &ast.ExpressionLiteralBoolean{Value: true},
 							Right:    &ast.ExpressionLiteralBoolean{Value: false},
 							Operator: "!=",
@@ -679,9 +679,9 @@ func TestEvaluatorEvalExpressionInfixBoolean(t *testing.T) {
 			input: &ast.Program{
 				Statements: []ast.Statement{
 					&ast.StatementExpression{
-						Token: tokens.New(tokens.TypeNotEq, "!="),
+						Token: tokens.New(tokens.TypeNotEQ, "!="),
 						Expression: &ast.ExpressionInfix{
-							Token:    tokens.New(tokens.TypeNotEq, "!="),
+							Token:    tokens.New(tokens.TypeNotEQ, "!="),
 							Left:     &ast.ExpressionLiteralBoolean{Value: true},
 							Right:    &ast.ExpressionLiteralBoolean{Value: true},
 							Operator: "!=",
@@ -768,9 +768,9 @@ func TestEvaluatorEvalExpressionInfixString(t *testing.T) {
 			input: &ast.Program{
 				Statements: []ast.Statement{
 					&ast.StatementExpression{
-						Token: tokens.New(tokens.TypeEq, "=="),
+						Token: tokens.New(tokens.TypeEQ, "=="),
 						Expression: &ast.ExpressionInfix{
-							Token:    tokens.New(tokens.TypeEq, "=="),
+							Token:    tokens.New(tokens.TypeEQ, "=="),
 							Left:     &ast.ExpressionLiteralString{Value: "foobar"},
 							Right:    &ast.ExpressionLiteralString{Value: "foobar"},
 							Operator: "==",
@@ -785,9 +785,9 @@ func TestEvaluatorEvalExpressionInfixString(t *testing.T) {
 			input: &ast.Program{
 				Statements: []ast.Statement{
 					&ast.StatementExpression{
-						Token: tokens.New(tokens.TypeEq, "=="),
+						Token: tokens.New(tokens.TypeEQ, "=="),
 						Expression: &ast.ExpressionInfix{
-							Token:    tokens.New(tokens.TypeEq, "=="),
+							Token:    tokens.New(tokens.TypeEQ, "=="),
 							Left:     &ast.ExpressionLiteralString{Value: "foobar"},
 							Right:    &ast.ExpressionLiteralString{Value: "barfoo"},
 							Operator: "==",
@@ -802,9 +802,9 @@ func TestEvaluatorEvalExpressionInfixString(t *testing.T) {
 			input: &ast.Program{
 				Statements: []ast.Statement{
 					&ast.StatementExpression{
-						Token: tokens.New(tokens.TypeNotEq, "!="),
+						Token: tokens.New(tokens.TypeNotEQ, "!="),
 						Expression: &ast.ExpressionInfix{
-							Token:    tokens.New(tokens.TypeNotEq, "!="),
+							Token:    tokens.New(tokens.TypeNotEQ, "!="),
 							Left:     &ast.ExpressionLiteralString{Value: "foobar"},
 							Right:    &ast.ExpressionLiteralString{Value: "barfoo"},
 							Operator: "!=",
@@ -819,9 +819,9 @@ func TestEvaluatorEvalExpressionInfixString(t *testing.T) {
 			input: &ast.Program{
 				Statements: []ast.Statement{
 					&ast.StatementExpression{
-						Token: tokens.New(tokens.TypeNotEq, "!="),
+						Token: tokens.New(tokens.TypeNotEQ, "!="),
 						Expression: &ast.ExpressionInfix{
-							Token:    tokens.New(tokens.TypeNotEq, "!="),
+							Token:    tokens.New(tokens.TypeNotEQ, "!="),
 							Left:     &ast.ExpressionLiteralString{Value: "foobar"},
 							Right:    &ast.ExpressionLiteralString{Value: "foobar"},
 							Operator: "!=",
@@ -864,7 +864,7 @@ func TestEvaluatorEvalConditionals(t *testing.T) {
 								{
 									Token: tokens.Token{Type: tokens.TypeIf, Lexeme: "if"},
 									Condition: &ast.ExpressionInfix{
-										Token:    tokens.New(tokens.TypeEq, "=="),
+										Token:    tokens.New(tokens.TypeEQ, "=="),
 										Left:     &ast.ExpressionLiteralInteger{Value: 1},
 										Right:    &ast.ExpressionLiteralInteger{Value: 1},
 										Operator: "==",
@@ -881,7 +881,7 @@ func TestEvaluatorEvalConditionals(t *testing.T) {
 								{
 									Token: tokens.Token{Type: tokens.TypeElif, Lexeme: "elif"},
 									Condition: &ast.ExpressionInfix{
-										Token:    tokens.New(tokens.TypeEq, "=="),
+										Token:    tokens.New(tokens.TypeEQ, "=="),
 										Left:     &ast.ExpressionLiteralInteger{Value: 2},
 										Right:    &ast.ExpressionLiteralInteger{Value: 2},
 										Operator: "==",
@@ -921,7 +921,7 @@ func TestEvaluatorEvalConditionals(t *testing.T) {
 								{
 									Token: tokens.Token{Type: tokens.TypeIf, Lexeme: "if"},
 									Condition: &ast.ExpressionInfix{
-										Token:    tokens.New(tokens.TypeEq, "=="),
+										Token:    tokens.New(tokens.TypeEQ, "=="),
 										Left:     &ast.ExpressionLiteralInteger{Value: 1},
 										Right:    &ast.ExpressionLiteralInteger{Value: 42},
 										Operator: "==",
@@ -938,7 +938,7 @@ func TestEvaluatorEvalConditionals(t *testing.T) {
 								{
 									Token: tokens.Token{Type: tokens.TypeElif, Lexeme: "elif"},
 									Condition: &ast.ExpressionInfix{
-										Token:    tokens.New(tokens.TypeEq, "=="),
+										Token:    tokens.New(tokens.TypeEQ, "=="),
 										Left:     &ast.ExpressionLiteralInteger{Value: 2},
 										Right:    &ast.ExpressionLiteralInteger{Value: 2},
 										Operator: "==",
@@ -978,7 +978,7 @@ func TestEvaluatorEvalConditionals(t *testing.T) {
 								{
 									Token: tokens.Token{Type: tokens.TypeIf, Lexeme: "if"},
 									Condition: &ast.ExpressionInfix{
-										Token:    tokens.New(tokens.TypeEq, "=="),
+										Token:    tokens.New(tokens.TypeEQ, "=="),
 										Left:     &ast.ExpressionLiteralInteger{Value: 1},
 										Right:    &ast.ExpressionLiteralInteger{Value: 42},
 										Operator: "==",
@@ -995,7 +995,7 @@ func TestEvaluatorEvalConditionals(t *testing.T) {
 								{
 									Token: tokens.Token{Type: tokens.TypeElif, Lexeme: "elif"},
 									Condition: &ast.ExpressionInfix{
-										Token:    tokens.New(tokens.TypeEq, "=="),
+										Token:    tokens.New(tokens.TypeEQ, "=="),
 										Left:     &ast.ExpressionLiteralString{Value: "two"},
 										Right:    &ast.ExpressionLiteralString{Value: "three"},
 										Operator: "==",
@@ -1012,7 +1012,7 @@ func TestEvaluatorEvalConditionals(t *testing.T) {
 								{
 									Token: tokens.Token{Type: tokens.TypeElif, Lexeme: "elif"},
 									Condition: &ast.ExpressionInfix{
-										Token:    tokens.New(tokens.TypeEq, "=="),
+										Token:    tokens.New(tokens.TypeEQ, "=="),
 										Left:     &ast.ExpressionLiteralInteger{Value: 3},
 										Right:    &ast.ExpressionLiteralInteger{Value: 3},
 										Operator: "==",
@@ -1052,7 +1052,7 @@ func TestEvaluatorEvalConditionals(t *testing.T) {
 								{
 									Token: tokens.Token{Type: tokens.TypeIf, Lexeme: "if"},
 									Condition: &ast.ExpressionInfix{
-										Token:    tokens.New(tokens.TypeEq, "=="),
+										Token:    tokens.New(tokens.TypeEQ, "=="),
 										Left:     &ast.ExpressionLiteralInteger{Value: 1},
 										Right:    &ast.ExpressionLiteralInteger{Value: 42},
 										Operator: "==",
@@ -1069,7 +1069,7 @@ func TestEvaluatorEvalConditionals(t *testing.T) {
 								{
 									Token: tokens.Token{Type: tokens.TypeElif, Lexeme: "elif"},
 									Condition: &ast.ExpressionInfix{
-										Token:    tokens.New(tokens.TypeEq, "=="),
+										Token:    tokens.New(tokens.TypeEQ, "=="),
 										Left:     &ast.ExpressionLiteralInteger{Value: 2},
 										Right:    &ast.ExpressionLiteralInteger{Value: 3},
 										Operator: "==",
@@ -1109,7 +1109,7 @@ func TestEvaluatorEvalConditionals(t *testing.T) {
 								{
 									Token: tokens.Token{Type: tokens.TypeIf, Lexeme: "if"},
 									Condition: &ast.ExpressionInfix{
-										Token:    tokens.New(tokens.TypeEq, "=="),
+										Token:    tokens.New(tokens.TypeEQ, "=="),
 										Left:     &ast.ExpressionLiteralInteger{Value: 1},
 										Right:    &ast.ExpressionLiteralInteger{Value: 42},
 										Operator: "==",
@@ -1126,7 +1126,7 @@ func TestEvaluatorEvalConditionals(t *testing.T) {
 								{
 									Token: tokens.Token{Type: tokens.TypeElif, Lexeme: "elif"},
 									Condition: &ast.ExpressionInfix{
-										Token:    tokens.New(tokens.TypeEq, "=="),
+										Token:    tokens.New(tokens.TypeEQ, "=="),
 										Left:     &ast.ExpressionLiteralInteger{Value: 2},
 										Right:    &ast.ExpressionLiteralInteger{Value: 3},
 										Operator: "==",
@@ -2007,7 +2007,7 @@ func TestEvaluastorEvalForLoops(t *testing.T) {
 											{
 												Token: tokens.Token{Type: tokens.TypeIf, Lexeme: "if"},
 												Condition: &ast.ExpressionInfix{
-													Token: tokens.New(tokens.TypeEq, "=="),
+													Token: tokens.New(tokens.TypeEQ, "=="),
 													Left: &ast.ExpressionInfix{
 														Token:    tokens.New(tokens.TypePercent, "%"),
 														Left:     &ast.ExpressionIdentifier{Token: tokens.New(tokens.TypeIdent, "i"), Value: "i"},
