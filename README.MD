@@ -8,6 +8,8 @@ Donkey expands on Monkey with additional features such as:
 * variable rebinding
 * bitwise operators
 * statement block scoping
+* increment/decrement suffix operators
+* and more!
 
 install the donkey repl with:
 ```bash
