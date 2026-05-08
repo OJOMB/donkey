@@ -56,6 +56,14 @@ var baz = true;
 baz = false; // I'm sure you can guess what this does
 ```
 
+lists:
+```donkey
+var myList = [1, 2, 3, 4, 5];
+print(myList[0]); // prints 1
+print(myList[1]); // prints 2
+print(myList[2]); // prints 3
+```
+
 control flow:
 ```donkey
 if (x < y) {
