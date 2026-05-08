@@ -39,6 +39,28 @@ func TestLexParseEval(t *testing.T) {
 			a;`,
 			expected: &objects.Integer{Value: 3},
 		},
+		{
+			name: "list literals ints",
+			input: `
+				var list = [1, 2, 3];
+				list;`,
+			expected: &objects.List{Elements: []objects.Object{
+				&objects.Integer{Value: 1},
+				&objects.Integer{Value: 2},
+				&objects.Integer{Value: 3},
+			}},
+		},
+		{
+			name: "list literals strings",
+			input: `
+				var list = ["foo", "bar", "baz"];
+				list;`,
+			expected: &objects.List{Elements: []objects.Object{
+				&objects.String{Value: "foo"},
+				&objects.String{Value: "bar"},
+				&objects.String{Value: "baz"},
+			}},
+		},
 	}
 
 	evaluator := New(nil)

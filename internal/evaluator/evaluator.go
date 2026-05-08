@@ -39,7 +39,7 @@ func New(l logs.Logger) *Evaluator {
 // Eval evaluates the given AST node and returns the resulting object.
 func (e *Evaluator) Eval(node ast.Node, env *objects.Environment) objects.Object {
 	switch nt := node.(type) {
-	case *ast.ExpressionLiteralInteger, *ast.ExpressionLiteralBoolean, *ast.ExpressionLiteralString, *ast.ExpressionLiteralFunction:
+	case *ast.ExpressionLiteralInteger, *ast.ExpressionLiteralBoolean, *ast.ExpressionLiteralString, *ast.ExpressionLiteralFunction, *ast.ExpressionLiteralList:
 		return e.evalLiteral(nt, env)
 	case *ast.Program:
 		return e.evalStatements(nt, env)
@@ -208,6 +208,19 @@ func (e *Evaluator) evalLiteral(node ast.Node, env *objects.Environment) objects
 			Body:       nt.Body,
 			Env:        env,
 		}
+	case *ast.ExpressionLiteralList:
+		elems := make([]objects.Object, len(nt.Elements))
+		for i, elem := range nt.Elements {
+			evaluatedElem := e.Eval(elem, env)
+			if evaluatedElem == nil {
+				e.logger.Error("list element evaluated to nil", "index", i, "element", elem.String())
+				return newError("list element evaluated to nil: index:%d elem:%s", i, elem.String())
+			}
+
+			elems[i] = evaluatedElem
+		}
+
+		return &objects.List{Elements: elems}
 	default:
 		e.logger.Warn("unsupported literal type", "type", fmt.Sprintf("%T", nt))
 		return Nowt
