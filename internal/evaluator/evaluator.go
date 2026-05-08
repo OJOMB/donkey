@@ -21,6 +21,7 @@ var (
 
 // Evaluator is responsible for evaluating input AST nodes and producing the corresponding objects in the Donkey programming language.
 type Evaluator struct {
+	stdLib builtinLib
 	logger logs.Logger
 }
 
@@ -30,7 +31,9 @@ func New(l logs.Logger) *Evaluator {
 		l = logs.NewNullLogger()
 	}
 
-	return &Evaluator{logger: l.With("component", "evaluator")}
+	return &Evaluator{
+		stdLib: builtins,
+		logger: l.With("component", "evaluator")}
 }
 
 // Eval evaluates the given AST node and returns the resulting object.
@@ -100,13 +103,7 @@ func (e *Evaluator) Eval(node ast.Node, env *objects.Environment) objects.Object
 			return newError("unsupported prefix operator: %s", nt.Token.Lexeme)
 		}
 	case *ast.ExpressionIdentifier:
-		obj, ok := env.Get(nt.Value)
-		if !ok {
-			e.logger.Warn("identifier not found in environment", "name", nt.Value)
-			return newError("identifier not found: %s", nt.Value)
-		}
-
-		return obj
+		return e.evalExpressionIdentifier(nt, env)
 	case *ast.ExpressionInfix:
 		l := e.Eval(nt.Left, env)
 		if l == nil {
@@ -132,12 +129,6 @@ func (e *Evaluator) Eval(node ast.Node, env *objects.Environment) objects.Object
 			return newError("call expression function evaluated to nil: fn:%s", nt.Function.String())
 		}
 
-		function, ok := functionObj.(*objects.Function)
-		if !ok {
-			e.logger.Warn("call expression function did not evaluate to a function object", "function", nt.Function.String(), "type", functionObj.Type())
-			return newError("call expression function did not evaluate to a function object: fn:%s got:%s", nt.Function.String(), functionObj.Type())
-		}
-
 		args := make([]objects.Object, len(nt.Arguments))
 		for i, arg := range nt.Arguments {
 			evaluatedArg := e.Eval(arg, env)
@@ -149,7 +140,7 @@ func (e *Evaluator) Eval(node ast.Node, env *objects.Environment) objects.Object
 			args[i] = evaluatedArg
 		}
 
-		return e.applyFunction(function, args)
+		return e.applyFunction(functionObj, args)
 	default:
 		e.logger.Error("unsupported AST node type", "type", fmt.Sprintf("%T", nt))
 		return newError("unsupported AST node type: %T", nt)
@@ -506,26 +497,46 @@ func (e *Evaluator) EvalCondition(node *ast.StatementFor, env *objects.Environme
 	return conditionBool.Value, nil
 }
 
-func (e *Evaluator) applyFunction(function *objects.Function, args []objects.Object) objects.Object {
-	// create a new environment for the function execution that is enclosed by the function's defining environment
-	env := objects.NewEnclosedEnvironment(function.Env)
+func (e *Evaluator) applyFunction(function objects.Object, args []objects.Object) objects.Object {
+	switch fn := function.(type) {
+	case *objects.BuiltinFunction:
+		return fn.Implementation(args...)
+	case *objects.Function:
+		// create a new environment for the function execution that is enclosed by the function's defining environment
+		env := objects.NewEnclosedEnvironment(fn.Env)
 
-	// bind the function parameters to the argument values in the new environment
-	for i, param := range function.Parameters {
-		if i >= len(args) {
-			e.logger.Warn("not enough arguments provided for function call", "expected", len(function.Parameters), "provided", len(args))
-			return newError("not enough arguments provided for function call: expected %d, got %d", len(function.Parameters), len(args))
+		// bind the function parameters to the argument values in the new environment
+		for i, param := range fn.Parameters {
+			if i >= len(args) {
+				e.logger.Warn("not enough arguments provided for function call", "expected", len(fn.Parameters), "provided", len(args))
+				return newError("not enough arguments provided for function call: expected %d, got %d", len(fn.Parameters), len(args))
+			}
+
+			env.Bind(param.Value, args[i])
 		}
 
-		env.Bind(param.Value, args[i])
-	}
-
-	// evaluate the function body in the new environment
-	result := e.evalStatementBlock(function.Body, env)
-	if returnValue, ok := result.(*objects.ReturnValue); ok {
-		return returnValue.Value
+		// evaluate the function body in the new environment
+		result := e.evalStatementBlock(fn.Body, env)
+		if returnValue, ok := result.(*objects.ReturnValue); ok {
+			return returnValue.Value
+		}
 	}
 
 	// if the function body does not contain a return statement, we return Nowt to indicate the absence of a value
 	return Nowt
+}
+
+func (e *Evaluator) evalExpressionIdentifier(node *ast.ExpressionIdentifier, env *objects.Environment) objects.Object {
+	obj, ok := env.Get(node.Value)
+	if ok {
+		return obj
+	}
+
+	if builtin, ok := e.stdLib[node.Value]; ok {
+		return builtin
+	}
+
+	e.logger.Warn("identifier not found in environment", "name", node.Value)
+
+	return newError("identifier not found: %s", node.Value)
 }

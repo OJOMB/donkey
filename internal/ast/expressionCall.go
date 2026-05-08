@@ -29,6 +29,7 @@ func (ec *ExpressionCall) String() string {
 		}
 		_, _ = out.WriteString(arg.String())
 	}
+
 	_, _ = out.WriteString(")")
 	return out.String()
 }

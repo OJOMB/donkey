@@ -24,6 +24,8 @@ const (
 	TypeContinue Type = "CONTINUE"
 	// TypeBreak represents the type of a break object
 	TypeBreak Type = "BREAK"
+	// TypeBuiltin represents the type of a builtin function object
+	TypeBuiltin Type = "BUILTIN"
 )
 
 // Object is the interface that all objects in the Donkey programming language must implement.

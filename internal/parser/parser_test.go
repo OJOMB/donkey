@@ -491,6 +491,31 @@ func TestParseStatements(t *testing.T) {
 			},
 			expectedErrs: []string{},
 		},
+		{
+			name:  "test builtin function len - no errors",
+			input: `len("hello");`,
+			expectedOutput: &ast.Program{
+				Statements: []ast.Statement{
+					&ast.StatementExpression{
+						Token: tokens.Token{Type: tokens.TypeIdent, Lexeme: "len"},
+						Expression: &ast.ExpressionCall{
+							Token: tokens.Token{Type: tokens.TypeLParen, Lexeme: "("},
+							Function: &ast.ExpressionIdentifier{
+								Token: tokens.Token{Type: tokens.TypeIdent, Lexeme: "len"},
+								Value: "len",
+							},
+							Arguments: []ast.Expression{
+								&ast.ExpressionLiteralString{
+									Token: tokens.Token{Type: tokens.TypeString, Lexeme: "hello"},
+									Value: "hello",
+								},
+							},
+						},
+					},
+				},
+			},
+			expectedErrs: []string{},
+		},
 	}
 
 	for _, tc := range testCases {
