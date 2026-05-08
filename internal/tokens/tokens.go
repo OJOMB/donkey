@@ -45,6 +45,10 @@ const (
 	TypeLBrace Type = "{"
 	// TypeRBrace represents the right brace token.
 	TypeRBrace Type = "}"
+	// TypeLBracket represents the left bracket token.
+	TypeLBracket Type = "["
+	// TypeRBracket represents the right bracket token.
+	TypeRBracket Type = "]"
 
 	// TypeEQ represents the equality operator token.
 	TypeEQ Type = "=="
@@ -147,10 +151,17 @@ type Token struct {
 	Lexeme string
 }
 
-// New creates a new Token with the given type and literal value.
-func New(tokenType Type, tokenLiteral string) Token {
+// New creates a new Token with the given type and lexeme.
+func New(tokenType Type, tokenLexeme string) Token {
 	return Token{
 		Type:   tokenType,
-		Lexeme: tokenLiteral,
+		Lexeme: tokenLexeme,
 	}
+}
+
+// NewStatic creates a new Token with the given type and a lexeme that is the same as the type string.
+// This is useful for tokens that have a fixed lexeme, such as keywords and symbols.
+// should not be used for identifiers, integers, or string literals, which have variable lexemes.
+func NewStatic(tokenType Type) Token {
+	return New(tokenType, tokenType.String())
 }

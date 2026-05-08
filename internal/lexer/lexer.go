@@ -148,6 +148,10 @@ func (l *Lexer) NextToken() tokens.Token {
 		tok = tokens.New(tokens.TypeLBrace, "{")
 	case '}':
 		tok = tokens.New(tokens.TypeRBrace, "}")
+	case '[':
+		tok = tokens.NewStatic(tokens.TypeLBracket)
+	case ']':
+		tok = tokens.NewStatic(tokens.TypeRBracket)
 	case '"':
 		// we have encountered the opening speech marks of a string literal, so we want to read the whole string literal and return it as a token
 		tok.Type = tokens.TypeString

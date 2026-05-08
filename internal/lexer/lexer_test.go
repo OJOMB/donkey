@@ -72,6 +72,10 @@ func TestNextToken(t *testing.T) {
 				fn test(x, y) {
 					return x + y;
 				}
+
+
+				var lInt = [1, 2, 3];
+				var lStr = ["foo", "bar", "baz"];
 				`,
 			expectedOutput: []tokens.Token{
 				{Type: tokens.TypeBind, Lexeme: "var"},
@@ -313,6 +317,30 @@ func TestNextToken(t *testing.T) {
 				{Type: tokens.TypeIdent, Lexeme: "y"},
 				{Type: tokens.TypeSemicolon, Lexeme: ";"},
 				{Type: tokens.TypeRBrace, Lexeme: "}"},
+
+				{Type: tokens.TypeBind, Lexeme: "var"},
+				{Type: tokens.TypeIdent, Lexeme: "lInt"},
+				{Type: tokens.TypeAssign, Lexeme: "="},
+				{Type: tokens.TypeLBracket, Lexeme: "["},
+				{Type: tokens.TypeInt, Lexeme: "1"},
+				{Type: tokens.TypeComma, Lexeme: ","},
+				{Type: tokens.TypeInt, Lexeme: "2"},
+				{Type: tokens.TypeComma, Lexeme: ","},
+				{Type: tokens.TypeInt, Lexeme: "3"},
+				{Type: tokens.TypeRBracket, Lexeme: "]"},
+				{Type: tokens.TypeSemicolon, Lexeme: ";"},
+
+				{Type: tokens.TypeBind, Lexeme: "var"},
+				{Type: tokens.TypeIdent, Lexeme: "lStr"},
+				{Type: tokens.TypeAssign, Lexeme: "="},
+				{Type: tokens.TypeLBracket, Lexeme: "["},
+				{Type: tokens.TypeString, Lexeme: "foo"},
+				{Type: tokens.TypeComma, Lexeme: ","},
+				{Type: tokens.TypeString, Lexeme: "bar"},
+				{Type: tokens.TypeComma, Lexeme: ","},
+				{Type: tokens.TypeString, Lexeme: "baz"},
+				{Type: tokens.TypeRBracket, Lexeme: "]"},
+				{Type: tokens.TypeSemicolon, Lexeme: ";"},
 
 				{Type: tokens.TypeEOF, Lexeme: ""},
 			},
