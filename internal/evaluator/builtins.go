@@ -1,6 +1,8 @@
 package evaluator
 
 import (
+	"fmt"
+
 	"github.com/OJOMB/donkey/internal/ast"
 	"github.com/OJOMB/donkey/internal/objects"
 )
@@ -42,5 +44,33 @@ var builtins = builtinLib{
 			}
 		},
 		Name: "len",
+	},
+	"print": {
+		Fn: objects.Function{
+			Parameters: []*ast.ExpressionIdentifier{
+				{Value: "arg"},
+			},
+			Body: &ast.StatementBlock{
+				Statements: []ast.Statement{
+					&ast.StatementExpression{
+						Expression: &ast.ExpressionCall{
+							Function: &ast.ExpressionIdentifier{Value: "print"},
+							Arguments: []ast.Expression{
+								&ast.ExpressionIdentifier{Value: "arg"},
+							},
+						},
+					},
+				},
+			},
+			Env: nil, // Built-in functions don't have an environment
+		},
+		Implementation: func(args ...objects.Object) objects.Object {
+			for _, arg := range args {
+				fmt.Println(arg.Inspect())
+			}
+
+			return &objects.Nowt{}
+		},
+		Name: "print",
 	},
 }

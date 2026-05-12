@@ -2484,6 +2484,27 @@ func TestEvaluatorEvalBuiltinFunctions(t *testing.T) {
 			},
 			expected: &objects.Integer{Value: 0},
 		},
+		{
+			name: "print with a single argument",
+			input: &ast.Program{
+				Statements: []ast.Statement{
+					&ast.StatementExpression{
+						Token: tokens.New(tokens.TypeIdent, "print"),
+						Expression: &ast.ExpressionCall{
+							Token: tokens.New(tokens.TypeIdent, "print"),
+							Function: &ast.ExpressionIdentifier{
+								Token: tokens.New(tokens.TypeIdent, "print"),
+								Value: "print",
+							},
+							Arguments: []ast.Expression{
+								&ast.ExpressionLiteralString{Value: "hello world"},
+							},
+						},
+					},
+				},
+			},
+			expected: &objects.Nowt{},
+		},
 	}
 
 	for i, tc := range tests {
