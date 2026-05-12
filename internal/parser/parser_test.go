@@ -1723,3 +1723,78 @@ func TestParserParseExpressionLiteralList(t *testing.T) {
 		})
 	}
 }
+
+func TestParserParseExpressionListIndexing(t *testing.T) {
+	type testCase struct {
+		name           string
+		input          string
+		expectedOutput ast.Statement
+		expectedErrs   []string
+	}
+
+	var testCases = []testCase{
+		{
+			name:  "test simple list indexing",
+			input: `myList[0]`,
+			expectedOutput: &ast.StatementExpression{
+				Token: tokens.Token{Type: tokens.TypeIdent, Lexeme: "myList"},
+				Expression: &ast.ExpressionIndex{
+					Token: tokens.Token{Type: tokens.TypeLBracket, Lexeme: "["},
+					Left: &ast.ExpressionIdentifier{
+						Token: tokens.Token{Type: tokens.TypeIdent, Lexeme: "myList"},
+						Value: "myList",
+					},
+					Index: &ast.ExpressionLiteralInteger{
+						Token: tokens.Token{Type: tokens.TypeInt, Lexeme: "0"},
+						Value: 0,
+					},
+				},
+			},
+			expectedErrs: []string{},
+		},
+		{
+			name:  "test list indexing with infix expression as index",
+			input: `myList[1 + 2]`,
+			expectedOutput: &ast.StatementExpression{
+				Token: tokens.Token{Type: tokens.TypeIdent, Lexeme: "myList"},
+				Expression: &ast.ExpressionIndex{
+					Token: tokens.Token{Type: tokens.TypeLBracket, Lexeme: "["},
+					Left: &ast.ExpressionIdentifier{
+						Token: tokens.Token{Type: tokens.TypeIdent, Lexeme: "myList"},
+						Value: "myList",
+					},
+					Index: &ast.ExpressionInfix{
+						Token:    tokens.Token{Type: tokens.TypePlus, Lexeme: "+"},
+						Operator: "+",
+						Left: &ast.ExpressionLiteralInteger{
+							Token: tokens.Token{Type: tokens.TypeInt, Lexeme: "1"},
+							Value: 1,
+						},
+						Right: &ast.ExpressionLiteralInteger{
+							Token: tokens.Token{Type: tokens.TypeInt, Lexeme: "2"},
+							Value: 2,
+						},
+					},
+				},
+			},
+			expectedErrs: []string{},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			p, err := New(lexer.New(tc.input, nil), nil)
+			require.NoError(t, err)
+
+			program := p.ParseProgram()
+			require.NotNil(t, program)
+
+			// we know the program will be a single statement expression whose expression is the index expression, so we can directly access it here for ease of testing
+			stmtExpr, ok := program.Statements[0].(*ast.StatementExpression)
+			require.True(t, ok)
+
+			assert.Equal(t, tc.expectedOutput, stmtExpr)
+			assert.Equal(t, tc.expectedErrs, p.Errors)
+		})
+	}
+}

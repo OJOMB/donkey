@@ -424,3 +424,41 @@ func TestStringLiteral(t *testing.T) {
 		assert.Equal(t, tc.expectedOutput, toks, "test case %d failed", i)
 	}
 }
+
+func TestLexerLexIndexing(t *testing.T) {
+	type testCase struct {
+		name           string
+		input          string
+		expectedOutput []tokens.Token
+	}
+
+	var testCases = []testCase{
+		{
+			name:  "test indexing into an array",
+			input: `myArray[0];`,
+			expectedOutput: []tokens.Token{
+				{Type: tokens.TypeIdent, Lexeme: "myArray"},
+				{Type: tokens.TypeLBracket, Lexeme: "["},
+				{Type: tokens.TypeInt, Lexeme: "0"},
+				{Type: tokens.TypeRBracket, Lexeme: "]"},
+				{Type: tokens.TypeSemicolon, Lexeme: ";"},
+				{Type: tokens.TypeEOF, Lexeme: ""},
+			},
+		},
+	}
+
+	for i, tc := range testCases {
+		lex := New(tc.input, nil)
+
+		var toks []tokens.Token
+		for {
+			tok := lex.NextToken()
+			toks = append(toks, tok)
+			if tok.Type == tokens.TypeEOF {
+				break
+			}
+		}
+
+		assert.Equal(t, tc.expectedOutput, toks, "test case %d failed", i)
+	}
+}

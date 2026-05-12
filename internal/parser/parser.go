@@ -30,7 +30,7 @@ type Parser struct {
 }
 
 // New creates a new Parser instance with the given lexer and logger.
-// It initializes the parser's state and registers the necessary parse functions for different token types.
+// It initializes the parser's state and registers the necessary parse functions for prefix and infix expressions.
 // if logger is nil, the parser will use a null logger by default.
 func New(l *lexer.Lexer, logger logs.Logger) (*Parser, error) {
 	if logger == nil {
@@ -215,6 +215,15 @@ func (p *Parser) parseExpressionStatement() ast.Statement {
 	}
 
 	stmt := &ast.StatementExpression{Token: p.currToken}
+
+	// <IDENT>[<EXPRESSION>] is the only valid expression statement that starts with an identifier that is not a function call or a rebind
+	// so we can check for that specific case before trying to parse a generic expression statement
+	if p.currToken.Type == tokens.TypeIdent && p.peekToken.Type == tokens.TypeLBracket {
+		// here we have an identifier followed by a left bracket, so we can assume this is an index expression being used as a statement, like myList[0];
+		stmt.Expression = p.parseExpressionIndex()
+		return stmt
+	}
+
 	stmt.Expression = p.parseExpression(precedenceLowest)
 
 	return stmt
@@ -772,12 +781,12 @@ func (p *Parser) parseExpressionLiteralList() ast.Expression {
 
 	p.nextToken()
 	lit.Elements = p.parseExpressionList(tokens.TypeRBracket)
+
 	return lit
 }
 
 func (p *Parser) parseExpressionList(end tokens.Type) []ast.Expression {
 	exprs := make([]ast.Expression, 0)
-
 	exprs = append(exprs, p.parseExpression(precedenceLowest))
 	for p.peekToken.Type == tokens.TypeComma {
 		p.nextToken()
@@ -790,4 +799,29 @@ func (p *Parser) parseExpressionList(end tokens.Type) []ast.Expression {
 	}
 
 	return exprs
+}
+
+func (p *Parser) parseExpressionIndex() ast.Expression {
+	expr := &ast.ExpressionIndex{
+		Token: p.peekToken,
+		Left: &ast.ExpressionIdentifier{
+			Token: p.currToken,
+			Value: p.currToken.Lexeme,
+		},
+	}
+
+	p.nextToken() // advance to l bracket token
+	p.nextToken() // advance to the expression inside the brackets
+	expr.Index = p.parseExpression(precedenceLowest)
+	if expr.Index == nil {
+		p.logger.Debug("failed to parse index expression inside brackets")
+		return nil
+	}
+
+	if !p.expectPeek(tokens.TypeRBracket) {
+		p.logger.Debug("expected ] after index expression, got %s instead", p.peekToken.Type)
+		return nil
+	}
+
+	return expr
 }
