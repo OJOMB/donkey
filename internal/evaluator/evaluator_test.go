@@ -61,6 +61,13 @@ func TestLexParseEval(t *testing.T) {
 				&objects.String{Value: "baz"},
 			}},
 		},
+		{
+			name: "list literals indexed",
+			input: `
+				var list = [1, 2, 3];
+				list[2];`,
+			expected: &objects.Integer{Value: 3},
+		},
 	}
 
 	evaluator := New(nil)
@@ -2476,6 +2483,95 @@ func TestEvaluatorEvalBuiltinFunctions(t *testing.T) {
 				},
 			},
 			expected: &objects.Integer{Value: 0},
+		},
+	}
+
+	for i, tc := range tests {
+		t.Run(fmt.Sprintf("test %d: %s", i, tc.name), func(t *testing.T) {
+			evaluator := New(nil)
+			result := evaluator.Eval(tc.input, objects.NewEnvironment())
+
+			assert.Equal(t, tc.expected.Type(), result.Type())
+			assert.Equal(t, tc.expected.Inspect(), result.Inspect())
+		})
+	}
+}
+
+func TestEvaluatorEvalIndexExpressions(t *testing.T) {
+	type testCase struct {
+		name     string
+		input    *ast.Program
+		expected objects.Object
+	}
+
+	tests := []testCase{
+		{
+			name: "indexing into an array",
+			input: &ast.Program{
+				Statements: []ast.Statement{
+					&ast.StatementBind{
+						Token: tokens.New(tokens.TypeBind, "var"),
+						Name: &ast.ExpressionIdentifier{
+							Token: tokens.New(tokens.TypeIdent, "arr"),
+							Value: "arr",
+						},
+						Value: &ast.ExpressionLiteralList{
+							Token: tokens.New(tokens.TypeLBracket, "["),
+							Elements: []ast.Expression{
+								&ast.ExpressionLiteralInteger{Value: 1},
+								&ast.ExpressionLiteralInteger{Value: 2},
+								&ast.ExpressionLiteralInteger{Value: 3},
+							},
+						},
+					},
+					&ast.StatementExpression{
+						Token: tokens.New(tokens.TypeIdent, "arr"),
+						Expression: &ast.ExpressionIndex{
+							Token: tokens.New(tokens.TypeLBracket, "["),
+							Left: &ast.ExpressionIdentifier{
+								Token: tokens.New(tokens.TypeIdent, "arr"),
+								Value: "arr",
+							},
+							Index: &ast.ExpressionLiteralInteger{Value: 1},
+						},
+					},
+				},
+			},
+			expected: &objects.Integer{Value: 2},
+		},
+		{
+			name: "negative indexing into an array within bounds",
+			input: &ast.Program{
+				Statements: []ast.Statement{
+					&ast.StatementBind{
+						Token: tokens.New(tokens.TypeBind, "var"),
+						Name: &ast.ExpressionIdentifier{
+							Token: tokens.New(tokens.TypeIdent, "arr"),
+							Value: "arr",
+						},
+						Value: &ast.ExpressionLiteralList{
+							Token: tokens.New(tokens.TypeLBracket, "["),
+							Elements: []ast.Expression{
+								&ast.ExpressionLiteralInteger{Value: 1},
+								&ast.ExpressionLiteralInteger{Value: 2},
+								&ast.ExpressionLiteralInteger{Value: 3},
+							},
+						},
+					},
+					&ast.StatementExpression{
+						Token: tokens.New(tokens.TypeIdent, "arr"),
+						Expression: &ast.ExpressionIndex{
+							Token: tokens.New(tokens.TypeLBracket, "["),
+							Left: &ast.ExpressionIdentifier{
+								Token: tokens.New(tokens.TypeIdent, "arr"),
+								Value: "arr",
+							},
+							Index: &ast.ExpressionLiteralInteger{Value: -1},
+						},
+					},
+				},
+			},
+			expected: &objects.Integer{Value: 3},
 		},
 	}
 

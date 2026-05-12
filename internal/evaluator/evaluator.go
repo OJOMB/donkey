@@ -39,8 +39,6 @@ func New(l logs.Logger) *Evaluator {
 // Eval evaluates the given AST node and returns the resulting object.
 func (e *Evaluator) Eval(node ast.Node, env *objects.Environment) objects.Object {
 	switch nt := node.(type) {
-	case *ast.ExpressionLiteralInteger, *ast.ExpressionLiteralBoolean, *ast.ExpressionLiteralString, *ast.ExpressionLiteralFunction, *ast.ExpressionLiteralList:
-		return e.evalLiteral(nt, env)
 	case *ast.Program:
 		return e.evalStatements(nt, env)
 	case *ast.StatementExpression:
@@ -86,6 +84,8 @@ func (e *Evaluator) Eval(node ast.Node, env *objects.Environment) objects.Object
 		return e.evalStatementWhile(nt, env)
 	case *ast.StatementFor:
 		return e.evalStatementFor(nt, env)
+	case *ast.ExpressionLiteralInteger, *ast.ExpressionLiteralBoolean, *ast.ExpressionLiteralString, *ast.ExpressionLiteralFunction, *ast.ExpressionLiteralList:
+		return e.evalLiteral(nt, env)
 	case *ast.ExpressionPrefix:
 		right := e.Eval(nt.Right, env)
 		if right == nil {
@@ -104,6 +104,8 @@ func (e *Evaluator) Eval(node ast.Node, env *objects.Environment) objects.Object
 		}
 	case *ast.ExpressionIdentifier:
 		return e.evalExpressionIdentifier(nt, env)
+	case *ast.ExpressionIndex:
+		return e.evalExpressionIndex(nt, env)
 	case *ast.ExpressionInfix:
 		l := e.Eval(nt.Left, env)
 		if l == nil {
@@ -552,4 +554,51 @@ func (e *Evaluator) evalExpressionIdentifier(node *ast.ExpressionIdentifier, env
 	e.logger.Warn("identifier not found in environment", "name", node.Value)
 
 	return newError("identifier not found: %s", node.Value)
+}
+
+func (e *Evaluator) evalExpressionIndex(node *ast.ExpressionIndex, env *objects.Environment) objects.Object {
+	left := e.Eval(node.Left, env)
+	if left == nil {
+		e.logger.Error("index expression left-hand side evaluated to nil", "expression", node.Left.String())
+		return newError("index expression left-hand side evaluated to nil: expr:%s", node.Left.String())
+	}
+
+	// left must be a list for indexing to be valid
+	if left.Type() != objects.TypeList {
+		e.logger.Warn("index expression left-hand side is not a list", "type", left.Type())
+		return newError("index expression left-hand side is not a list: %s", left.Type())
+	}
+
+	index := e.Eval(node.Index, env)
+	if index == nil {
+		e.logger.Error("index expression index evaluated to nil", "expression", node.Index.String())
+		return newError("index expression index evaluated to nil: expr:%s", node.Index.String())
+	}
+
+	if index.Type() != objects.TypeInteger {
+		e.logger.Warn("index expression index is not an integer", "type", index.Type())
+		return newError("index expression index is not an integer: %s", index.Type())
+	}
+
+	list := left.(*objects.List)
+	idx := index.(*objects.Integer).Value
+
+	if idx >= int(len(list.Elements)) {
+		e.logger.Warn("index expression index out of bounds", "index", idx, "listLength", len(list.Elements))
+		return newError("index expression index out of bounds: index:%d listLength:%d", idx, len(list.Elements))
+	}
+
+	// lets allow negative indices to count from the end of the list, so -1 is the last element, -2 is the second to last, and so on
+	// if the negative index is out of bounds, we will return an error just like we do for positive indices that are out of bounds
+	if idx < 0 {
+		elemLen := int(len(list.Elements))
+		if -idx > elemLen {
+			e.logger.Warn("index expression negative index out of bounds", "index", idx, "listLength", elemLen)
+			return newError("index expression negative index out of bounds: index:%d listLength:%d", idx, elemLen)
+		}
+
+		idx = int(len(list.Elements)) + idx
+	}
+
+	return list.Elements[idx]
 }
