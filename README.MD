@@ -80,7 +80,7 @@ if (x < y) {
 }
 ```
 
-function literals and calls:
+function literals, function statements, and calls:
 ```donkey
 var add = fn(x, y) { return x + y; };
 add(2, 3); // returns 5
