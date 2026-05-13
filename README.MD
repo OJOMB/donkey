@@ -62,6 +62,11 @@ var myList = [1, 2, 3, 4, 5];
 print(myList[0]); // prints 1
 print(myList[1]); // prints 2
 print(myList[2]); // prints 3
+
+// lisp-style list operations:
+cdr(myList); // returns [2, 3, 4, 5]
+cons(0, myList); // returns [0, 1, 2, 3, 4, 5]
+car(myList); // returns 1
 ```
 
 control flow:

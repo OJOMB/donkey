@@ -2485,6 +2485,34 @@ func TestEvaluatorEvalBuiltinFunctions(t *testing.T) {
 			expected: &objects.Integer{Value: 0},
 		},
 		{
+			name: "len with a list argument",
+			input: &ast.Program{
+				Statements: []ast.Statement{
+					&ast.StatementExpression{
+						Token: tokens.New(tokens.TypeIdent, "len"),
+						Expression: &ast.ExpressionCall{
+							Token: tokens.New(tokens.TypeIdent, "len"),
+							Function: &ast.ExpressionIdentifier{
+								Token: tokens.New(tokens.TypeIdent, "len"),
+								Value: "len",
+							},
+							Arguments: []ast.Expression{
+								&ast.ExpressionLiteralList{
+									Token: tokens.New(tokens.TypeLBracket, "["),
+									Elements: []ast.Expression{
+										&ast.ExpressionLiteralInteger{Value: 1},
+										&ast.ExpressionLiteralInteger{Value: 2},
+										&ast.ExpressionLiteralInteger{Value: 3},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			expected: &objects.Integer{Value: 3},
+		},
+		{
 			name: "print with a single argument",
 			input: &ast.Program{
 				Statements: []ast.Statement{
@@ -2503,7 +2531,203 @@ func TestEvaluatorEvalBuiltinFunctions(t *testing.T) {
 					},
 				},
 			},
+			expected: &objects.String{Value: "hello world"},
+		},
+		{
+			name: "print with multiple arguments",
+			input: &ast.Program{
+				Statements: []ast.Statement{
+					&ast.StatementExpression{
+						Token: tokens.New(tokens.TypeIdent, "print"),
+						Expression: &ast.ExpressionCall{
+							Token: tokens.New(tokens.TypeIdent, "print"),
+							Function: &ast.ExpressionIdentifier{
+								Token: tokens.New(tokens.TypeIdent, "print"),
+								Value: "print",
+							},
+							Arguments: []ast.Expression{
+								&ast.ExpressionLiteralString{Value: "hallo"},
+								&ast.ExpressionLiteralString{Value: "welt"},
+							},
+						},
+					},
+				},
+			},
+			expected: &objects.String{Value: "hallo welt"},
+		},
+		{
+			name: "cdr with a non-empty list argument",
+			input: &ast.Program{
+				Statements: []ast.Statement{
+					&ast.StatementExpression{
+						Token: tokens.New(tokens.TypeIdent, "cdr"),
+						Expression: &ast.ExpressionCall{
+							Token: tokens.New(tokens.TypeIdent, "cdr"),
+							Function: &ast.ExpressionIdentifier{
+								Token: tokens.New(tokens.TypeIdent, "cdr"),
+								Value: "cdr",
+							},
+							Arguments: []ast.Expression{
+								&ast.ExpressionLiteralList{
+									Token: tokens.New(tokens.TypeLBracket, "["),
+									Elements: []ast.Expression{
+										&ast.ExpressionLiteralInteger{Value: 1},
+										&ast.ExpressionLiteralInteger{Value: 2},
+										&ast.ExpressionLiteralInteger{Value: 3},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			expected: &objects.List{
+				Elements: []objects.Object{
+					&objects.Integer{Value: 2},
+					&objects.Integer{Value: 3},
+				},
+			},
+		},
+		{
+			name: "cdr with a empty list argument",
+			input: &ast.Program{
+				Statements: []ast.Statement{
+					&ast.StatementExpression{
+						Token: tokens.New(tokens.TypeIdent, "cdr"),
+						Expression: &ast.ExpressionCall{
+							Token: tokens.New(tokens.TypeIdent, "cdr"),
+							Function: &ast.ExpressionIdentifier{
+								Token: tokens.New(tokens.TypeIdent, "cdr"),
+								Value: "cdr",
+							},
+							Arguments: []ast.Expression{
+								&ast.ExpressionLiteralList{
+									Token:    tokens.New(tokens.TypeLBracket, "["),
+									Elements: []ast.Expression{},
+								},
+							},
+						},
+					},
+				},
+			},
+			expected: &objects.List{
+				Elements: []objects.Object{},
+			},
+		},
+		{
+			name: "car with a non-empty list argument",
+			input: &ast.Program{
+				Statements: []ast.Statement{
+					&ast.StatementExpression{
+						Token: tokens.New(tokens.TypeIdent, "car"),
+						Expression: &ast.ExpressionCall{
+							Token: tokens.New(tokens.TypeIdent, "car"),
+							Function: &ast.ExpressionIdentifier{
+								Token: tokens.New(tokens.TypeIdent, "car"),
+								Value: "car",
+							},
+							Arguments: []ast.Expression{
+								&ast.ExpressionLiteralList{
+									Token: tokens.New(tokens.TypeLBracket, "["),
+									Elements: []ast.Expression{
+										&ast.ExpressionLiteralInteger{Value: 1},
+										&ast.ExpressionLiteralInteger{Value: 2},
+										&ast.ExpressionLiteralInteger{Value: 3},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			expected: &objects.Integer{Value: 1},
+		},
+		{
+			name: "car with a empty list argument",
+			input: &ast.Program{
+				Statements: []ast.Statement{
+					&ast.StatementExpression{
+						Token: tokens.New(tokens.TypeIdent, "car"),
+						Expression: &ast.ExpressionCall{
+							Token: tokens.New(tokens.TypeIdent, "car"),
+							Function: &ast.ExpressionIdentifier{
+								Token: tokens.New(tokens.TypeIdent, "car"),
+								Value: "car",
+							},
+							Arguments: []ast.Expression{
+								&ast.ExpressionLiteralList{
+									Token:    tokens.New(tokens.TypeLBracket, "["),
+									Elements: []ast.Expression{},
+								},
+							},
+						},
+					},
+				},
+			},
 			expected: &objects.Nowt{},
+		},
+		{
+			name: "cons with a non-empty list argument",
+			input: &ast.Program{
+				Statements: []ast.Statement{
+					&ast.StatementExpression{
+						Token: tokens.New(tokens.TypeIdent, "cons"),
+						Expression: &ast.ExpressionCall{
+							Token: tokens.New(tokens.TypeIdent, "cons"),
+							Function: &ast.ExpressionIdentifier{
+								Token: tokens.New(tokens.TypeIdent, "cons"),
+								Value: "cons",
+							},
+							Arguments: []ast.Expression{
+								&ast.ExpressionLiteralInteger{Value: 1},
+								&ast.ExpressionLiteralList{
+									Token: tokens.New(tokens.TypeLBracket, "["),
+									Elements: []ast.Expression{
+										&ast.ExpressionLiteralInteger{Value: 2},
+										&ast.ExpressionLiteralInteger{Value: 3},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			expected: &objects.List{
+				Elements: []objects.Object{
+					&objects.Integer{Value: 1},
+					&objects.Integer{Value: 2},
+					&objects.Integer{Value: 3},
+				},
+			},
+		},
+		{
+			name: "cons with an empty list argument",
+			input: &ast.Program{
+				Statements: []ast.Statement{
+					&ast.StatementExpression{
+						Token: tokens.New(tokens.TypeIdent, "cons"),
+						Expression: &ast.ExpressionCall{
+							Token: tokens.New(tokens.TypeIdent, "cons"),
+							Function: &ast.ExpressionIdentifier{
+								Token: tokens.New(tokens.TypeIdent, "cons"),
+								Value: "cons",
+							},
+							Arguments: []ast.Expression{
+								&ast.ExpressionLiteralInteger{Value: 1},
+								&ast.ExpressionLiteralList{
+									Token:    tokens.New(tokens.TypeLBracket, "["),
+									Elements: []ast.Expression{},
+								},
+							},
+						},
+					},
+				},
+			},
+			expected: &objects.List{
+				Elements: []objects.Object{
+					&objects.Integer{Value: 1},
+				},
+			},
 		},
 	}
 
