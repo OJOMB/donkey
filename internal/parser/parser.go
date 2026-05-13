@@ -387,6 +387,7 @@ func (p *Parser) parseExpressionInfix(left ast.Expression) ast.Expression {
 	}
 
 	precedence := p.currPrecedence()
+
 	p.nextToken()
 	expr.Right = p.parseExpression(precedence)
 

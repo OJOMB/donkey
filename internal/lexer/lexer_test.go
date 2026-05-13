@@ -75,7 +75,9 @@ func TestNextToken(t *testing.T) {
 
 				var lInt = [1, 2, 3];
 				var lStr = ["foo", "bar", "baz"];
-				`,
+
+				a << b;
+				a >> b;`,
 			expectedOutput: []tokens.Token{
 				{Type: tokens.TypeBind, Lexeme: "var"},
 				{Type: tokens.TypeIdent, Lexeme: "five"},
@@ -339,6 +341,16 @@ func TestNextToken(t *testing.T) {
 				{Type: tokens.TypeComma, Lexeme: ","},
 				{Type: tokens.TypeString, Lexeme: "baz"},
 				{Type: tokens.TypeRBracket, Lexeme: "]"},
+				{Type: tokens.TypeSemicolon, Lexeme: ";"},
+
+				{Type: tokens.TypeIdent, Lexeme: "a"},
+				{Type: tokens.TypeBitwiseShiftLeft, Lexeme: "<<"},
+				{Type: tokens.TypeIdent, Lexeme: "b"},
+				{Type: tokens.TypeSemicolon, Lexeme: ";"},
+
+				{Type: tokens.TypeIdent, Lexeme: "a"},
+				{Type: tokens.TypeBitwiseShiftRight, Lexeme: ">>"},
+				{Type: tokens.TypeIdent, Lexeme: "b"},
 				{Type: tokens.TypeSemicolon, Lexeme: ";"},
 
 				{Type: tokens.TypeEOF, Lexeme: ""},

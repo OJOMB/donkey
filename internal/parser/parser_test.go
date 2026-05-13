@@ -1798,3 +1798,72 @@ func TestParserParseExpressionListIndexing(t *testing.T) {
 		})
 	}
 }
+
+func TestParserParseBitwiseOps(t *testing.T) {
+	type testCase struct {
+		name           string
+		input          string
+		expectedOutput ast.Statement
+		expectedErrs   []string
+	}
+
+	var testCases = []testCase{
+		{
+			name:  "test bitwise shift left",
+			input: `5 << 1`,
+			expectedOutput: &ast.StatementExpression{
+				Token: tokens.Token{Type: tokens.TypeInt, Lexeme: "5"},
+				Expression: &ast.ExpressionInfix{
+					Token:    tokens.Token{Type: tokens.TypeBitwiseShiftLeft, Lexeme: "<<"},
+					Operator: "<<",
+					Left: &ast.ExpressionLiteralInteger{
+						Token: tokens.Token{Type: tokens.TypeInt, Lexeme: "5"},
+						Value: 5,
+					},
+					Right: &ast.ExpressionLiteralInteger{
+						Token: tokens.Token{Type: tokens.TypeInt, Lexeme: "1"},
+						Value: 1,
+					},
+				},
+			},
+			expectedErrs: []string{},
+		},
+		{
+			name:  "test bitwise shift right",
+			input: `10 >> 2`,
+			expectedOutput: &ast.StatementExpression{
+				Token: tokens.Token{Type: tokens.TypeInt, Lexeme: "10"},
+				Expression: &ast.ExpressionInfix{
+					Token:    tokens.Token{Type: tokens.TypeBitwiseShiftRight, Lexeme: ">>"},
+					Operator: ">>",
+					Left: &ast.ExpressionLiteralInteger{
+						Token: tokens.Token{Type: tokens.TypeInt, Lexeme: "10"},
+						Value: 10,
+					},
+					Right: &ast.ExpressionLiteralInteger{
+						Token: tokens.Token{Type: tokens.TypeInt, Lexeme: "2"},
+						Value: 2,
+					},
+				},
+			},
+			expectedErrs: []string{},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			p, err := New(lexer.New(tc.input, nil), nil)
+			require.NoError(t, err)
+
+			program := p.ParseProgram()
+			require.NotNil(t, program)
+
+			// we know the program will be a single statement expression whose expression is the infix expression, so we can directly access it here for ease of testing
+			stmtExpr, ok := program.Statements[0].(*ast.StatementExpression)
+			require.True(t, ok)
+
+			assert.Equal(t, tc.expectedOutput, stmtExpr)
+			assert.Equal(t, tc.expectedErrs, p.Errors)
+		})
+	}
+}

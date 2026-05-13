@@ -24,9 +24,11 @@ var precedences = map[tokens.Type]int{
 	tokens.TypeLogicalOr:  precedenceLogicalOr,
 	tokens.TypeLogicalAnd: precedenceLogicalAnd,
 
-	tokens.TypeBitwiseOr:  precedenceBitwiseOr,
-	tokens.TypeBitwiseXor: precedenceBitwiseXor,
-	tokens.TypeBitwiseAnd: precedenceBitwiseAnd,
+	tokens.TypeBitwiseOr:         precedenceBitwiseOr,
+	tokens.TypeBitwiseXor:        precedenceBitwiseXor,
+	tokens.TypeBitwiseAnd:        precedenceBitwiseAnd,
+	tokens.TypeBitwiseShiftLeft:  precedenceShift,
+	tokens.TypeBitwiseShiftRight: precedenceShift,
 
 	tokens.TypeEQ:    precedenceEquals,
 	tokens.TypeNotEQ: precedenceEquals,
