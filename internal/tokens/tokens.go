@@ -36,6 +36,8 @@ const (
 	TypeComma Type = ","
 	// TypeSemicolon represents the semicolon token.
 	TypeSemicolon Type = ";"
+	// TypeColon represents the colon token.
+	TypeColon Type = ":"
 
 	// TypeLParen represents the left parenthesis token.
 	TypeLParen Type = "("

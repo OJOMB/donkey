@@ -474,3 +474,50 @@ func TestLexerLexIndexing(t *testing.T) {
 		assert.Equal(t, tc.expectedOutput, toks, "test case %d failed", i)
 	}
 }
+
+func TestLexerLexHashes(t *testing.T) {
+	type testCase struct {
+		name           string
+		input          string
+		expectedOutput []tokens.Token
+	}
+
+	var testCases = []testCase{
+		{
+			name:  "test lexing a hash literal",
+			input: `{"one": 1, "two": 2, "three": 3};`,
+			expectedOutput: []tokens.Token{
+				{Type: tokens.TypeLBrace, Lexeme: "{"},
+				{Type: tokens.TypeString, Lexeme: "one"},
+				{Type: tokens.TypeColon, Lexeme: ":"},
+				{Type: tokens.TypeInt, Lexeme: "1"},
+				{Type: tokens.TypeComma, Lexeme: ","},
+				{Type: tokens.TypeString, Lexeme: "two"},
+				{Type: tokens.TypeColon, Lexeme: ":"},
+				{Type: tokens.TypeInt, Lexeme: "2"},
+				{Type: tokens.TypeComma, Lexeme: ","},
+				{Type: tokens.TypeString, Lexeme: "three"},
+				{Type: tokens.TypeColon, Lexeme: ":"},
+				{Type: tokens.TypeInt, Lexeme: "3"},
+				{Type: tokens.TypeRBrace, Lexeme: "}"},
+				{Type: tokens.TypeSemicolon, Lexeme: ";"},
+				{Type: tokens.TypeEOF, Lexeme: ""},
+			},
+		},
+	}
+
+	for i, tc := range testCases {
+		lex := New(tc.input, nil)
+
+		var toks []tokens.Token
+		for {
+			tok := lex.NextToken()
+			toks = append(toks, tok)
+			if tok.Type == tokens.TypeEOF {
+				break
+			}
+		}
+
+		assert.Equal(t, tc.expectedOutput, toks, "test case %d failed", i)
+	}
+}
