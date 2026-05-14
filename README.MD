@@ -41,7 +41,10 @@ donkeyrepl
       |_|  |_|        |_||
        \_\  \_\        \_\\
 Welcome to the Donkey programming language!
->>
+In [1]: 2 + 3
+Out[1]: 5
+In [2]: var x = 10;
+Out[2]: 10
 ```
 
 variable binding and rebinding:
