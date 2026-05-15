@@ -26,6 +26,8 @@ const (
 	TypeBreak Type = "BREAK"
 	// TypeBuiltin represents the type of a builtin function object
 	TypeBuiltin Type = "BUILTIN"
+	// TypeMaps represents the type of a maps object
+	TypeMaps Type = "MAPS"
 	// TypeList represents the type of a list object
 	TypeList Type = "LIST"
 )

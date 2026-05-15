@@ -10,6 +10,7 @@ import (
 type builtinLib map[string]*objects.BuiltinFunction
 
 var builtins = builtinLib{
+	// len returns the length of a string, list or map. If the argument is a different type, len returns an error.
 	"len": {
 		Fn: objects.Function{
 			Parameters: []*ast.ExpressionIdentifier{
@@ -37,6 +38,8 @@ var builtins = builtinLib{
 			case *objects.String:
 				return &objects.Integer{Value: int(len([]rune(arg.Value)))}
 			case *objects.List:
+				return &objects.Integer{Value: int(len(arg.Elements))}
+			case *objects.Map:
 				return &objects.Integer{Value: int(len(arg.Elements))}
 			default:
 				return newError("len not supported for type %s", args[0].Type())
