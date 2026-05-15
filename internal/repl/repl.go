@@ -2,6 +2,7 @@ package repl
 
 import (
 	"bufio"
+	"fmt"
 	"io"
 
 	"github.com/OJOMB/donkey/internal/evaluator"
@@ -34,7 +35,8 @@ const donkeyASCII = `
        \_\  \_\        \_\\
 `
 
-const Prompt = ">> "
+const inPromptTemplate = "In [%d]: "
+const outPromptTemplate = "Out [%d]: "
 
 type Repl struct {
 	in  io.Reader
@@ -60,9 +62,10 @@ func (r *Repl) Start() {
 
 	// this is the global env
 	var env *objects.Environment
+	var inputLine = 1
 	// loop indefinitely, reading input from the user and processing it until we encounter a SIGINT (Ctrl+C)
 	for {
-		if _, err := r.out.Write([]byte(Prompt)); err != nil {
+		if _, err := r.out.Write([]byte(fmt.Sprintf(inPromptTemplate, inputLine))); err != nil {
 			r.logger.Error("failed to write prompt", "error", err)
 			return
 		}
@@ -102,10 +105,12 @@ func (r *Repl) Start() {
 		env = objects.NewEnclosedEnvironment(env)
 		result := e.Eval(program, env)
 		if result != nil {
-			if _, err := r.out.Write([]byte(result.Inspect() + "\n")); err != nil {
+			if _, err := r.out.Write([]byte(fmt.Sprintf(outPromptTemplate, inputLine) + result.Inspect() + "\n")); err != nil {
 				r.logger.Error("failed to write evaluation result", "error", err)
 				return
 			}
 		}
+
+		inputLine++
 	}
 }

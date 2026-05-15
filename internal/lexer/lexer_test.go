@@ -457,6 +457,36 @@ func TestLexerLexIndexing(t *testing.T) {
 				{Type: tokens.TypeEOF, Lexeme: ""},
 			},
 		},
+		{
+			name:  "test indexing into a string",
+			input: `myString[0];`,
+			expectedOutput: []tokens.Token{
+				{Type: tokens.TypeIdent, Lexeme: "myString"},
+				{Type: tokens.TypeLBracket, Lexeme: "["},
+				{Type: tokens.TypeInt, Lexeme: "0"},
+				{Type: tokens.TypeRBracket, Lexeme: "]"},
+				{Type: tokens.TypeSemicolon, Lexeme: ";"},
+				{Type: tokens.TypeEOF, Lexeme: ""},
+			},
+		},
+		{
+			name:  "test indexing into a list literal",
+			input: `[1, 2, 3][0];`,
+			expectedOutput: []tokens.Token{
+				{Type: tokens.TypeLBracket, Lexeme: "["},
+				{Type: tokens.TypeInt, Lexeme: "1"},
+				{Type: tokens.TypeComma, Lexeme: ","},
+				{Type: tokens.TypeInt, Lexeme: "2"},
+				{Type: tokens.TypeComma, Lexeme: ","},
+				{Type: tokens.TypeInt, Lexeme: "3"},
+				{Type: tokens.TypeRBracket, Lexeme: "]"},
+				{Type: tokens.TypeLBracket, Lexeme: "["},
+				{Type: tokens.TypeInt, Lexeme: "0"},
+				{Type: tokens.TypeRBracket, Lexeme: "]"},
+				{Type: tokens.TypeSemicolon, Lexeme: ";"},
+				{Type: tokens.TypeEOF, Lexeme: ""},
+			},
+		},
 	}
 
 	for i, tc := range testCases {
@@ -475,7 +505,7 @@ func TestLexerLexIndexing(t *testing.T) {
 	}
 }
 
-func TestLexerLexHashes(t *testing.T) {
+func TestLexerLexMaps(t *testing.T) {
 	type testCase struct {
 		name           string
 		input          string

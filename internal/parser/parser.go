@@ -127,7 +127,15 @@ func (p *Parser) parseStatement() ast.Statement {
 	case tokens.TypeReturn:
 		return p.parseStatementReturn()
 	case tokens.TypeLBrace:
-		return p.parseBlockStatement()
+		// we need to differentiate between block stmts and maps
+		// a map can have any expression as a key, but a block stmt can only have statements,
+		// so if we see a left brace and the next token is not a statement token, then we can assume this is a map literal being used as an expression statement, like {"key": "value"};
+		switch p.peekToken.Type {
+		case tokens.TypeBind, tokens.TypeReturn, tokens.TypeIf, tokens.TypeWhile, tokens.TypeFor, tokens.TypeFunction:
+			return p.parseBlockStatement()
+		default:
+			return p.parseExpressionStatement()
+		}
 	case tokens.TypeWhile:
 		return p.parseStatementWhile()
 	case tokens.TypeFor:
@@ -135,15 +143,15 @@ func (p *Parser) parseStatement() ast.Statement {
 	case tokens.TypeFunction:
 		return p.parseStatementFunction()
 	default:
-		// <IDENT><INCREMENT> or <IDENT><DECREMENT>
 		if p.isIncrementOrDecrement() {
-			// here we have an identifier followed by an increment or decrement token, so we can assume this is an increment or decrement statement like foo++ or bar--;
+			// <IDENT><INCREMENT> or <IDENT><DECREMENT>
+			// here we have an identifier followed by an increment/decrement token
+			// which in essence is a rebind statement
 			return p.parseStatementReBind()
 		}
 
 		if p.peekToken.Type == tokens.TypeAssign {
 			// here we have an identifier followed by an assign token
-			// so we can assume this is a rebind statement like foo = 5; or bar = "hello";
 			return p.parseStatementReBind()
 		}
 
@@ -220,7 +228,7 @@ func (p *Parser) parseExpressionStatement() ast.Statement {
 	// so we can check for that specific case before trying to parse a generic expression statement
 	if p.currToken.Type == tokens.TypeIdent && p.peekToken.Type == tokens.TypeLBracket {
 		// here we have an identifier followed by a left bracket, so we can assume this is an index expression being used as a statement, like myList[0];
-		stmt.Expression = p.parseExpressionIndex()
+		stmt.Expression = p.parseExpressionIndex(nil)
 		return stmt
 	}
 
@@ -293,9 +301,10 @@ func (p *Parser) expectPeek(tokType tokens.Type) bool {
 		return false
 	}
 
-	// I really don't like this, but it saves us from having to write p.nextToken() every time we want to check for a specific token type
-	// the name expectPeek does not imply the fn will advance the tokens, but it does.
+	// I really don't like this, the name expectPeek does not really imply the function will advance the tokens, but it does.
+	// but functionally it saves us from having to write p.nextToken() every time we want to check the type of the next token
 	p.nextToken()
+
 	return true
 }
 
@@ -783,6 +792,11 @@ func (p *Parser) parseExpressionLiteralList() ast.Expression {
 	p.nextToken()
 	lit.Elements = p.parseExpressionList(tokens.TypeRBracket)
 
+	// its possible to index into a list literal like [1, 2, 3][0], so we need to check for that and parse it as an index expression if we see a left bracket after the list literal
+	if p.peekToken.Type == tokens.TypeLBracket {
+		return p.parseExpressionIndex(lit)
+	}
+
 	return lit
 }
 
@@ -802,13 +816,22 @@ func (p *Parser) parseExpressionList(end tokens.Type) []ast.Expression {
 	return exprs
 }
 
-func (p *Parser) parseExpressionIndex() ast.Expression {
-	expr := &ast.ExpressionIndex{
-		Token: p.peekToken,
-		Left: &ast.ExpressionIdentifier{
+// parseExpressionIndex parses an index expression, which is an expression of the form <expression>[<expression>].
+// The left expression is the expression being indexed, and the right expression is the index expression inside the brackets.
+// If the left expression is nil, it means we are parsing an index expression that starts with an identifier
+// like myList[0], so we create an ExpressionIdentifier for the left expression using the current token.
+// if the left expression is not nil, it means we are parsing an index expression that starts with a more complex expression, like indexing into a list literal [1, 2, 3][0]
+func (p *Parser) parseExpressionIndex(left ast.Expression) ast.Expression {
+	if left == nil {
+		left = &ast.ExpressionIdentifier{
 			Token: p.currToken,
 			Value: p.currToken.Lexeme,
-		},
+		}
+	}
+
+	expr := &ast.ExpressionIndex{
+		Token: p.peekToken,
+		Left:  left,
 	}
 
 	p.nextToken() // advance to l bracket token

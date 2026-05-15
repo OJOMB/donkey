@@ -109,3 +109,31 @@ func (ll *ExpressionLiteralList) String() string {
 
 	return out.String()
 }
+
+// ExpressionLiteralMap represents a map literal expression in the Donkey programming language, such as "{"key": "value", "foo": "bar"}".
+// For example, in the expression "var myMap = {"key": "value", "foo": "bar"};", the "{"key": "value", "foo": "bar"}" is a map literal expression that represents the value being assigned to the variable "myMap" in the var statement.
+type ExpressionLiteralMap struct {
+	Token tokens.Token
+	// Pairs is a map where the keys are expressions representing the keys of the map, and the values are expressions representing the corresponding values in the map.
+	Pairs map[Expression]Expression
+}
+
+func (lm *ExpressionLiteralMap) expressionNode()     {}
+func (lm *ExpressionLiteralMap) TokenLexeme() string { return lm.Token.Lexeme }
+
+func (lm *ExpressionLiteralMap) String() string {
+	var out = strings.Builder{}
+	_, _ = out.WriteString("{")
+	i := 0
+	for key, value := range lm.Pairs {
+		if i > 0 {
+			_, _ = out.WriteString(", ")
+		}
+		_, _ = out.WriteString(key.String())
+		_, _ = out.WriteString(": ")
+		_, _ = out.WriteString(value.String())
+		i++
+	}
+	_, _ = out.WriteString("}")
+	return out.String()
+}
