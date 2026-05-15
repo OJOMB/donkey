@@ -47,6 +47,8 @@ var precedences = map[tokens.Type]int{
 
 	tokens.TypeExponent: precedenceExponentiation,
 
-	tokens.TypeBang:   precedencePrefix,
-	tokens.TypeLParen: precedenceCall,
+	tokens.TypeBang: precedencePrefix,
+
+	tokens.TypeLBracket: precedenceCall,
+	tokens.TypeLParen:   precedenceCall,
 }
