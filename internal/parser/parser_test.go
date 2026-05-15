@@ -610,23 +610,50 @@ func TestIdentifierExpression(t *testing.T) {
 }
 
 func TestIntegerExpression(t *testing.T) {
-	input := "5;"
+	t.Run("simple integer literal", func(t *testing.T) {
+		input := "5;"
 
-	p, err := New(lexer.New(input, nil), nil)
-	require.NoError(t, err)
+		p, err := New(lexer.New(input, nil), nil)
+		require.NoError(t, err)
 
-	program := p.ParseProgram()
-	assert.NotNil(t, program)
-	require.Len(t, program.Statements, 1)
+		program := p.ParseProgram()
+		assert.NotNil(t, program)
+		require.Len(t, program.Statements, 1)
 
-	stmt, ok := program.Statements[0].(*ast.StatementExpression)
-	require.True(t, ok)
+		stmt, ok := program.Statements[0].(*ast.StatementExpression)
+		require.True(t, ok)
 
-	intLiteral, ok := stmt.Expression.(*ast.ExpressionLiteralInteger)
-	require.True(t, ok)
-	assert.Equal(t, 5, intLiteral.Value)
-	assert.Equal(t, "5", intLiteral.TokenLexeme())
-	assert.Equal(t, "5", intLiteral.String())
+		intLiteral, ok := stmt.Expression.(*ast.ExpressionLiteralInteger)
+		require.True(t, ok)
+		assert.Equal(t, 5, intLiteral.Value)
+		assert.Equal(t, "5", intLiteral.TokenLexeme())
+		assert.Equal(t, "5", intLiteral.String())
+	})
+
+	t.Run("negative integer literal", func(t *testing.T) {
+		input := "-15;"
+
+		p, err := New(lexer.New(input, nil), nil)
+		require.NoError(t, err)
+
+		program := p.ParseProgram()
+
+		assert.NotNil(t, program)
+		require.Len(t, program.Statements, 1)
+
+		stmt, ok := program.Statements[0].(*ast.StatementExpression)
+		require.True(t, ok)
+
+		prefixExp, ok := stmt.Expression.(*ast.ExpressionPrefix)
+		require.True(t, ok)
+		assert.Equal(t, "-", prefixExp.Operator)
+
+		intLiteral, ok := prefixExp.Right.(*ast.ExpressionLiteralInteger)
+		require.True(t, ok)
+		assert.Equal(t, 15, intLiteral.Value)
+		assert.Equal(t, "15", intLiteral.TokenLexeme())
+		assert.Equal(t, "15", intLiteral.String())
+	})
 }
 
 func TestStringExpression(t *testing.T) {
