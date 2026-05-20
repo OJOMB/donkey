@@ -1987,4 +1987,107 @@ func TestParserParseBitwiseOps(t *testing.T) {
 	}
 }
 
-func TestParserParseExpressionLiteralMap(t *testing.T) {}
+func TestParserParseStatementExpressionLiteralMap(t *testing.T) {
+	type testCase struct {
+		name           string
+		input          string
+		expectedOutput ast.Statement
+		expectedErrs   []string
+	}
+
+	var testCases = []testCase{
+		{
+			name:  "test empty map",
+			input: `{}`,
+			expectedOutput: &ast.StatementExpression{
+				Token: tokens.Token{Type: tokens.TypeLBrace, Lexeme: "{"},
+				Expression: &ast.ExpressionLiteralMap{
+					Token: tokens.Token{Type: tokens.TypeLBrace, Lexeme: "{"},
+					Pairs: []ast.MapPair{},
+				},
+			},
+			expectedErrs: []string{},
+		},
+		{
+			name:  "test map with multiple key-value pairs",
+			input: `{ "one": 1, "two": 2 + 3, "three": myFunction(x, y) }`,
+			expectedOutput: &ast.StatementExpression{
+				Token: tokens.Token{Type: tokens.TypeLBrace, Lexeme: "{"},
+				Expression: &ast.ExpressionLiteralMap{
+					Token: tokens.Token{Type: tokens.TypeLBrace, Lexeme: "{"},
+					Pairs: []ast.MapPair{
+						{
+							Key: &ast.ExpressionLiteralString{
+								Token: tokens.Token{Type: tokens.TypeString, Lexeme: "one"},
+								Value: "one",
+							},
+							Value: &ast.ExpressionLiteralInteger{
+								Token: tokens.Token{Type: tokens.TypeInt, Lexeme: "1"},
+								Value: 1,
+							},
+						},
+						{
+							Key: &ast.ExpressionLiteralString{
+								Token: tokens.Token{Type: tokens.TypeString, Lexeme: "two"},
+								Value: "two",
+							},
+							Value: &ast.ExpressionInfix{
+								Token:    tokens.Token{Type: tokens.TypePlus, Lexeme: "+"},
+								Operator: "+",
+								Left: &ast.ExpressionLiteralInteger{
+									Token: tokens.Token{Type: tokens.TypeInt, Lexeme: "2"},
+									Value: 2,
+								},
+								Right: &ast.ExpressionLiteralInteger{
+									Token: tokens.Token{Type: tokens.TypeInt, Lexeme: "3"},
+									Value: 3,
+								},
+							},
+						},
+						{
+							Key: &ast.ExpressionLiteralString{
+								Token: tokens.Token{Type: tokens.TypeString, Lexeme: "three"},
+								Value: "three",
+							},
+							Value: &ast.ExpressionCall{
+								Token: tokens.Token{Type: tokens.TypeLParen, Lexeme: "("},
+								Function: &ast.ExpressionIdentifier{
+									Token: tokens.Token{Type: tokens.TypeIdent, Lexeme: "myFunction"},
+									Value: "myFunction",
+								},
+								Arguments: []ast.Expression{
+									&ast.ExpressionIdentifier{
+										Token: tokens.Token{Type: tokens.TypeIdent, Lexeme: "x"},
+										Value: "x",
+									},
+									&ast.ExpressionIdentifier{
+										Token: tokens.Token{Type: tokens.TypeIdent, Lexeme: "y"},
+										Value: "y",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			expectedErrs: []string{},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			p, err := New(lexer.New(tc.input, nil), nil)
+			require.NoError(t, err)
+
+			program := p.ParseProgram()
+			require.NotNil(t, program)
+
+			// we know the program will be a single statement expression whose expression is the map literal, so we can directly access it here for ease of testing
+			stmtExpr, ok := program.Statements[0].(*ast.StatementExpression)
+			require.True(t, ok)
+
+			assert.Equal(t, tc.expectedOutput, stmtExpr)
+			assert.Equal(t, tc.expectedErrs, p.Errors)
+		})
+	}
+}

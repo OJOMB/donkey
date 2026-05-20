@@ -59,11 +59,12 @@ func New(l *lexer.Lexer, logger logs.Logger) (*Parser, error) {
 	p.RegisterPrefix(tokens.TypeBang, p.parseExpressionPrefix)
 	p.RegisterPrefix(tokens.TypeMinus, p.parseExpressionPrefix)
 	p.RegisterPrefix(tokens.TypeLParen, p.parseExpressionGrouped)
+	p.RegisterPrefix(tokens.TypeLBracket, p.parseExpressionLiteralList)
+	p.RegisterPrefix(tokens.TypeLBrace, p.parseExpressionLiteralMap)
 	p.RegisterPrefix(tokens.TypeIf, p.parseExpressionIf)
 	p.RegisterPrefix(tokens.TypeFunction, p.parseExpressionLiteralFunction)
 	p.RegisterPrefix(tokens.TypeContinue, p.parseExpressionKeyword)
 	p.RegisterPrefix(tokens.TypeBreak, p.parseExpressionKeyword)
-	p.RegisterPrefix(tokens.TypeLBracket, p.parseExpressionLiteralList)
 
 	// register infix parse functions for different token types
 	p.RegisterInfix(tokens.TypePlus, p.parseExpressionInfix)
@@ -132,9 +133,9 @@ func (p *Parser) parseStatement() ast.Statement {
 		// so if we see a left brace and the next token is not a statement token, then we can assume this is a map literal being used as an expression statement, like {"key": "value"};
 		switch p.peekToken.Type {
 		case tokens.TypeBind, tokens.TypeReturn, tokens.TypeIf, tokens.TypeWhile, tokens.TypeFor, tokens.TypeFunction:
-			return p.parseBlockStatement()
+			return p.parseBlockStatement(nil)
 		default:
-			return p.parseExpressionStatement()
+			return p.parseStatementExpressionLiteralMap()
 		}
 	case tokens.TypeWhile:
 		return p.parseStatementWhile()
@@ -354,7 +355,7 @@ func (p *Parser) parseExpressionLiteralFunction() ast.Expression {
 		return nil
 	}
 
-	lit.Body = p.parseBlockStatement()
+	lit.Body = p.parseBlockStatement(nil)
 
 	return lit
 }
@@ -439,7 +440,7 @@ func (p *Parser) parseExpressionIf() ast.Expression {
 			return nil
 		}
 
-		branch.Consequence = p.parseBlockStatement()
+		branch.Consequence = p.parseBlockStatement(nil)
 
 		expr.Branches = append(expr.Branches, branch)
 
@@ -457,7 +458,7 @@ func (p *Parser) parseExpressionIf() ast.Expression {
 			return nil
 		}
 
-		expr.Alternative = p.parseBlockStatement()
+		expr.Alternative = p.parseBlockStatement(nil)
 	}
 
 	return expr
@@ -498,8 +499,15 @@ func (p *Parser) parseCallArguments() []ast.Expression {
 
 	return args
 }
-func (p *Parser) parseBlockStatement() *ast.StatementBlock {
+func (p *Parser) parseBlockStatement(initialStmt ast.Statement) *ast.StatementBlock {
 	block := &ast.StatementBlock{Statements: make([]ast.Statement, 0)}
+
+	// if we have an initial statement, we add it to the block before parsing the rest of the statements in the block
+	// this can happen when we mistakenly parse a block statement as a map literal, so we try to parse it as a block statement and if that fails we parse it as a map literal, but in the case of a block statement we have already consumed the left brace token
+	// so we need to add the initial statement to the block before parsing the rest of the statements in the block
+	if initialStmt != nil {
+		block.Statements = append(block.Statements, initialStmt)
+	}
 
 	p.nextToken()
 	for p.currToken.Type != tokens.TypeRBrace && p.currToken.Type != tokens.TypeEOF {
@@ -666,7 +674,7 @@ func (p *Parser) parseStatementWhile() ast.Statement {
 		return nil
 	}
 
-	stmt.Body = p.parseBlockStatement()
+	stmt.Body = p.parseBlockStatement(nil)
 
 	return stmt
 }
@@ -720,7 +728,7 @@ func (p *Parser) parseStatementFor() ast.Statement {
 		return nil
 	}
 
-	stmt.Body = p.parseBlockStatement()
+	stmt.Body = p.parseBlockStatement(nil)
 
 	return stmt
 }
@@ -775,7 +783,7 @@ func (p *Parser) parseStatementFunction() ast.Statement {
 		return nil
 	}
 
-	fn.Value.Body = p.parseBlockStatement()
+	fn.Value.Body = p.parseBlockStatement(nil)
 
 	return fn
 }
@@ -814,6 +822,140 @@ func (p *Parser) parseExpressionList(end tokens.Type) []ast.Expression {
 	}
 
 	return exprs
+}
+
+func (p *Parser) parseStatementExpressionLiteralMap() ast.Statement {
+	lit := &ast.ExpressionLiteralMap{Token: p.currToken, Pairs: make([]ast.MapPair, 0)}
+
+	// in the case of an empty map, we should have a right brace immediately after the left brace
+	if p.peekToken.Type == tokens.TypeRBrace {
+		p.nextToken()
+		return &ast.StatementExpression{
+			Token:      tokens.Token{Type: tokens.TypeLBrace, Lexeme: "{"},
+			Expression: lit,
+		}
+	}
+
+	p.nextToken()
+	if p.currToken.Type == tokens.TypeIdent && p.peekToken.Type == tokens.TypeAssign {
+		// seems like we actually have a block statement starting with a statement rebind
+		initStmt := p.parseStatementReBind()
+		if initStmt == nil {
+			p.logger.Debug("failed to parse initial statement in block")
+			return nil
+		}
+
+		return p.parseBlockStatement(initStmt)
+	}
+
+	i := 0
+	for p.peekToken.Type != tokens.TypeRBrace && p.peekToken.Type != tokens.TypeEOF {
+		key := p.parseExpression(precedenceLowest)
+		if key == nil {
+			p.logger.Debug("failed to parse map literal key expression")
+			return nil
+		}
+
+		if !p.expectPeek(tokens.TypeColon) {
+			if i == 0 {
+				// since we have already checked this block did not begin with any of the strict statement tokens
+				// and it wasnt a statement rebind, we can assume it started with a statement expression.
+				initStmt := &ast.StatementExpression{
+					Token:      tokens.Token{Type: p.currToken.Type, Lexeme: p.currToken.Lexeme},
+					Expression: key,
+				}
+
+				// here we have encountered what we thought was a map, but seems to be a block statement instead, so we can try to parse it as a block statement and if that fails we can return an error
+				return p.parseBlockStatement(initStmt)
+			}
+
+			p.logger.Debug("expected : after map literal key expression, got %s instead", p.peekToken.Type)
+			return nil
+		}
+
+		p.nextToken()
+
+		value := p.parseExpression(precedenceLowest)
+		if value == nil {
+			p.logger.Debug("failed to parse map literal value expression")
+			return nil
+		}
+
+		lit.Pairs = append(lit.Pairs, ast.MapPair{
+			Key:   key,
+			Value: value,
+		})
+
+		if p.peekToken.Type != tokens.TypeComma {
+			if !p.expectPeek(tokens.TypeRBrace) {
+				p.logger.Debug("expected } after map literal value expression, got %s instead", p.peekToken.Type)
+				return nil
+			}
+
+			p.nextToken() // advance past the right brace
+			break
+		}
+
+		p.nextToken()
+		p.nextToken()
+
+		i++
+	}
+
+	return &ast.StatementExpression{
+		Token:      tokens.Token{Type: tokens.TypeLBrace, Lexeme: "{"},
+		Expression: lit,
+	}
+}
+
+func (p *Parser) parseExpressionLiteralMap() ast.Expression {
+	lit := &ast.ExpressionLiteralMap{Token: p.currToken, Pairs: make([]ast.MapPair, 0)}
+
+	// in the case of an empty map, we should have a right brace immediately after the left brace
+	if p.peekToken.Type == tokens.TypeRBrace {
+		p.nextToken()
+		return lit
+	}
+
+	p.nextToken()
+	for p.currToken.Type != tokens.TypeRBrace && p.currToken.Type != tokens.TypeEOF {
+		key := p.parseExpression(precedenceLowest)
+		if key == nil {
+			p.logger.Debug("failed to parse map literal key expression")
+			return nil
+		}
+
+		if !p.expectPeek(tokens.TypeColon) {
+			p.logger.Debug("expected : after map literal key expression, got %s instead", p.peekToken.Type)
+			return nil
+		}
+
+		p.nextToken()
+		value := p.parseExpression(precedenceLowest)
+		if value == nil {
+			p.logger.Debug("failed to parse map literal value expression")
+			return nil
+		}
+
+		lit.Pairs = append(lit.Pairs, ast.MapPair{
+			Key:   key,
+			Value: value,
+		})
+
+		if p.peekToken.Type != tokens.TypeComma {
+			if !p.expectPeek(tokens.TypeRBrace) {
+				p.logger.Debug("expected } after map literal value expression, got %s instead", p.peekToken.Type)
+				return nil
+			}
+
+			p.nextToken() // advance past the right brace
+			break
+		}
+
+		p.nextToken()
+	}
+
+	return lit
 }
 
 // parseExpressionIndex parses an index expression, which is an expression of the form <expression>[<expression>].

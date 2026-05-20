@@ -2,7 +2,7 @@ package ast
 
 import "strings"
 
-// Program is the root node of the AST. It contains a slice of statements.
+// Program is the root node of the AST. It is very simply just a slice of sequential statements.
 type Program struct {
 	Statements []Statement
 }
