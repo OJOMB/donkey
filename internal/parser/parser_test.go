@@ -574,6 +574,59 @@ func TestParseStatements(t *testing.T) {
 			},
 			expectedErrs: []string{},
 		},
+		{
+			name: "test map literals - no errors",
+			input: `
+				var myMap = {"one": 1, "two": 2, "three": 3};
+			`,
+			expectedOutput: &ast.Program{
+				Statements: []ast.Statement{
+					&ast.StatementBind{
+						Token: tokens.Token{Type: tokens.TypeBind, Lexeme: "var"},
+						Name: &ast.ExpressionIdentifier{
+							Token: tokens.Token{Type: tokens.TypeIdent, Lexeme: "myMap"},
+							Value: "myMap",
+						},
+						Value: &ast.ExpressionLiteralMap{
+							Token: tokens.Token{Type: tokens.TypeLBrace, Lexeme: "{"},
+							Pairs: []ast.MapPair{
+								{
+									Key: &ast.ExpressionLiteralString{
+										Token: tokens.Token{Type: tokens.TypeString, Lexeme: "one"},
+										Value: "one",
+									},
+									Value: &ast.ExpressionLiteralInteger{
+										Token: tokens.Token{Type: tokens.TypeInt, Lexeme: "1"},
+										Value: 1,
+									},
+								},
+								{
+									Key: &ast.ExpressionLiteralString{
+										Token: tokens.Token{Type: tokens.TypeString, Lexeme: "two"},
+										Value: "two",
+									},
+									Value: &ast.ExpressionLiteralInteger{
+										Token: tokens.Token{Type: tokens.TypeInt, Lexeme: "2"},
+										Value: 2,
+									},
+								},
+								{
+									Key: &ast.ExpressionLiteralString{
+										Token: tokens.Token{Type: tokens.TypeString, Lexeme: "three"},
+										Value: "three",
+									},
+									Value: &ast.ExpressionLiteralInteger{
+										Token: tokens.Token{Type: tokens.TypeInt, Lexeme: "3"},
+										Value: 3,
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			expectedErrs: []string{},
+		},
 	}
 
 	for _, tc := range testCases {

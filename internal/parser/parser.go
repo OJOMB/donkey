@@ -953,6 +953,7 @@ func (p *Parser) parseExpressionLiteralMap() ast.Expression {
 		}
 
 		p.nextToken()
+		p.nextToken()
 	}
 
 	return lit
