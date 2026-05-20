@@ -72,6 +72,14 @@ cons(0, myList); // returns [0, 1, 2, 3, 4, 5]
 car(myList); // returns 1
 ```
 
+maps:
+```donkey
+var myMap = {"a": 1, "b": 2, "c": 3};
+print(myMap["a"]); // prints 1
+print(myMap["b"]); // prints 2
+print(myMap["c"]); // prints 3
+```
+
 control flow:
 ```donkey
 if (x < y) {
