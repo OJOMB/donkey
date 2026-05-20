@@ -26,8 +26,8 @@ const (
 	TypeBreak Type = "BREAK"
 	// TypeBuiltin represents the type of a builtin function object
 	TypeBuiltin Type = "BUILTIN"
-	// TypeMaps represents the type of a maps object
-	TypeMaps Type = "MAPS"
+	// TypeMap represents the type of a maps object
+	TypeMap Type = "MAPS"
 	// TypeList represents the type of a list object
 	TypeList Type = "LIST"
 )
@@ -39,4 +39,9 @@ type Object interface {
 	Type() Type
 	// Inspect returns a string representation of the object, which is used for debugging and error messages.
 	Inspect() string
+}
+
+type ObjectKey interface {
+	Object
+	HashKey() HashKey
 }

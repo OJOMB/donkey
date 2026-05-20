@@ -12,3 +12,7 @@ func (i *Integer) Type() Type { return TypeInteger }
 
 // Inspect returns a string representation of the Integer object, which is the string form of the integer value.
 func (i *Integer) Inspect() string { return fmt.Sprintf("%d", i.Value) }
+
+func (i *Integer) HashKey() HashKey {
+	return HashKey{Type: i.Type(), Value: uint64(i.Value)}
+}

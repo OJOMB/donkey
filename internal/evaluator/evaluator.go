@@ -84,7 +84,8 @@ func (e *Evaluator) Eval(node ast.Node, env *objects.Environment) objects.Object
 		return e.evalStatementWhile(nt, env)
 	case *ast.StatementFor:
 		return e.evalStatementFor(nt, env)
-	case *ast.ExpressionLiteralInteger, *ast.ExpressionLiteralBoolean, *ast.ExpressionLiteralString, *ast.ExpressionLiteralFunction, *ast.ExpressionLiteralList:
+	case *ast.ExpressionLiteralInteger, *ast.ExpressionLiteralBoolean, *ast.ExpressionLiteralString,
+		*ast.ExpressionLiteralFunction, *ast.ExpressionLiteralList, *ast.ExpressionLiteralMap:
 		return e.evalLiteral(nt, env)
 	case *ast.ExpressionPrefix:
 		right := e.Eval(nt.Right, env)
@@ -105,7 +106,22 @@ func (e *Evaluator) Eval(node ast.Node, env *objects.Environment) objects.Object
 	case *ast.ExpressionIdentifier:
 		return e.evalExpressionIdentifier(nt, env)
 	case *ast.ExpressionIndex:
-		return e.evalExpressionIndex(nt, env)
+		// index expressions are used for both lists and maps, so we need to evaluate the left-hand side and determine its type before we can evaluate the index expression
+		left := e.Eval(nt.Left, env)
+		if left == nil {
+			e.logger.Error("index expression left-hand side evaluated to nil", "expression", nt.Left.String())
+			return newError("index expression left-hand side evaluated to nil: expr:%s", nt.Left.String())
+		}
+
+		switch left.Type() {
+		case objects.TypeList:
+			return e.evalExpressionListIndex(nt, env)
+		case objects.TypeMap:
+			return e.evalExpressionMapIndex(nt, env)
+		default:
+			e.logger.Warn("index expression left-hand side is not indexable", "type", left.Type())
+			return newError("index expression left-hand side is not indexable: %s", left.Type())
+		}
 	case *ast.ExpressionInfix:
 		l := e.Eval(nt.Left, env)
 		if l == nil {
@@ -223,6 +239,31 @@ func (e *Evaluator) evalLiteral(node ast.Node, env *objects.Environment) objects
 		}
 
 		return &objects.List{Elements: elems}
+	case *ast.ExpressionLiteralMap:
+		pairs := make(map[objects.HashKey]objects.HashPair, len(nt.Pairs))
+		for i, pair := range nt.Pairs {
+			evaluatedKey := e.Eval(pair.Key, env)
+			if evaluatedKey == nil {
+				e.logger.Error("map key evaluated to nil", "index", i, "key", pair.Key.String())
+				return newError("map key evaluated to nil: index:%d key:%s", i, pair.Key.String())
+			}
+
+			hashKey, ok := evaluatedKey.(objects.ObjectKey)
+			if !ok {
+				e.logger.Warn("map key is not a valid map key", "index", i, "key", pair.Key.String(), "type", evaluatedKey.Type())
+				return newError("map key is not a valid map key: index:%d key:%s type:%s", i, pair.Key.String(), evaluatedKey.Type())
+			}
+
+			evaluatedValue := e.Eval(pair.Value, env)
+			if evaluatedValue == nil {
+				e.logger.Error("map value evaluated to nil", "index", i, "value", pair.Value.String())
+				return newError("map value evaluated to nil: index:%d value:%s", i, pair.Value.String())
+			}
+
+			pairs[hashKey.HashKey()] = objects.HashPair{Key: evaluatedKey, Value: evaluatedValue}
+		}
+
+		return &objects.Map{Pairs: pairs}
 	default:
 		e.logger.Warn("unsupported literal type", "type", fmt.Sprintf("%T", nt))
 		return Nowt
@@ -556,7 +597,7 @@ func (e *Evaluator) evalExpressionIdentifier(node *ast.ExpressionIdentifier, env
 	return newError("identifier not found: %s", node.Value)
 }
 
-func (e *Evaluator) evalExpressionIndex(node *ast.ExpressionIndex, env *objects.Environment) objects.Object {
+func (e *Evaluator) evalExpressionListIndex(node *ast.ExpressionIndex, env *objects.Environment) objects.Object {
 	left := e.Eval(node.Left, env)
 	if left == nil {
 		e.logger.Error("index expression left-hand side evaluated to nil", "expression", node.Left.String())
@@ -601,4 +642,39 @@ func (e *Evaluator) evalExpressionIndex(node *ast.ExpressionIndex, env *objects.
 	}
 
 	return list.Elements[idx]
+}
+
+func (e *Evaluator) evalExpressionMapIndex(node *ast.ExpressionIndex, env *objects.Environment) objects.Object {
+	left := e.Eval(node.Left, env)
+	if left == nil {
+		e.logger.Error("index expression left-hand side evaluated to nil", "expression", node.Left.String())
+		return newError("index expression left-hand side evaluated to nil: expr:%s", node.Left.String())
+	}
+
+	// left must be a map for indexing to be valid
+	if left.Type() != objects.TypeMap {
+		e.logger.Warn("index expression left-hand side is not a map", "type", left.Type())
+		return newError("index expression left-hand side is not a map: %s", left.Type())
+	}
+
+	index := e.Eval(node.Index, env)
+	if index == nil {
+		e.logger.Error("index expression index evaluated to nil", "expression", node.Index.String())
+		return newError("index expression index evaluated to nil: expr:%s", node.Index.String())
+	}
+
+	idx, ok := index.(objects.ObjectKey)
+	if !ok {
+		e.logger.Warn("index expression index is not a valid map key", "type", index.Type())
+		return newError("index expression index is not a valid map key: %s", index.Type())
+	}
+
+	m := left.(*objects.Map)
+	value, ok := m.Pairs[idx.HashKey()]
+	if !ok {
+		e.logger.Warn("key not found in map", "key", index.Inspect())
+		return newError("key not found in map: %s", index.Inspect())
+	}
+
+	return value.Value
 }

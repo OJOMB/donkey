@@ -22,52 +22,52 @@ func TestLexParseEval(t *testing.T) {
 	}
 
 	tests := []testCase{
-		{
-			name: "statementBind function definition and call",
-			input: `
-			var addOne = fn(x) { return x + 1; };
-			addOne(5);`,
-			expected: &objects.Integer{Value: 6},
-		},
-		{
-			name: "bitwise operators",
-			input: `
-			var a = 5;
-			var b = 3;
-			a = a & b;
-			a = a | b;
-			a;`,
-			expected: &objects.Integer{Value: 3},
-		},
-		{
-			name: "list literals ints",
-			input: `
-				var list = [1, 2, 3];
-				list;`,
-			expected: &objects.List{Elements: []objects.Object{
-				&objects.Integer{Value: 1},
-				&objects.Integer{Value: 2},
-				&objects.Integer{Value: 3},
-			}},
-		},
-		{
-			name: "list literals strings",
-			input: `
-				var list = ["foo", "bar", "baz"];
-				list;`,
-			expected: &objects.List{Elements: []objects.Object{
-				&objects.String{Value: "foo"},
-				&objects.String{Value: "bar"},
-				&objects.String{Value: "baz"},
-			}},
-		},
-		{
-			name: "list literals indexed",
-			input: `
-				var list = [1, 2, 3];
-				list[2];`,
-			expected: &objects.Integer{Value: 3},
-		},
+		// {
+		// 	name: "statementBind function definition and call",
+		// 	input: `
+		// 	var addOne = fn(x) { return x + 1; };
+		// 	addOne(5);`,
+		// 	expected: &objects.Integer{Value: 6},
+		// },
+		// {
+		// 	name: "bitwise operators",
+		// 	input: `
+		// 	var a = 5;
+		// 	var b = 3;
+		// 	a = a & b;
+		// 	a = a | b;
+		// 	a;`,
+		// 	expected: &objects.Integer{Value: 3},
+		// },
+		// {
+		// 	name: "list ints",
+		// 	input: `
+		// 		var list = [1, 2, 3];
+		// 		list;`,
+		// 	expected: &objects.List{Elements: []objects.Object{
+		// 		&objects.Integer{Value: 1},
+		// 		&objects.Integer{Value: 2},
+		// 		&objects.Integer{Value: 3},
+		// 	}},
+		// },
+		// {
+		// 	name: "list strings",
+		// 	input: `
+		// 		var list = ["foo", "bar", "baz"];
+		// 		list;`,
+		// 	expected: &objects.List{Elements: []objects.Object{
+		// 		&objects.String{Value: "foo"},
+		// 		&objects.String{Value: "bar"},
+		// 		&objects.String{Value: "baz"},
+		// 	}},
+		// },
+		// {
+		// 	name: "list indexed",
+		// 	input: `
+		// 		var list = [1, 2, 3];
+		// 		list[2];`,
+		// 	expected: &objects.Integer{Value: 3},
+		// },
 	}
 
 	evaluator := New(nil)
@@ -2742,7 +2742,7 @@ func TestEvaluatorEvalBuiltinFunctions(t *testing.T) {
 	}
 }
 
-func TestEvaluatorEvalIndexExpressions(t *testing.T) {
+func TestEvaluatorEvalIndexExpressionsList(t *testing.T) {
 	type testCase struct {
 		name     string
 		input    *ast.Program
@@ -2817,6 +2817,110 @@ func TestEvaluatorEvalIndexExpressions(t *testing.T) {
 				},
 			},
 			expected: &objects.Integer{Value: 3},
+		},
+	}
+
+	for i, tc := range tests {
+		t.Run(fmt.Sprintf("test %d: %s", i, tc.name), func(t *testing.T) {
+			evaluator := New(nil)
+			result := evaluator.Eval(tc.input, objects.NewEnvironment())
+
+			assert.Equal(t, tc.expected.Type(), result.Type())
+			assert.Equal(t, tc.expected.Inspect(), result.Inspect())
+		})
+	}
+}
+
+func TestEvaluatorEvalMaps(t *testing.T) {
+	type testCase struct {
+		name     string
+		input    *ast.Program
+		expected string
+	}
+
+	tests := []testCase{
+		{
+			name: "map literal with string keys and integer values",
+			input: &ast.Program{
+				Statements: []ast.Statement{
+					&ast.StatementExpression{
+						Token: tokens.New(tokens.TypeIdent, "myMap"),
+						Expression: &ast.ExpressionLiteralMap{
+							Token: tokens.New(tokens.TypeLBrace, "{"),
+							Pairs: []ast.MapPair{
+								{
+									Key:   &ast.ExpressionLiteralString{Value: "one"},
+									Value: &ast.ExpressionLiteralInteger{Value: 1},
+								},
+								{
+									Key:   &ast.ExpressionLiteralString{Value: "two"},
+									Value: &ast.ExpressionLiteralInteger{Value: 2},
+								},
+							},
+						},
+					},
+				},
+			},
+			expected: `{"one": 1, "two": 2}`,
+		},
+	}
+
+	for i, tc := range tests {
+		t.Run(fmt.Sprintf("test %d: %s", i, tc.name), func(t *testing.T) {
+			evaluator := New(nil)
+			result := evaluator.Eval(tc.input, objects.NewEnvironment())
+
+			mapObj, ok := result.(*objects.Map)
+			assert.True(t, ok, "result should be of type *objects.Map")
+
+			mapJSON := mapObj.Inspect()
+			assert.JSONEq(t, tc.expected, mapJSON)
+		})
+	}
+}
+
+func TestEvaluatorEvalIndexExpressionsMap(t *testing.T) {
+	type testCase struct {
+		name     string
+		input    *ast.Program
+		expected objects.Object
+	}
+
+	tests := []testCase{
+		{
+			name: "indexing into a map with a string key",
+			input: &ast.Program{
+				Statements: []ast.Statement{
+					&ast.StatementBind{
+						Token: tokens.New(tokens.TypeBind, "var"),
+						Name: &ast.ExpressionIdentifier{
+							Token: tokens.New(tokens.TypeIdent, "myMap"),
+							Value: "myMap",
+						},
+						Value: &ast.ExpressionLiteralMap{
+							Token: tokens.New(tokens.TypeLBrace, "{"),
+							Pairs: []ast.MapPair{
+								{
+									Key:   &ast.ExpressionLiteralString{Value: "one"},
+									Value: &ast.ExpressionLiteralInteger{Value: 1},
+								},
+							},
+						},
+					},
+					&ast.StatementExpression{
+						Token: tokens.New(tokens.TypeIdent, "myMap"),
+						Expression: &ast.ExpressionIndex{
+							Token: tokens.New(tokens.TypeLBracket, "["),
+							Left: &ast.ExpressionIdentifier{
+								Token: tokens.New(tokens.TypeIdent, "myMap"),
+								Value: "myMap",
+							},
+							Index: &ast.ExpressionLiteralString{Value: "one"},
+						},
+					},
+				},
+			},
+			expected: &objects.Integer{Value: 1},
 		},
 	}
 

@@ -40,7 +40,7 @@ var builtins = builtinLib{
 			case *objects.List:
 				return &objects.Integer{Value: int(len(arg.Elements))}
 			case *objects.Map:
-				return &objects.Integer{Value: int(len(arg.Elements))}
+				return &objects.Integer{Value: int(len(arg.Pairs))}
 			default:
 				return newError("len not supported for type %s", args[0].Type())
 			}
