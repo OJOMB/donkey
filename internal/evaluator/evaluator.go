@@ -414,10 +414,12 @@ func (e *Evaluator) evalExpressionIf(node *ast.ExpressionIf, env *objects.Enviro
 }
 
 func (e *Evaluator) evalStatementBlock(block *ast.StatementBlock, env *objects.Environment) objects.Object {
+	var blockEnv = objects.NewEnclosedEnvironment(env)
+
 	var result objects.Object
 	for i, stmt := range block.Statements {
 		e.logger.Debug("evaluating statement in block", "index", i, "statement", stmt.String())
-		result = e.Eval(stmt, env)
+		result = e.Eval(stmt, blockEnv)
 
 		if returnValue, ok := result.(*objects.ReturnValue); ok {
 			return returnValue

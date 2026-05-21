@@ -22,52 +22,73 @@ func TestLexParseEval(t *testing.T) {
 	}
 
 	tests := []testCase{
-		// {
-		// 	name: "statementBind function definition and call",
-		// 	input: `
-		// 	var addOne = fn(x) { return x + 1; };
-		// 	addOne(5);`,
-		// 	expected: &objects.Integer{Value: 6},
-		// },
-		// {
-		// 	name: "bitwise operators",
-		// 	input: `
-		// 	var a = 5;
-		// 	var b = 3;
-		// 	a = a & b;
-		// 	a = a | b;
-		// 	a;`,
-		// 	expected: &objects.Integer{Value: 3},
-		// },
-		// {
-		// 	name: "list ints",
-		// 	input: `
-		// 		var list = [1, 2, 3];
-		// 		list;`,
-		// 	expected: &objects.List{Elements: []objects.Object{
-		// 		&objects.Integer{Value: 1},
-		// 		&objects.Integer{Value: 2},
-		// 		&objects.Integer{Value: 3},
-		// 	}},
-		// },
-		// {
-		// 	name: "list strings",
-		// 	input: `
-		// 		var list = ["foo", "bar", "baz"];
-		// 		list;`,
-		// 	expected: &objects.List{Elements: []objects.Object{
-		// 		&objects.String{Value: "foo"},
-		// 		&objects.String{Value: "bar"},
-		// 		&objects.String{Value: "baz"},
-		// 	}},
-		// },
-		// {
-		// 	name: "list indexed",
-		// 	input: `
-		// 		var list = [1, 2, 3];
-		// 		list[2];`,
-		// 	expected: &objects.Integer{Value: 3},
-		// },
+		{
+			name: "statementBind function definition and call",
+			input: `
+			var addOne = fn(x) { return x + 1; };
+			addOne(5);`,
+			expected: &objects.Integer{Value: 6},
+		},
+		{
+			name: "bitwise operators",
+			input: `
+			var a = 5;
+			var b = 3;
+			a = a & b;
+			a = a | b;
+			a;`,
+			expected: &objects.Integer{Value: 3},
+		},
+		{
+			name: "list ints",
+			input: `
+				var list = [1, 2, 3];
+				list;`,
+			expected: &objects.List{Elements: []objects.Object{
+				&objects.Integer{Value: 1},
+				&objects.Integer{Value: 2},
+				&objects.Integer{Value: 3},
+			}},
+		},
+		{
+			name: "list strings",
+			input: `
+				var list = ["foo", "bar", "baz"];
+				list;`,
+			expected: &objects.List{Elements: []objects.Object{
+				&objects.String{Value: "foo"},
+				&objects.String{Value: "bar"},
+				&objects.String{Value: "baz"},
+			}},
+		},
+		{
+			name: "list indexed",
+			input: `
+				var list = [1, 2, 3];
+				list[2];`,
+			expected: &objects.Integer{Value: 3},
+		},
+		{
+			name: "statement block that looks like a map (i.e. does not start with an explicit statement token)",
+			input: `
+				var foo = 0;
+
+				{
+					foo = 10;
+				}
+
+				foo;`,
+			expected: &objects.Integer{Value: 10},
+		},
+		{
+			name: "check that variables declared in a block do not leak out into the surrounding code",
+			input: `
+				{
+					var foo = 10;
+				}
+				foo;`,
+			expected: &objects.ErrorValue{Message: "identifier not found: foo"},
+		},
 	}
 
 	evaluator := New(nil)
@@ -2862,6 +2883,45 @@ func TestEvaluatorEvalMaps(t *testing.T) {
 				},
 			},
 			expected: `{"one": 1, "two": 2}`,
+		},
+		{
+			name: "map literal with mixed key and value types",
+			input: &ast.Program{
+				Statements: []ast.Statement{
+					&ast.StatementExpression{
+						Token: tokens.New(tokens.TypeIdent, "myMap"),
+						Expression: &ast.ExpressionLiteralMap{
+							Token: tokens.New(tokens.TypeLBrace, "{"),
+							Pairs: []ast.MapPair{
+								{
+									Key:   &ast.ExpressionLiteralInteger{Value: 1},
+									Value: &ast.ExpressionLiteralString{Value: "one"},
+								},
+								{
+									Key:   &ast.ExpressionLiteralString{Value: "two"},
+									Value: &ast.ExpressionLiteralBoolean{Value: true},
+								},
+							},
+						},
+					},
+				},
+			},
+			expected: `{"1": "one", "two": true}`,
+		},
+		{
+			name: "empty map literal",
+			input: &ast.Program{
+				Statements: []ast.Statement{
+					&ast.StatementExpression{
+						Token: tokens.New(tokens.TypeIdent, "myMap"),
+						Expression: &ast.ExpressionLiteralMap{
+							Token: tokens.New(tokens.TypeLBrace, "{"),
+							Pairs: []ast.MapPair{},
+						},
+					},
+				},
+			},
+			expected: `{}`,
 		},
 	}
 
