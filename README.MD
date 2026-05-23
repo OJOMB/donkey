@@ -9,6 +9,7 @@ Donkey expands on Monkey with additional features such as:
 * bitwise operators
 * statement block scoping
 * increment/decrement suffix operators
+* multi-level indexing into lists and maps (e.g. myList[0][1] or myMap["a"]["b"])
 * and more!
 
 install the donkey repl with:
@@ -66,6 +67,14 @@ print(myList[0]); // prints 1
 print(myList[1]); // prints 2
 print(myList[2]); // prints 3
 
+var nestedList = [[1, 2], [3, 4], [5, 6]];
+print(nestedList[0][0]); // prints 1
+print(nestedList[0][1]); // prints 2
+print(nestedList[1][0]); // prints 3
+print(nestedList[1][1]); // prints 4
+print(nestedList[2][0]); // prints 5
+print(nestedList[2][1]); // prints 6
+
 // lisp-style list operations:
 cdr(myList); // returns [2, 3, 4, 5]
 cons(0, myList); // returns [0, 1, 2, 3, 4, 5]
@@ -78,6 +87,9 @@ var myMap = {"a": 1, "b": 2, "c": 3};
 print(myMap["a"]); // prints 1
 print(myMap["b"]); // prints 2
 print(myMap["c"]); // prints 3
+
+var nestedMap = {"x": {"y": 10}};
+print(nestedMap["x"]["y"]); // prints 10
 ```
 
 control flow:
