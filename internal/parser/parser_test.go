@@ -627,6 +627,127 @@ func TestParseStatements(t *testing.T) {
 			},
 			expectedErrs: []string{},
 		},
+		{
+			name:  "indexing a map literal",
+			input: `{"one": 1, "two": 2}["two"];`,
+			expectedOutput: &ast.Program{
+				Statements: []ast.Statement{
+					&ast.StatementExpression{
+						Token: tokens.NewStatic(tokens.TypeLBracket),
+						Expression: &ast.ExpressionIndex{
+							Token: tokens.NewStatic(tokens.TypeLBracket),
+							Index: &ast.ExpressionLiteralString{
+								Token: tokens.New(tokens.TypeString, "two"), Value: "two",
+							},
+							Left: &ast.ExpressionLiteralMap{
+								Token: tokens.NewStatic(tokens.TypeLBrace),
+								Pairs: []ast.MapPair{
+									{
+										Key: &ast.ExpressionLiteralString{
+											Token: tokens.New(tokens.TypeString, "one"),
+											Value: "one",
+										},
+										Value: &ast.ExpressionLiteralInteger{
+											Token: tokens.New(tokens.TypeInt, "1"),
+											Value: 1,
+										},
+									},
+									{
+										Key: &ast.ExpressionLiteralString{
+											Token: tokens.New(tokens.TypeString, "two"),
+											Value: "two",
+										},
+										Value: &ast.ExpressionLiteralInteger{
+											Token: tokens.New(tokens.TypeInt, "2"),
+											Value: 2,
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			expectedErrs: []string{},
+		},
+		{
+			name: "indexing a nested map literal",
+			input: `
+				{
+					"one": {
+						"oneone": 11,
+						"twotwo": 22
+					},
+					"two": 2
+				}["one"]["oneone"];`,
+			expectedOutput: &ast.Program{
+				Statements: []ast.Statement{
+					&ast.StatementExpression{
+						Token: tokens.NewStatic(tokens.TypeLBracket),
+						Expression: &ast.ExpressionIndex{
+							Token: tokens.NewStatic(tokens.TypeLBracket),
+							Index: &ast.ExpressionLiteralString{
+								Token: tokens.New(tokens.TypeString, "oneone"), Value: "oneone",
+							},
+							Left: &ast.ExpressionIndex{
+								Token: tokens.NewStatic(tokens.TypeLBracket),
+								Index: &ast.ExpressionLiteralString{
+									Token: tokens.New(tokens.TypeString, "one"),
+									Value: "one",
+								},
+								Left: &ast.ExpressionLiteralMap{
+									Token: tokens.NewStatic(tokens.TypeLBrace),
+									Pairs: []ast.MapPair{
+										{
+											Key: &ast.ExpressionLiteralString{
+												Token: tokens.New(tokens.TypeString, "one"),
+												Value: "one",
+											},
+											Value: &ast.ExpressionLiteralMap{
+												Token: tokens.NewStatic(tokens.TypeLBrace),
+												Pairs: []ast.MapPair{
+													{
+														Key: &ast.ExpressionLiteralString{
+															Token: tokens.New(tokens.TypeString, "oneone"),
+															Value: "oneone",
+														},
+														Value: &ast.ExpressionLiteralInteger{
+															Token: tokens.New(tokens.TypeInt, "11"),
+															Value: 11,
+														},
+													},
+													{
+														Key: &ast.ExpressionLiteralString{
+															Token: tokens.New(tokens.TypeString, "twotwo"),
+															Value: "twotwo",
+														},
+														Value: &ast.ExpressionLiteralInteger{
+															Token: tokens.New(tokens.TypeInt, "22"),
+															Value: 22,
+														},
+													},
+												},
+											},
+										},
+										{
+											Key: &ast.ExpressionLiteralString{
+												Token: tokens.New(tokens.TypeString, "two"),
+												Value: "two",
+											},
+											Value: &ast.ExpressionLiteralInteger{
+												Token: tokens.New(tokens.TypeInt, "2"),
+												Value: 2,
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			expectedErrs: []string{},
+		},
 	}
 
 	for _, tc := range testCases {
@@ -1815,15 +1936,15 @@ func TestParserParseExpressionListIndexing(t *testing.T) {
 			name:  "test simple list indexing",
 			input: `myList[0]`,
 			expectedOutput: &ast.StatementExpression{
-				Token: tokens.Token{Type: tokens.TypeIdent, Lexeme: "myList"},
+				Token: tokens.New(tokens.TypeIdent, "myList"),
 				Expression: &ast.ExpressionIndex{
-					Token: tokens.Token{Type: tokens.TypeLBracket, Lexeme: "["},
+					Token: tokens.NewStatic(tokens.TypeLBracket),
 					Left: &ast.ExpressionIdentifier{
-						Token: tokens.Token{Type: tokens.TypeIdent, Lexeme: "myList"},
+						Token: tokens.New(tokens.TypeIdent, "myList"),
 						Value: "myList",
 					},
 					Index: &ast.ExpressionLiteralInteger{
-						Token: tokens.Token{Type: tokens.TypeInt, Lexeme: "0"},
+						Token: tokens.New(tokens.TypeInt, "0"),
 						Value: 0,
 					},
 				},
@@ -1834,22 +1955,22 @@ func TestParserParseExpressionListIndexing(t *testing.T) {
 			name:  "test list indexing with infix expression as index",
 			input: `myList[1 + 2]`,
 			expectedOutput: &ast.StatementExpression{
-				Token: tokens.Token{Type: tokens.TypeIdent, Lexeme: "myList"},
+				Token: tokens.New(tokens.TypeIdent, "myList"),
 				Expression: &ast.ExpressionIndex{
-					Token: tokens.Token{Type: tokens.TypeLBracket, Lexeme: "["},
+					Token: tokens.NewStatic(tokens.TypeLBracket),
 					Left: &ast.ExpressionIdentifier{
-						Token: tokens.Token{Type: tokens.TypeIdent, Lexeme: "myList"},
+						Token: tokens.New(tokens.TypeIdent, "myList"),
 						Value: "myList",
 					},
 					Index: &ast.ExpressionInfix{
-						Token:    tokens.Token{Type: tokens.TypePlus, Lexeme: "+"},
+						Token:    tokens.New(tokens.TypePlus, "+"),
 						Operator: "+",
 						Left: &ast.ExpressionLiteralInteger{
-							Token: tokens.Token{Type: tokens.TypeInt, Lexeme: "1"},
+							Token: tokens.New(tokens.TypeInt, "1"),
 							Value: 1,
 						},
 						Right: &ast.ExpressionLiteralInteger{
-							Token: tokens.Token{Type: tokens.TypeInt, Lexeme: "2"},
+							Token: tokens.New(tokens.TypeInt, "2"),
 							Value: 2,
 						},
 					},
@@ -1858,7 +1979,7 @@ func TestParserParseExpressionListIndexing(t *testing.T) {
 			expectedErrs: []string{},
 		},
 		{
-			name:  "test indexing into a list literal",
+			name:  "indexing into a list literal",
 			input: `[1, 2, 3][0]`,
 			expectedOutput: &ast.StatementExpression{
 				Token: tokens.Token{Type: tokens.TypeLBracket, Lexeme: "["},
@@ -1868,89 +1989,89 @@ func TestParserParseExpressionListIndexing(t *testing.T) {
 						Token: tokens.Token{Type: tokens.TypeLBracket, Lexeme: "["},
 						Elements: []ast.Expression{
 							&ast.ExpressionLiteralInteger{
-								Token: tokens.Token{Type: tokens.TypeInt, Lexeme: "1"},
+								Token: tokens.New(tokens.TypeInt, "1"),
 								Value: 1,
 							},
 							&ast.ExpressionLiteralInteger{
-								Token: tokens.Token{Type: tokens.TypeInt, Lexeme: "2"},
+								Token: tokens.New(tokens.TypeInt, "2"),
 								Value: 2,
 							},
 							&ast.ExpressionLiteralInteger{
-								Token: tokens.Token{Type: tokens.TypeInt, Lexeme: "3"},
+								Token: tokens.New(tokens.TypeInt, "3"),
 								Value: 3,
 							},
 						},
 					},
 					Index: &ast.ExpressionLiteralInteger{
-						Token: tokens.Token{Type: tokens.TypeInt, Lexeme: "0"},
+						Token: tokens.New(tokens.TypeInt, "0"),
 						Value: 0,
 					},
 				},
 			},
 			expectedErrs: []string{},
 		},
-		// {
-		// 	// TODO: figure out a way to do this
-		// 	name:  "test indexing into a nested list literal",
-		// 	input: `[[1, 2, 3],[4,5,6]][0][1]`,
-		// 	expectedOutput: &ast.StatementExpression{
-		// 		Token: tokens.Token{Type: tokens.TypeLBracket, Lexeme: "["},
-		// 		Expression: &ast.ExpressionIndex{
-		// 			Token: tokens.Token{Type: tokens.TypeLBracket, Lexeme: "["},
-		// 			Index: &ast.ExpressionLiteralInteger{
-		// 				Token: tokens.Token{Type: tokens.TypeInt, Lexeme: "1"},
-		// 				Value: 1,
-		// 			},
-		// 			Left: &ast.ExpressionIndex{
-		// 				Token: tokens.Token{Type: tokens.TypeLBracket, Lexeme: "["},
-		// 				Index: &ast.ExpressionLiteralInteger{
-		// 					Token: tokens.Token{Type: tokens.TypeInt, Lexeme: "0"},
-		// 					Value: 0,
-		// 				},
-		// 				Left: &ast.ExpressionLiteralList{
-		// 					Token: tokens.Token{Type: tokens.TypeLBracket, Lexeme: "["},
-		// 					Elements: []ast.Expression{
-		// 						&ast.ExpressionLiteralList{
-		// 							Token: tokens.Token{Type: tokens.TypeLBracket, Lexeme: "["},
-		// 							Elements: []ast.Expression{
-		// 								&ast.ExpressionLiteralInteger{
-		// 									Token: tokens.Token{Type: tokens.TypeInt, Lexeme: "1"},
-		// 									Value: 1,
-		// 								},
-		// 								&ast.ExpressionLiteralInteger{
-		// 									Token: tokens.Token{Type: tokens.TypeInt, Lexeme: "2"},
-		// 									Value: 2,
-		// 								},
-		// 								&ast.ExpressionLiteralInteger{
-		// 									Token: tokens.Token{Type: tokens.TypeInt, Lexeme: "3"},
-		// 									Value: 3,
-		// 								},
-		// 							},
-		// 						},
-		// 						&ast.ExpressionLiteralList{
-		// 							Token: tokens.Token{Type: tokens.TypeLBracket, Lexeme: "["},
-		// 							Elements: []ast.Expression{
-		// 								&ast.ExpressionLiteralInteger{
-		// 									Token: tokens.Token{Type: tokens.TypeInt, Lexeme: "4"},
-		// 									Value: 4,
-		// 								},
-		// 								&ast.ExpressionLiteralInteger{
-		// 									Token: tokens.Token{Type: tokens.TypeInt, Lexeme: "5"},
-		// 									Value: 5,
-		// 								},
-		// 								&ast.ExpressionLiteralInteger{
-		// 									Token: tokens.Token{Type: tokens.TypeInt, Lexeme: "6"},
-		// 									Value: 6,
-		// 								},
-		// 							},
-		// 						},
-		// 					},
-		// 				},
-		// 			},
-		// 		},
-		// 	},
-		// 	expectedErrs: []string{},
-		// },
+		{
+			// TODO: figure out a way to do this
+			name:  "test indexing into a nested list literal",
+			input: `[[1, 2, 3],[4,5,6]][0][1]`,
+			expectedOutput: &ast.StatementExpression{
+				Token: tokens.Token{Type: tokens.TypeLBracket, Lexeme: "["},
+				Expression: &ast.ExpressionIndex{
+					Token: tokens.NewStatic(tokens.TypeLBracket),
+					Index: &ast.ExpressionLiteralInteger{
+						Token: tokens.New(tokens.TypeInt, "1"),
+						Value: 1,
+					},
+					Left: &ast.ExpressionIndex{
+						Token: tokens.NewStatic(tokens.TypeLBracket),
+						Index: &ast.ExpressionLiteralInteger{
+							Token: tokens.New(tokens.TypeInt, "0"),
+							Value: 0,
+						},
+						Left: &ast.ExpressionLiteralList{
+							Token: tokens.NewStatic(tokens.TypeLBracket),
+							Elements: []ast.Expression{
+								&ast.ExpressionLiteralList{
+									Token: tokens.NewStatic(tokens.TypeLBracket),
+									Elements: []ast.Expression{
+										&ast.ExpressionLiteralInteger{
+											Token: tokens.New(tokens.TypeInt, "1"),
+											Value: 1,
+										},
+										&ast.ExpressionLiteralInteger{
+											Token: tokens.New(tokens.TypeInt, "2"),
+											Value: 2,
+										},
+										&ast.ExpressionLiteralInteger{
+											Token: tokens.New(tokens.TypeInt, "3"),
+											Value: 3,
+										},
+									},
+								},
+								&ast.ExpressionLiteralList{
+									Token: tokens.NewStatic(tokens.TypeLBracket),
+									Elements: []ast.Expression{
+										&ast.ExpressionLiteralInteger{
+											Token: tokens.New(tokens.TypeInt, "4"),
+											Value: 4,
+										},
+										&ast.ExpressionLiteralInteger{
+											Token: tokens.New(tokens.TypeInt, "5"),
+											Value: 5,
+										},
+										&ast.ExpressionLiteralInteger{
+											Token: tokens.New(tokens.TypeInt, "6"),
+											Value: 6,
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			expectedErrs: []string{},
+		},
 	}
 
 	for _, tc := range testCases {
