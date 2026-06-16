@@ -487,6 +487,27 @@ func TestLexerLexIndexing(t *testing.T) {
 				{Type: tokens.TypeEOF, Lexeme: ""},
 			},
 		},
+		{
+			name:  "test nested indexing into a list literal",
+			input: `[1, 2, 3][0][0];`,
+			expectedOutput: []tokens.Token{
+				{Type: tokens.TypeLBracket, Lexeme: "["},
+				{Type: tokens.TypeInt, Lexeme: "1"},
+				{Type: tokens.TypeComma, Lexeme: ","},
+				{Type: tokens.TypeInt, Lexeme: "2"},
+				{Type: tokens.TypeComma, Lexeme: ","},
+				{Type: tokens.TypeInt, Lexeme: "3"},
+				{Type: tokens.TypeRBracket, Lexeme: "]"},
+				{Type: tokens.TypeLBracket, Lexeme: "["},
+				{Type: tokens.TypeInt, Lexeme: "0"},
+				{Type: tokens.TypeRBracket, Lexeme: "]"},
+				{Type: tokens.TypeLBracket, Lexeme: "["},
+				{Type: tokens.TypeInt, Lexeme: "0"},
+				{Type: tokens.TypeRBracket, Lexeme: "]"},
+				{Type: tokens.TypeSemicolon, Lexeme: ";"},
+				{Type: tokens.TypeEOF, Lexeme: ""},
+			},
+		},
 	}
 
 	for i, tc := range testCases {
@@ -514,7 +535,7 @@ func TestLexerLexMaps(t *testing.T) {
 
 	var testCases = []testCase{
 		{
-			name:  "test lexing a map literal",
+			name:  "a map literal",
 			input: `{"one": 1, "two": 2, "three": 3};`,
 			expectedOutput: []tokens.Token{
 				{Type: tokens.TypeLBrace, Lexeme: "{"},
@@ -535,7 +556,7 @@ func TestLexerLexMaps(t *testing.T) {
 			},
 		},
 		{
-			name:  "test lexing a nested map literal with indexing",
+			name:  "a nested map literal with indexing",
 			input: `{"one": {"oneone": 11, "twotwo": [1,2,3]}, "two": 2}["one"]["oneone"];`,
 			expectedOutput: []tokens.Token{
 				{Type: tokens.TypeLBrace, Lexeme: "{"},
@@ -567,6 +588,65 @@ func TestLexerLexMaps(t *testing.T) {
 				{Type: tokens.TypeLBracket, Lexeme: "["},
 				{Type: tokens.TypeString, Lexeme: "oneone"},
 				{Type: tokens.TypeRBracket, Lexeme: "]"},
+				{Type: tokens.TypeSemicolon, Lexeme: ";"},
+				{Type: tokens.TypeEOF, Lexeme: ""},
+			},
+		},
+		{
+			name:  "an empty map literal",
+			input: `{}`,
+			expectedOutput: []tokens.Token{
+				{Type: tokens.TypeLBrace, Lexeme: "{"},
+				{Type: tokens.TypeRBrace, Lexeme: "}"},
+				{Type: tokens.TypeEOF, Lexeme: ""},
+			},
+		},
+		{
+			name:  "a map literal with non-string keys",
+			input: `{1: "one", true: "true", false: "false"}`,
+			expectedOutput: []tokens.Token{
+				{Type: tokens.TypeLBrace, Lexeme: "{"},
+				{Type: tokens.TypeInt, Lexeme: "1"},
+				{Type: tokens.TypeColon, Lexeme: ":"},
+				{Type: tokens.TypeString, Lexeme: "one"},
+				{Type: tokens.TypeComma, Lexeme: ","},
+				{Type: tokens.TypeTrue, Lexeme: "true"},
+				{Type: tokens.TypeColon, Lexeme: ":"},
+				{Type: tokens.TypeString, Lexeme: "true"},
+				{Type: tokens.TypeComma, Lexeme: ","},
+				{Type: tokens.TypeFalse, Lexeme: "false"},
+				{Type: tokens.TypeColon, Lexeme: ":"},
+				{Type: tokens.TypeString, Lexeme: "false"},
+				{Type: tokens.TypeRBrace, Lexeme: "}"},
+				{Type: tokens.TypeEOF, Lexeme: ""},
+			},
+		},
+		{
+			name: "test lexing rebinding a map key to a different value",
+			input: `
+				var m = {"one": 1, "one": 2};
+				m["one"] = 3;
+			`,
+			expectedOutput: []tokens.Token{
+				{Type: tokens.TypeBind, Lexeme: "var"},
+				{Type: tokens.TypeIdent, Lexeme: "m"},
+				{Type: tokens.TypeAssign, Lexeme: "="},
+				{Type: tokens.TypeLBrace, Lexeme: "{"},
+				{Type: tokens.TypeString, Lexeme: "one"},
+				{Type: tokens.TypeColon, Lexeme: ":"},
+				{Type: tokens.TypeInt, Lexeme: "1"},
+				{Type: tokens.TypeComma, Lexeme: ","},
+				{Type: tokens.TypeString, Lexeme: "one"},
+				{Type: tokens.TypeColon, Lexeme: ":"},
+				{Type: tokens.TypeInt, Lexeme: "2"},
+				{Type: tokens.TypeRBrace, Lexeme: "}"},
+				{Type: tokens.TypeSemicolon, Lexeme: ";"},
+				{Type: tokens.TypeIdent, Lexeme: "m"},
+				{Type: tokens.TypeLBracket, Lexeme: "["},
+				{Type: tokens.TypeString, Lexeme: "one"},
+				{Type: tokens.TypeRBracket, Lexeme: "]"},
+				{Type: tokens.TypeAssign, Lexeme: "="},
+				{Type: tokens.TypeInt, Lexeme: "3"},
 				{Type: tokens.TypeSemicolon, Lexeme: ";"},
 				{Type: tokens.TypeEOF, Lexeme: ""},
 			},

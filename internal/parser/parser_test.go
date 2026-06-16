@@ -2265,3 +2265,165 @@ func TestParserParseStatementExpressionLiteralMap(t *testing.T) {
 		})
 	}
 }
+
+func TestParserParseStatementIndexBind(t *testing.T) {
+	type testCase struct {
+		name           string
+		input          string
+		expectedOutput *ast.Program
+		expectedErrs   []string
+	}
+
+	var testCases = []testCase{
+		// {
+		// 	name: "test index bind",
+		// 	input: `
+		// 		var myList = [1, 2, 3];
+		// 		myList[0] = 5;
+		// 	`,
+		// 	expectedOutput: &ast.Program{
+		// 		Statements: []ast.Statement{
+		// 			&ast.StatementBind{
+		// 				Token: tokens.Token{Type: tokens.TypeBind, Lexeme: "var"},
+		// 				Name: &ast.ExpressionIdentifier{
+		// 					Token: tokens.Token{Type: tokens.TypeIdent, Lexeme: "myList"},
+		// 					Value: "myList",
+		// 				},
+		// 				Value: &ast.ExpressionLiteralList{
+		// 					Token: tokens.Token{Type: tokens.TypeLBracket, Lexeme: "["},
+		// 					Elements: []ast.Expression{
+		// 						&ast.ExpressionLiteralInteger{
+		// 							Token: tokens.Token{Type: tokens.TypeInt, Lexeme: "1"},
+		// 							Value: 1,
+		// 						},
+		// 						&ast.ExpressionLiteralInteger{
+		// 							Token: tokens.Token{Type: tokens.TypeInt, Lexeme: "2"},
+		// 							Value: 2,
+		// 						},
+		// 						&ast.ExpressionLiteralInteger{
+		// 							Token: tokens.Token{Type: tokens.TypeInt, Lexeme: "3"},
+		// 							Value: 3,
+		// 						},
+		// 					},
+		// 				},
+		// 			},
+		// 			&ast.StatementIndexBind{
+		// 				Token: tokens.Token{Type: tokens.TypeAssign, Lexeme: "="},
+		// 				Left: &ast.ExpressionIndex{
+		// 					Token: tokens.Token{Type: tokens.TypeLBracket, Lexeme: "["},
+		// 					Left: &ast.ExpressionIdentifier{
+		// 						Token: tokens.Token{Type: tokens.TypeIdent, Lexeme: "myList"},
+		// 						Value: "myList",
+		// 					},
+		// 					Index: &ast.ExpressionLiteralInteger{
+		// 						Token: tokens.Token{Type: tokens.TypeInt, Lexeme: "0"},
+		// 						Value: 0,
+		// 					},
+		// 				},
+		// 				Right: &ast.ExpressionLiteralInteger{
+		// 					Token: tokens.Token{Type: tokens.TypeInt, Lexeme: "5"},
+		// 					Value: 5,
+		// 				},
+		// 			},
+		// 		},
+		// 	},
+		// 	expectedErrs: []string{},
+		// },
+		{
+			name: "test nested index bind with infix expression as RHS",
+			input: `
+				var myList = [[1, 2], [4, 5]];
+				myList[0][1] = 5 * 4;
+			`,
+			expectedOutput: &ast.Program{
+				Statements: []ast.Statement{
+					&ast.StatementBind{
+						Token: tokens.Token{Type: tokens.TypeBind, Lexeme: "var"},
+						Name: &ast.ExpressionIdentifier{
+							Token: tokens.Token{Type: tokens.TypeIdent, Lexeme: "myList"},
+							Value: "myList",
+						},
+						Value: &ast.ExpressionLiteralList{
+							Token: tokens.Token{Type: tokens.TypeLBracket, Lexeme: "["},
+							Elements: []ast.Expression{
+								&ast.ExpressionLiteralList{
+									Token: tokens.Token{Type: tokens.TypeLBracket, Lexeme: "["},
+									Elements: []ast.Expression{
+										&ast.ExpressionLiteralInteger{
+											Token: tokens.Token{Type: tokens.TypeInt, Lexeme: "1"},
+											Value: 1,
+										},
+										&ast.ExpressionLiteralInteger{
+											Token: tokens.Token{Type: tokens.TypeInt, Lexeme: "2"},
+											Value: 2,
+										},
+									},
+								},
+								&ast.ExpressionLiteralList{
+									Token: tokens.Token{Type: tokens.TypeLBracket, Lexeme: "["},
+									Elements: []ast.Expression{
+										&ast.ExpressionLiteralInteger{
+											Token: tokens.Token{Type: tokens.TypeInt, Lexeme: "4"},
+											Value: 4,
+										},
+										&ast.ExpressionLiteralInteger{
+											Token: tokens.Token{Type: tokens.TypeInt, Lexeme: "5"},
+											Value: 5,
+										},
+									},
+								},
+							},
+						},
+					},
+					&ast.StatementIndexBind{
+						Token: tokens.Token{Type: tokens.TypeAssign, Lexeme: "="},
+						Left: &ast.ExpressionIndex{
+							Token: tokens.Token{Type: tokens.TypeLBracket, Lexeme: "["},
+							Index: &ast.ExpressionLiteralInteger{
+								Token: tokens.Token{Type: tokens.TypeInt, Lexeme: "1"},
+								Value: 1,
+							},
+							Left: &ast.ExpressionIndex{
+								Token: tokens.Token{Type: tokens.TypeLBracket, Lexeme: "["},
+								Index: &ast.ExpressionLiteralInteger{
+									Token: tokens.Token{Type: tokens.TypeInt, Lexeme: "0"},
+									Value: 0,
+								},
+								Left: &ast.ExpressionIdentifier{
+									Token: tokens.Token{Type: tokens.TypeIdent, Lexeme: "myList"},
+									Value: "myList",
+								},
+							},
+						},
+						Right: &ast.ExpressionInfix{
+							Token:    tokens.Token{Type: tokens.TypeAsterisk, Lexeme: "*"},
+							Operator: "*",
+							Left: &ast.ExpressionLiteralInteger{
+								Token: tokens.Token{Type: tokens.TypeInt, Lexeme: "5"},
+								Value: 5,
+							},
+							Right: &ast.ExpressionLiteralInteger{
+								Token: tokens.Token{Type: tokens.TypeInt, Lexeme: "4"},
+								Value: 4,
+							},
+						},
+					},
+				},
+			},
+			expectedErrs: []string{},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			p, err := New(lexer.New(tc.input, nil), nil)
+			require.NoError(t, err)
+
+			program := p.ParseProgram()
+			require.NotNil(t, program)
+
+			assert.Equal(t, tc.expectedOutput, program)
+			assert.Equal(t, tc.expectedErrs, p.Errors)
+		})
+	}
+}

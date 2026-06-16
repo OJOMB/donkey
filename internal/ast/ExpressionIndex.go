@@ -9,7 +9,7 @@ type ExpressionIndex struct {
 	Token tokens.Token
 	// Left is the expression being indexed, such as a variable or another expression that evaluates to a list or string.
 	Left Expression
-	// Index is the expression representing the index, which can be any expression that evaluates to an integer (for lists) or a string (for strings).
+	// Index is the expression representing the index, which can be any expression that evaluates to an integer or a string.
 	Index Expression
 }
 

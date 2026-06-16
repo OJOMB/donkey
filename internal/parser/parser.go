@@ -158,6 +158,7 @@ func (p *Parser) parseStatement() ast.Statement {
 
 		// if the statement doesn't match any of the above types, we assume it's an expression statement and try to parse it as such
 		// this would be something like foo(5 + 5); or 5 + 5; or "foobar";
+		// it could still be something like an index bind statement like myList[0] = 5;
 		stmt = p.parseExpressionStatement()
 	}
 
@@ -169,7 +170,7 @@ func (p *Parser) isIncrementOrDecrement() bool {
 		(p.currToken.Type == tokens.TypeIdent && p.peekToken.Type == tokens.TypeDecrement)
 }
 
-// parseStatementBind parses a var statement and returns an ast.LetStatement node.
+// parseStatementBind parses a var statement and returns an ast.StatementBind node.
 func (p *Parser) parseStatementBind() *ast.StatementBind {
 	// first token must be var
 	if p.currToken.Type != tokens.TypeBind {
@@ -203,7 +204,7 @@ func (p *Parser) parseStatementBind() *ast.StatementBind {
 	return ls
 }
 
-// parseStatementReturn parses a return statement and returns an ast.ReturnStatement node.
+// parseStatementReturn parses a return statement and returns an ast.StatementReturn node.
 func (p *Parser) parseStatementReturn() *ast.StatementReturn {
 	if p.currToken.Type != tokens.TypeReturn {
 		return nil
@@ -232,10 +233,25 @@ func (p *Parser) parseExpressionStatement() ast.Statement {
 			Token: p.currToken,
 			Value: p.currToken.Lexeme,
 		}
-		p.nextToken() // advance to the left bracket
 
-		// here we have an identifier followed by a left bracket, so we can assume this is an index expression being used as a statement, like myList[0];
-		stmt.Expression = p.parseExpressionIndex(left)
+		// parse the index expression recursively, in case we have a nested index expression like myList[0][1]
+		indexExpr := p.parseExpressionIndexRecursive(left)
+
+		// now we need to check if the next token is an assign token, which would indicate that this is an index bind statement like myList[0] = 5;7
+		if p.peekToken.Type == tokens.TypeAssign {
+			// so now we constuct a StatementIndexBind node with the index expression as the left expression and the expression after the assign token as the right expression
+			p.nextToken() // advance to the expression after the assign token
+			p.nextToken() // advance to the expression after the assign token
+			right := p.parseExpression(precedenceLowest)
+
+			return &ast.StatementIndexBind{
+				Token: tokens.NewStatic(tokens.TypeAssign),
+				Left:  indexExpr,
+				Right: right,
+			}
+		}
+
+		stmt.Expression = indexExpr
 
 		return stmt
 	}
@@ -857,8 +873,10 @@ func (p *Parser) parseStatementExpressionLiteralMap() ast.Statement {
 
 	p.nextToken() // advance to the first token after the left brace
 
-	// we need to check if this is actually a block statement instead of a map literal,
-	// since both block statements and map literals start with a left brace and the syntax for the first key in a map literal is the same as the syntax for the first statement in a block statement, we can check for the presence of an assign token after an identifier to differentiate between the two, since in a block statement we would have an identifier followed by an assign token for a rebind statement, but in a map literal we would have an identifier followed by a colon token for a key-value pair
+	// we need to check if this is actually a block statement instead of a map literal.
+	// since both block statements and map literals start with a left brace and the syntax for the first key in a map literal
+	// is the same as the syntax for the first statement in a block statement, we can check for the presence of an assign token after an identifier
+	// to differentiate between the two, since in a block statement we would have an identifier followed by an assign token for a rebind statement, but in a map literal we would have an identifier followed by a colon token for a key-value pair
 	if p.currToken.Type == tokens.TypeIdent && p.peekToken.Type == tokens.TypeAssign {
 		// seems like we actually have a block statement starting with a statement rebind
 		initStmt := p.parseStatementReBind()
@@ -873,7 +891,7 @@ func (p *Parser) parseStatementExpressionLiteralMap() ast.Statement {
 	i := 0
 	for p.peekToken.Type != tokens.TypeRBrace && p.peekToken.Type != tokens.TypeEOF {
 		if i > 0 {
-			// we don't advance the tokens on the first iteration because we alread did it in the prior check to differentiate between a block statement and a map literal
+			// we don't advance the tokens on the first iteration because we already did it in the prior check to differentiate between a block statement and a map literal
 			p.nextToken() // advance to the first token of the key expression
 		}
 
@@ -892,11 +910,13 @@ func (p *Parser) parseStatementExpressionLiteralMap() ast.Statement {
 					Expression: key,
 				}
 
-				// here we have encountered what we thought was a map, but seems to be a block statement instead, so we can try to parse it as a block statement and if that fails we can return an error
+				// here we have encountered what we thought was a map, but seems to be a block statement instead
+				// so we can try to parse it as a block statement and if that fails we return an error
 				return p.parseBlockStatement(initStmt)
 			}
 
 			p.logger.Debug("expected : after map literal key expression, got %s instead", p.peekToken.Type)
+
 			return nil
 		}
 
@@ -928,12 +948,28 @@ func (p *Parser) parseStatementExpressionLiteralMap() ast.Statement {
 	}
 
 	// at this point the currToken is the right brace
-
 	if p.peekToken.Type == tokens.TypeLBracket {
 		// next we need to check if we have an index expression on our hands
-		// bearing in mind we may have a nested index expression like {"key": [1, 2, 3]}[0], we need to check for an index expression until we no longer see a left bracket token
+		// bearing in mind we may have a nested index expression like {"key1": [1, 2, 3]}["key1"][0], we need to check for an index expression until we no longer see a left bracket token
 		// at which point we can return the statement expression with the map literal as the expression
 		var left = p.parseExpressionIndexRecursive(lit)
+
+		// we now need to check if this is a key bind statement
+		if p.peekToken.Type == tokens.TypeAssign {
+			// here we have a index bind statement to a map literal, like {"key": "value"}["key"] = "new value";
+			// this doesnt make sense since the map literal is unnamed but it's technically valid
+			idxBindStatement := &ast.StatementIndexBind{
+				Token: tokens.NewStatic(tokens.TypeAssign),
+				Left:  left,
+			}
+
+			p.nextToken()
+			p.nextToken() // advance to the expression after the assign token
+			idxBindStatement.Right = p.parseExpression(precedenceLowest)
+
+			return idxBindStatement
+		}
+
 		return &ast.StatementExpression{
 			Token:      tokens.Token{Type: tokens.TypeLBracket, Lexeme: "["},
 			Expression: left,
@@ -1006,22 +1042,7 @@ func (p *Parser) parseExpressionLiteralMap() ast.Expression {
 // If the left expression is nil, it means we are parsing an index expression that starts with an identifier
 // like myList[0], so we create an ExpressionIdentifier for the left expression using the current token.
 // if the left expression is not nil, it means we are parsing an index expression that starts with a more complex expression, like indexing into a list literal [1, 2, 3][0]
-func (p *Parser) parseExpressionIndex(left ast.Expression) ast.Expression {
-	if p.currToken.Type != tokens.TypeLBracket {
-		p.logger.Debug("expected [ at the beginning of index expression, got %s instead", p.currToken.Type)
-		return nil
-	}
-
-	var leftWasNil = left == nil
-	if leftWasNil {
-		left = &ast.ExpressionIdentifier{
-			Token: p.currToken,
-			Value: p.currToken.Lexeme,
-		}
-
-		p.nextToken() // advance to l bracket
-	}
-
+func (p *Parser) parseExpressionIndex(left ast.Expression) *ast.ExpressionIndex {
 	expr := &ast.ExpressionIndex{
 		Token: tokens.Token{Type: tokens.TypeLBracket, Lexeme: "["},
 		Left:  left,
@@ -1043,10 +1064,11 @@ func (p *Parser) parseExpressionIndex(left ast.Expression) ast.Expression {
 	return expr
 }
 
-func (p *Parser) parseExpressionIndexRecursive(left ast.Expression) ast.Expression {
+func (p *Parser) parseExpressionIndexRecursive(left ast.Expression) *ast.ExpressionIndex {
+	var idxExpr *ast.ExpressionIndex
 	for p.peekToken.Type == tokens.TypeLBracket {
 		p.nextToken() // advance to the left bracket
-		idxExpr := p.parseExpressionIndex(left)
+		idxExpr = p.parseExpressionIndex(left)
 		if idxExpr == nil {
 			p.logger.Debug("failed to parse index expression after map literal")
 			return nil
@@ -1055,5 +1077,5 @@ func (p *Parser) parseExpressionIndexRecursive(left ast.Expression) ast.Expressi
 		left = idxExpr
 	}
 
-	return left
+	return idxExpr
 }
