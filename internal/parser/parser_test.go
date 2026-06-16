@@ -2275,60 +2275,76 @@ func TestParserParseStatementIndexBind(t *testing.T) {
 	}
 
 	var testCases = []testCase{
-		// {
-		// 	name: "test index bind",
-		// 	input: `
-		// 		var myList = [1, 2, 3];
-		// 		myList[0] = 5;
-		// 	`,
-		// 	expectedOutput: &ast.Program{
-		// 		Statements: []ast.Statement{
-		// 			&ast.StatementBind{
-		// 				Token: tokens.Token{Type: tokens.TypeBind, Lexeme: "var"},
-		// 				Name: &ast.ExpressionIdentifier{
-		// 					Token: tokens.Token{Type: tokens.TypeIdent, Lexeme: "myList"},
-		// 					Value: "myList",
-		// 				},
-		// 				Value: &ast.ExpressionLiteralList{
-		// 					Token: tokens.Token{Type: tokens.TypeLBracket, Lexeme: "["},
-		// 					Elements: []ast.Expression{
-		// 						&ast.ExpressionLiteralInteger{
-		// 							Token: tokens.Token{Type: tokens.TypeInt, Lexeme: "1"},
-		// 							Value: 1,
-		// 						},
-		// 						&ast.ExpressionLiteralInteger{
-		// 							Token: tokens.Token{Type: tokens.TypeInt, Lexeme: "2"},
-		// 							Value: 2,
-		// 						},
-		// 						&ast.ExpressionLiteralInteger{
-		// 							Token: tokens.Token{Type: tokens.TypeInt, Lexeme: "3"},
-		// 							Value: 3,
-		// 						},
-		// 					},
-		// 				},
-		// 			},
-		// 			&ast.StatementIndexBind{
-		// 				Token: tokens.Token{Type: tokens.TypeAssign, Lexeme: "="},
-		// 				Left: &ast.ExpressionIndex{
-		// 					Token: tokens.Token{Type: tokens.TypeLBracket, Lexeme: "["},
-		// 					Left: &ast.ExpressionIdentifier{
-		// 						Token: tokens.Token{Type: tokens.TypeIdent, Lexeme: "myList"},
-		// 						Value: "myList",
-		// 					},
-		// 					Index: &ast.ExpressionLiteralInteger{
-		// 						Token: tokens.Token{Type: tokens.TypeInt, Lexeme: "0"},
-		// 						Value: 0,
-		// 					},
-		// 				},
-		// 				Right: &ast.ExpressionLiteralInteger{
-		// 					Token: tokens.Token{Type: tokens.TypeInt, Lexeme: "5"},
-		// 					Value: 5,
-		// 				},
-		// 			},
-		// 		},
-		// 	},
-		// 	expectedErrs: []string{},
-		// },
+		{
+			name: "test index bind",
+			input: `
+				var myList = [1, 2, 3];
+				myList[0] = 5;
+			`,
+			expectedOutput: &ast.Program{
+				Statements: []ast.Statement{
+					&ast.StatementBind{
+						Token: tokens.Token{Type: tokens.TypeBind, Lexeme: "var"},
+						Name: &ast.ExpressionIdentifier{
+							Token: tokens.Token{Type: tokens.TypeIdent, Lexeme: "myList"},
+							Value: "myList",
+						},
+						Value: &ast.ExpressionLiteralList{
+							Token: tokens.Token{Type: tokens.TypeLBracket, Lexeme: "["},
+							Elements: []ast.Expression{
+								&ast.ExpressionLiteralInteger{
+									Token: tokens.Token{Type: tokens.TypeInt, Lexeme: "1"},
+									Value: 1,
+								},
+								&ast.ExpressionLiteralInteger{
+									Token: tokens.Token{Type: tokens.TypeInt, Lexeme: "2"},
+									Value: 2,
+								},
+								&ast.ExpressionLiteralInteger{
+									Token: tokens.Token{Type: tokens.TypeInt, Lexeme: "3"},
+									Value: 3,
+								},
+							},
+						},
+					},
+					&ast.StatementIndexBind{
+						Token: tokens.Token{Type: tokens.TypeAssign, Lexeme: "="},
+						Left: &ast.ExpressionIndex{
+							Token: tokens.Token{Type: tokens.TypeLBracket, Lexeme: "["},
+							Left: &ast.ExpressionIdentifier{
+								Token: tokens.Token{Type: tokens.TypeIdent, Lexeme: "myList"},
+								Value: "myList",
+							},
+							Index: &ast.ExpressionLiteralInteger{
+								Token: tokens.Token{Type: tokens.TypeInt, Lexeme: "0"},
+								Value: 0,
+							},
+						},
+						Right: &ast.ExpressionLiteralInteger{
+							Token: tokens.Token{Type: tokens.TypeInt, Lexeme: "5"},
+							Value: 5,
+						},
+					},
+				},
+			},
+			expectedErrs: []string{},
+		},
+		{
+			name:  "test index bind to list literal",
+			input: `[1, 2][0] = 5;`,
+			expectedOutput: &ast.Program{
+				Statements: []ast.Statement{},
+			},
+			expectedErrs: []string{},
+		},
+		{
+			name:  "test index bind to map literal",
+			input: `{ "a": 1, "b": 2 }["a"] = 5;`,
+			expectedOutput: &ast.Program{
+				Statements: []ast.Statement{},
+			},
+			expectedErrs: []string{},
+		},
 		{
 			name: "test nested index bind with infix expression as RHS",
 			input: `
