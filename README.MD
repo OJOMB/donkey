@@ -92,6 +92,17 @@ var nestedMap = {"x": {"y": 10}};
 print(nestedMap["x"]["y"]); // prints 10
 ```
 
+index bind statements:
+```donkey
+var myList = [1, 2, 3];
+myList[0] = 10; // rebinds the first element of myList
+print(myList[0]); // prints 10
+
+var myMap = {"a": 1, "b": 2};
+myMap["a"] = 10; // rebinds the value of the key "a" in myMap
+print(myMap["a"]); // prints 10
+```
+
 control flow:
 ```donkey
 if (x < y) {
