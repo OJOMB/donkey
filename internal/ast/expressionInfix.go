@@ -16,3 +16,7 @@ func (ei *ExpressionInfix) TokenLexeme() string { return ei.Token.Lexeme }
 func (ei *ExpressionInfix) String() string {
 	return "(" + ei.Left.String() + " " + ei.Operator + " " + ei.Right.String() + ")"
 }
+
+func (ei *ExpressionInfix) Type() NodeType {
+	return NodeTypeExpressionInfix
+}

@@ -34,3 +34,7 @@ func (p *Program) String() string {
 
 	return out.String()
 }
+
+func (p *Program) Type() NodeType {
+	return NodeTypeProgram
+}

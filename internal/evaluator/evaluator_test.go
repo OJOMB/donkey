@@ -2995,83 +2995,100 @@ func TestEvaluatorEvalIndexExpressionsMap(t *testing.T) {
 	}
 }
 
-// func TestEvaluateMapKeyBinding(t *testing.T) {
-// 	type testCase struct {
-// 		name     string
-// 		input    *ast.Program
-// 		expected objects.Object
-// 	}
+func TestEvaluateIndexBinding(t *testing.T) {
+	type testCase struct {
+		name     string
+		input    *ast.Program
+		expected objects.Object
+	}
 
-// 	tests := []testCase{
-// 		{
-// 			name: "simple map key binding and getter",
-// 			input: &ast.Program{
-// 				Statements: []ast.Statement{
-// 					&ast.StatementBind{
-// 						Token: tokens.NewStatic(tokens.TypeBind),
-// 						Name: &ast.ExpressionIdentifier{
-// 							Token: tokens.New(tokens.TypeIdent, "m"),
-// 							Value: "m",
-// 						},
-// 						Value: &ast.ExpressionLiteralMap{
-// 							Token: tokens.New(tokens.TypeLBrace, "{"),
-// 							Pairs: []ast.MapPair{
-// 								{
-// 									Key: &ast.ExpressionIdentifier{
-// 										Token: tokens.New(tokens.TypeIdent, "key1"),
-// 										Value: "key1",
-// 									},
-// 									Value: &ast.ExpressionLiteralInteger{Value: 1},
-// 								},
-// 								{
-// 									Key: &ast.ExpressionIdentifier{
-// 										Token: tokens.New(tokens.TypeIdent, "key2"),
-// 										Value: "key2",
-// 									},
-// 									Value: &ast.ExpressionLiteralInteger{Value: 2},
-// 								},
-// 							},
-// 						},
-// 					},
-// 					&ast.StatementIndexBind{
-// 						Token: tokens.NewStatic(tokens.TypeBind),
-// 						Left: &ast.ExpressionIndex{
-// 							Token: tokens.New(tokens.TypeLBracket, "["),
-// 							Left: &ast.ExpressionIdentifier{
-// 								Token: tokens.New(tokens.TypeIdent, "m"),
-// 								Value: "m",
-// 							},
-// 							Index: &ast.ExpressionLiteralString{Value: "key2"},
-// 						},
-// 						Right: &ast.ExpressionLiteralInteger{
-// 							Token: tokens.New(tokens.TypeInt, "5"),
-// 							Value: 5,
-// 						},
-// 					},
-// 					&ast.StatementExpression{
-// 						Token: tokens.New(tokens.TypeLBracket, "["),
-// 						Expression: &ast.ExpressionIndex{
-// 							Token: tokens.New(tokens.TypeLBracket, "["),
-// 							Left: &ast.ExpressionIdentifier{
-// 								Token: tokens.New(tokens.TypeIdent, "m"),
-// 								Value: "m",
-// 							},
-// 							Index: &ast.ExpressionLiteralString{Value: "key2"},
-// 						},
-// 					},
-// 				},
-// 			},
-// 			expected: &objects.Integer{Value: 5},
-// 		},
-// 	}
+	tests := []testCase{
+		{
+			name: "nested map key binding and getter",
+			input: &ast.Program{
+				Statements: []ast.Statement{
+					&ast.StatementBind{
+						Token: tokens.NewStatic(tokens.TypeBind),
+						Name: &ast.ExpressionIdentifier{
+							Token: tokens.New(tokens.TypeIdent, "m"),
+							Value: "m",
+						},
+						Value: &ast.ExpressionLiteralMap{
+							Token: tokens.New(tokens.TypeLBrace, "{"),
+							Pairs: []ast.MapPair{
+								{
+									Key: &ast.ExpressionLiteralString{Value: "key1"},
+									Value: &ast.ExpressionLiteralMap{
+										Token: tokens.New(tokens.TypeLBrace, "{"),
+										Pairs: []ast.MapPair{
+											{
+												Key:   &ast.ExpressionLiteralString{Value: "key2"},
+												Value: &ast.ExpressionLiteralInteger{Value: 5},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+					&ast.StatementIndexBind{
+						Token: tokens.NewStatic(tokens.TypeBind),
+						Left: &ast.ExpressionIndex{
+							Token: tokens.New(tokens.TypeLBracket, "["),
+							Left: &ast.ExpressionIndex{
+								Token: tokens.New(tokens.TypeLBracket, "["),
+								Left: &ast.ExpressionIdentifier{
+									Token: tokens.New(tokens.TypeIdent, "m"),
+									Value: "m",
+								},
+								Index: &ast.ExpressionLiteralString{
+									Token: tokens.New(tokens.TypeString, "key1"),
+									Value: "key1"},
+							},
+							Index: &ast.ExpressionLiteralString{
+								Token: tokens.New(tokens.TypeString, "key2"),
+								Value: "key2",
+							},
+						},
+						Right: &ast.ExpressionLiteralInteger{
+							Token: tokens.New(tokens.TypeInt, "5"),
+							Value: 42,
+						},
+					},
+					&ast.StatementExpression{
+						Token: tokens.New(tokens.TypeLBracket, "["),
+						Expression: &ast.ExpressionIndex{
+							Token: tokens.New(tokens.TypeLBracket, "["),
+							Left: &ast.ExpressionIndex{
+								Token: tokens.New(tokens.TypeLBracket, "["),
+								Left: &ast.ExpressionIdentifier{
+									Token: tokens.New(tokens.TypeIdent, "m"),
+									Value: "m",
+								},
+								Index: &ast.ExpressionLiteralString{
+									Token: tokens.New(tokens.TypeString, "key1"),
+									Value: "key1",
+								},
+							},
+							Index: &ast.ExpressionLiteralString{
+								Token: tokens.New(tokens.TypeString, "key2"),
+								Value: "key2",
+							},
+						},
+					},
+				},
+			},
+			expected: &objects.Integer{Value: 42},
+		},
+	}
 
-// 	for i, tc := range tests {
-// 		t.Run(fmt.Sprintf("test %d: %s", i, tc.name), func(t *testing.T) {
-// 			evaluator := New(nil)
-// 			result := evaluator.Eval(tc.input, objects.NewEnvironment())
+	for i, tc := range tests {
+		t.Run(fmt.Sprintf("test %d: %s", i, tc.name), func(t *testing.T) {
+			evaluator := New(nil)
+			result := evaluator.Eval(tc.input, objects.NewEnvironment())
 
-// 			assert.Equal(t, tc.expected.Type(), result.Type())
-// 			assert.Equal(t, tc.expected.Inspect(), result.Inspect())
-// 		})
-// 	}
-// }
+			assert.Equal(t, tc.expected.Type(), result.Type())
+			assert.Equal(t, tc.expected.Inspect(), result.Inspect())
+		})
+	}
+}

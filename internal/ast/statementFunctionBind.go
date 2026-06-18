@@ -29,3 +29,7 @@ func (s *StatementFunctionBind) TokenLexeme() string {
 func (s *StatementFunctionBind) String() string {
 	return s.TokenLexeme() + " " + s.Name.String() + s.Value.String()
 }
+
+func (s *StatementFunctionBind) Type() NodeType {
+	return NodeTypeStatementFunctionBind
+}

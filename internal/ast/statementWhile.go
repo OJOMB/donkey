@@ -9,9 +9,17 @@ type StatementWhile struct {
 	Body      *StatementBlock
 }
 
-func (ew *StatementWhile) statementNode()      {}
+// statementNode is a marker method to indicate that StatementWhile is a statement node in the AST.
+func (ew *StatementWhile) statementNode() {}
+
+// TokenLexeme returns the lexeme of the token associated with the while statement, which is typically "while".
 func (ew *StatementWhile) TokenLexeme() string { return "while" }
 
+// Type returns the NodeType of the StatementWhile node, which is NodeTypeStatementWhile.
 func (ew *StatementWhile) String() string {
 	return "while " + ew.Condition.String() + " " + ew.Body.String()
+}
+
+func (ew *StatementWhile) Type() NodeType {
+	return NodeTypeStatementWhile
 }

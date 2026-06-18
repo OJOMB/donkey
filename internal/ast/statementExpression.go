@@ -23,3 +23,7 @@ func (es *StatementExpression) String() string {
 
 	return es.Expression.String()
 }
+
+func (es *StatementExpression) Type() NodeType {
+	return NodeTypeStatementExpression
+}

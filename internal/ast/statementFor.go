@@ -44,3 +44,7 @@ func (s *StatementFor) String() string {
 
 	return result + s.Body.String()
 }
+
+func (s *StatementFor) Type() NodeType {
+	return NodeTypeStatementFor
+}

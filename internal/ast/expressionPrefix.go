@@ -17,3 +17,7 @@ func (ep *ExpressionPrefix) TokenLexeme() string { return ep.Token.Lexeme }
 func (ep *ExpressionPrefix) String() string {
 	return "(" + ep.Operator + ep.Right.String() + ")"
 }
+
+func (ep *ExpressionPrefix) Type() NodeType {
+	return NodeTypeExpressionPrefix
+}

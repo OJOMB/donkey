@@ -17,3 +17,7 @@ func (sb *StatementBlock) String() string {
 
 	return out.String()
 }
+
+func (sb *StatementBlock) Type() NodeType {
+	return NodeTypeStatementBlock
+}

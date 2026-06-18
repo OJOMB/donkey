@@ -32,3 +32,7 @@ func (ls *StatementBind) TokenLexeme() string { return ls.Token.Lexeme }
 func (ls *StatementBind) String() string {
 	return fmt.Sprintf(stringFmtBindStatement, ls.Name.String(), ls.Value.String())
 }
+
+func (ls *StatementBind) Type() NodeType {
+	return NodeTypeStatementBind
+}

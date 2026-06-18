@@ -2,6 +2,7 @@ package evaluator
 
 import (
 	"fmt"
+	"slices"
 	"strings"
 
 	"github.com/OJOMB/donkey/internal/ast"
@@ -53,6 +54,8 @@ func (e *Evaluator) Eval(node ast.Node, env *objects.Environment) objects.Object
 		}
 
 		return env.Bind(nt.Name.Value, value)
+	case *ast.StatementIndexBind:
+		return e.evalStatementIndexBind(nt, env)
 	case *ast.StatementFunctionBind:
 		return env.Bind(nt.Name.Value, &objects.Function{
 			Parameters: nt.Value.Parameters,
@@ -106,22 +109,7 @@ func (e *Evaluator) Eval(node ast.Node, env *objects.Environment) objects.Object
 	case *ast.ExpressionIdentifier:
 		return e.evalExpressionIdentifier(nt, env)
 	case *ast.ExpressionIndex:
-		// index expressions are used for both lists and maps, so we need to evaluate the left-hand side and determine its type before we can evaluate the index expression
-		left := e.Eval(nt.Left, env)
-		if left == nil {
-			e.logger.Error("index expression left-hand side evaluated to nil", "expression", nt.Left.String())
-			return newError("index expression left-hand side evaluated to nil: expr:%s", nt.Left.String())
-		}
-
-		switch left.Type() {
-		case objects.TypeList:
-			return e.evalExpressionListIndex(nt, env)
-		case objects.TypeMap:
-			return e.evalExpressionMapIndex(nt, env)
-		default:
-			e.logger.Warn("index expression left-hand side is not indexable", "type", left.Type())
-			return newError("index expression left-hand side is not indexable: %s", left.Type())
-		}
+		return e.evalExpressionIndex(nt, env)
 	case *ast.ExpressionInfix:
 		l := e.Eval(nt.Left, env)
 		if l == nil {
@@ -599,6 +587,24 @@ func (e *Evaluator) evalExpressionIdentifier(node *ast.ExpressionIdentifier, env
 	return newError("identifier not found: %s", node.Value)
 }
 
+func (e *Evaluator) evalExpressionIndex(node *ast.ExpressionIndex, env *objects.Environment) objects.Object {
+	left := e.Eval(node.Left, env)
+	if left == nil {
+		e.logger.Error("index expression left-hand side evaluated to nil", "expression", node.Left.String())
+		return newError("index expression left-hand side evaluated to nil: expr:%s", node.Left.String())
+	}
+
+	switch left.Type() {
+	case objects.TypeList:
+		return e.evalExpressionListIndex(node, env)
+	case objects.TypeMap:
+		return e.evalExpressionMapIndex(node, env)
+	default:
+		e.logger.Warn("index expression left-hand side is not indexable", "type", left.Type())
+		return newError("index expression left-hand side is not indexable: %s", left.Type())
+	}
+}
+
 func (e *Evaluator) evalExpressionListIndex(node *ast.ExpressionIndex, env *objects.Environment) objects.Object {
 	left := e.Eval(node.Left, env)
 	if left == nil {
@@ -653,8 +659,8 @@ func (e *Evaluator) evalExpressionMapIndex(node *ast.ExpressionIndex, env *objec
 		return newError("index expression left-hand side evaluated to nil: expr:%s", node.Left.String())
 	}
 
-	// left must be a map for indexing to be valid
-	if left.Type() != objects.TypeMap {
+	mapObj, ok := left.(*objects.Map)
+	if !ok {
 		e.logger.Warn("index expression left-hand side is not a map", "type", left.Type())
 		return newError("index expression left-hand side is not a map: %s", left.Type())
 	}
@@ -665,18 +671,116 @@ func (e *Evaluator) evalExpressionMapIndex(node *ast.ExpressionIndex, env *objec
 		return newError("index expression index evaluated to nil: expr:%s", node.Index.String())
 	}
 
-	idx, ok := index.(objects.ObjectKey)
+	indexKey, ok := index.(objects.ObjectKey)
 	if !ok {
 		e.logger.Warn("index expression index is not a valid map key", "type", index.Type())
 		return newError("index expression index is not a valid map key: %s", index.Type())
 	}
 
-	m := left.(*objects.Map)
-	value, ok := m.Pairs[idx.HashKey()]
+	valueObj, ok := mapObj.Get(indexKey)
 	if !ok {
 		e.logger.Warn("key not found in map", "key", index.Inspect())
 		return newError("key not found in map: %s", index.Inspect())
 	}
 
-	return value.Value
+	return valueObj
+}
+
+func (e *Evaluator) getIndexableObjectAndIndices(node *ast.ExpressionIndex, env *objects.Environment) (objects.Object, []objects.Object, objects.Object) {
+	var (
+		idxExpr     = node
+		idxExprLeft = node.Left
+		obj         objects.Object
+		idxs        []objects.Object
+		ok          bool
+	)
+
+	for {
+		switch l := idxExprLeft.(type) {
+		case *ast.ExpressionIdentifier:
+			obj, ok = env.Get(l.Value)
+			if !ok {
+				e.logger.Warn("identifier not found in environment", "name", l.Value)
+				return nil, nil, newError("identifier not found: %s", l.Value)
+			}
+			if obj == nil {
+				e.logger.Warn("identifier not found in environment", "name", l.Value)
+				return nil, nil, newError("identifier not found: %s", l.Value)
+			}
+
+			idx := e.Eval(idxExpr.Index, env)
+			idxs = append(idxs, idx)
+		case *ast.ExpressionLiteralList:
+			obj = e.Eval(l, env)
+			if obj == nil {
+				e.logger.Error("list literal evaluated to nil", "literal", l.String())
+				return nil, nil, newError("list literal evaluated to nil: literal:%s", l.String())
+			}
+
+			idx := e.Eval(idxExpr.Index, env)
+			idxs = append(idxs, idx)
+		case *ast.ExpressionLiteralMap:
+			obj = e.Eval(l, env)
+			if obj == nil {
+				e.logger.Error("map literal evaluated to nil", "literal", l.String())
+				return nil, nil, newError("map literal evaluated to nil: literal:%s", l.String())
+			}
+
+			idx := e.Eval(idxExpr.Index, env)
+			idxs = append(idxs, idx)
+		case *ast.ExpressionIndex:
+			idx := e.Eval(idxExpr.Index, env)
+			idxs = append(idxs, idx)
+
+			idxExprLeft = l.Left
+			idxExpr = l
+			continue
+		default:
+			e.logger.Warn("unsupported left expression type for index bind", "type", fmt.Sprintf("%T", l))
+			return nil, nil, newError("unsupported left expression type for index bind: %T", l)
+		}
+
+		break
+	}
+
+	// check the type of the object to ensure it is indexable
+	if obj.Type() != objects.TypeList && obj.Type() != objects.TypeMap {
+		e.logger.Warn("object is not indexable", "type", obj.Type())
+		return nil, nil, newError("object is not indexable: %s", obj.Type())
+	}
+
+	slices.Reverse(idxs)
+
+	return obj, idxs, nil
+}
+
+func (e *Evaluator) evalStatementIndexBind(node *ast.StatementIndexBind, env *objects.Environment) objects.Object {
+	obj, idxs, err := e.getIndexableObjectAndIndices(node.Left, env)
+	if err != nil {
+		return err
+	}
+
+	// now we have the object and the indices, we can set the value at the specified index
+	right := e.Eval(node.Right, env)
+	if right == nil {
+		e.logger.Error("index bind right-hand side evaluated to nil", "expression", node.Right.String())
+		return newError("index bind right-hand side evaluated to nil: expr:%s", node.Right.String())
+	}
+
+	objIndexable, ok := obj.(objects.Indexable)
+	if !ok {
+		e.logger.Warn("object is not indexable", "type", obj.Type())
+		return newError("object is not indexable: %s", obj.Type())
+	}
+
+	return e.setValueAtIndex(objIndexable, idxs, right)
+}
+
+func (e *Evaluator) setValueAtIndex(obj objects.Indexable, idxs []objects.Object, value objects.Object) objects.Object {
+	if err := obj.SetMultiDimensional(idxs, value); err != nil {
+		e.logger.Warn("failed to set value at index", "error", err)
+		return newError("failed to set value at index: %s", err)
+	}
+
+	return obj
 }

@@ -15,3 +15,8 @@ func (ei *ExpressionKeyword) TokenLexeme() string { return ei.Token.Lexeme }
 func (ek *ExpressionKeyword) String() string {
 	return ek.Keyword
 }
+
+// Type returns the type of the node as a NodeType.
+func (ek *ExpressionKeyword) Type() NodeType {
+	return NodeTypeExpressionKeyword
+}

@@ -33,3 +33,7 @@ func (ec *ExpressionCall) String() string {
 	_, _ = out.WriteString(")")
 	return out.String()
 }
+
+func (ec *ExpressionCall) Type() NodeType {
+	return NodeTypeExpressionCall
+}

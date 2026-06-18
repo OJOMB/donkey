@@ -31,3 +31,8 @@ func (ls *StatementIndexBind) TokenLexeme() string { return ls.Token.Lexeme }
 func (ls *StatementIndexBind) String() string {
 	return fmt.Sprintf(stringFmtIndexBindStatement, ls.Left.String(), ls.Right.String())
 }
+
+// Type returns the type of the node as a NodeType.
+func (ls *StatementIndexBind) Type() NodeType {
+	return NodeTypeStatementIndexBind
+}

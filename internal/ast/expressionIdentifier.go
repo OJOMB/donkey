@@ -10,9 +10,17 @@ type ExpressionIdentifier struct {
 	Value string
 }
 
-func (i *ExpressionIdentifier) expressionNode()     {}
+func (i *ExpressionIdentifier) expressionNode() {}
+
+// TokenLexeme returns the lexeme of the token associated with the identifier.
 func (i *ExpressionIdentifier) TokenLexeme() string { return i.Token.Lexeme }
 
+// String returns the string representation of the identifier, which is its value.
 func (i *ExpressionIdentifier) String() string {
 	return i.Value
+}
+
+// Type returns the type of the node as a NodeType.
+func (i *ExpressionIdentifier) Type() NodeType {
+	return NodeTypeExpressionIdentifier
 }

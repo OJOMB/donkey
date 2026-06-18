@@ -13,11 +13,20 @@ type ExpressionLiteralInteger struct {
 	Value int
 }
 
-func (li *ExpressionLiteralInteger) expressionNode()     {}
+// expressionNode is a marker method to indicate that ExpressionLiteralInteger is an expression node in the AST.
+func (li *ExpressionLiteralInteger) expressionNode() {}
+
+// TokenLexeme returns the lexeme of the token associated with the integer literal expression.
 func (li *ExpressionLiteralInteger) TokenLexeme() string { return li.Token.Lexeme }
 
+// String returns the string representation of the ExpressionLiteralInteger.
 func (li *ExpressionLiteralInteger) String() string {
 	return li.Token.Lexeme
+}
+
+// Type returns the type of the node as a NodeType.
+func (li *ExpressionLiteralInteger) Type() NodeType {
+	return NodeTypeExpressionLiteralInteger
 }
 
 // ExpressionLiteralString represents a string literal expression in the Donkey programming language, such as "hello" or "world".
@@ -27,11 +36,19 @@ type ExpressionLiteralString struct {
 	Value string
 }
 
-func (ls *ExpressionLiteralString) expressionNode()     {}
+func (ls *ExpressionLiteralString) expressionNode() {}
+
+// TokenLexeme returns the lexeme of the token associated with the string literal expression.
 func (ls *ExpressionLiteralString) TokenLexeme() string { return ls.Token.Lexeme }
 
+// String returns the string representation of the ExpressionLiteralString.
 func (ls *ExpressionLiteralString) String() string {
 	return ls.Token.Lexeme
+}
+
+// Type returns the type of the node as a NodeType.
+func (ls *ExpressionLiteralString) Type() NodeType {
+	return NodeTypeExpressionLiteralString
 }
 
 // ExpressionLiteralBoolean represents a boolean literal expression in the Donkey programming language, such as true or false.
@@ -42,11 +59,20 @@ type ExpressionLiteralBoolean struct {
 	Value bool
 }
 
-func (lb *ExpressionLiteralBoolean) expressionNode()     {}
+// expressionNode is a marker method to indicate that ExpressionLiteralBoolean is an expression node in the AST.
+func (lb *ExpressionLiteralBoolean) expressionNode() {}
+
+// TokenLexeme returns the lexeme of the token associated with the boolean literal expression.
 func (lb *ExpressionLiteralBoolean) TokenLexeme() string { return lb.Token.Lexeme }
 
+// String returns the string representation of the ExpressionLiteralBoolean.
 func (lb *ExpressionLiteralBoolean) String() string {
 	return lb.Token.Lexeme
+}
+
+// Type returns the type of the node as a NodeType.
+func (lb *ExpressionLiteralBoolean) Type() NodeType {
+	return NodeTypeExpressionLiteralBoolean
 }
 
 // ExpressionLiteralFunction represents a function literal expression in the Donkey programming language, such as "fn(x) { x + 1 }".
@@ -64,9 +90,12 @@ type ExpressionLiteralFunction struct {
 	Body *StatementBlock
 }
 
-func (lf *ExpressionLiteralFunction) expressionNode()     {}
+func (lf *ExpressionLiteralFunction) expressionNode() {}
+
+// TokenLexeme returns the lexeme of the token associated with the function literal expression.
 func (lf *ExpressionLiteralFunction) TokenLexeme() string { return lf.Token.Lexeme }
 
+// String returns the string representation of the ExpressionLiteralFunction.
 func (lf *ExpressionLiteralFunction) String() string {
 	var out = strings.Builder{}
 	_, _ = out.WriteString(lf.Token.Lexeme)
@@ -82,6 +111,11 @@ func (lf *ExpressionLiteralFunction) String() string {
 	_, _ = out.WriteString(lf.Body.String())
 
 	return out.String()
+}
+
+// Type returns the type of the node as a NodeType.
+func (lf *ExpressionLiteralFunction) Type() NodeType {
+	return NodeTypeExpressionLiteralFunction
 }
 
 // ExpressionLiteralList represents a list literal expression in the Donkey programming language, such as "[1, 2, 3]" or "["foo", "bar", "baz"]".
@@ -108,6 +142,11 @@ func (ll *ExpressionLiteralList) String() string {
 	_, _ = out.WriteString("]")
 
 	return out.String()
+}
+
+// Type returns the type of the node as a NodeType.
+func (ll *ExpressionLiteralList) Type() NodeType {
+	return NodeTypeExpressionLiteralList
 }
 
 type MapPair struct {
@@ -141,4 +180,9 @@ func (lm *ExpressionLiteralMap) String() string {
 	}
 	_, _ = out.WriteString("}")
 	return out.String()
+}
+
+// Type returns the type of the node as a NodeType.
+func (lm *ExpressionLiteralMap) Type() NodeType {
+	return NodeTypeExpressionLiteralMap
 }

@@ -42,3 +42,7 @@ func (ei *ExpressionIf) String() string {
 
 	return out.String()
 }
+
+func (ei *ExpressionIf) Type() NodeType {
+	return NodeTypeExpressionIf
+}

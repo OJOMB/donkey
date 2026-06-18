@@ -26,3 +26,7 @@ func (rs *StatementReturn) TokenLexeme() string {
 func (rs *StatementReturn) String() string {
 	return fmt.Sprintf(stringFmtReturnStatement, rs.Value.String())
 }
+
+func (rs *StatementReturn) Type() NodeType {
+	return NodeTypeStatementReturn
+}

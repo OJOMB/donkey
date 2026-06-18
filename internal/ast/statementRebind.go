@@ -32,3 +32,7 @@ func (ls *StatementRebind) TokenLexeme() string { return ls.Token.Lexeme }
 func (ls *StatementRebind) String() string {
 	return fmt.Sprintf(stringFmtRebindStatement, ls.Name.String(), ls.Value.String())
 }
+
+func (ls *StatementRebind) Type() NodeType {
+	return NodeTypeStatementRebind
+}
