@@ -45,3 +45,9 @@ type ObjectKey interface {
 	Object
 	HashKey() HashKey
 }
+
+type Indexable interface {
+	Object
+	GetMultiDimensional(indices []Object) (Object, error)
+	SetMultiDimensional(indices []Object, value Object) error
+}
