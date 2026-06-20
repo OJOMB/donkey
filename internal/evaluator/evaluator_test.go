@@ -3174,6 +3174,50 @@ func TestEvaluateIndexBinding(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "index bind to a string",
+			input: &ast.Program{
+				Statements: []ast.Statement{
+					&ast.StatementBind{
+						Token: tokens.NewStatic(tokens.TypeBind),
+						Name: &ast.ExpressionIdentifier{
+							Token: tokens.New(tokens.TypeIdent, "s"),
+							Value: "s",
+						},
+						Value: &ast.ExpressionLiteralString{
+							Token: tokens.New(tokens.TypeString, "hello"),
+							Value: "hello",
+						},
+					},
+					&ast.StatementIndexBind{
+						Token: tokens.NewStatic(tokens.TypeBind),
+						Left: &ast.ExpressionIndex{
+							Token: tokens.NewStatic(tokens.TypeLBracket),
+							Left: &ast.ExpressionIdentifier{
+								Token: tokens.New(tokens.TypeIdent, "s"),
+								Value: "s",
+							},
+							Index: &ast.ExpressionLiteralInteger{
+								Token: tokens.New(tokens.TypeInt, "1"),
+								Value: 1,
+							},
+						},
+						Right: &ast.ExpressionLiteralString{
+							Token: tokens.New(tokens.TypeString, "a"),
+							Value: "a",
+						},
+					},
+					&ast.StatementExpression{
+						Token: tokens.New(tokens.TypeIdent, "s"),
+						Expression: &ast.ExpressionIdentifier{
+							Token: tokens.New(tokens.TypeIdent, "s"),
+							Value: "s",
+						},
+					},
+				},
+			},
+			expected: &objects.String{Value: "hallo"},
+		},
 	}
 
 	for i, tc := range tests {

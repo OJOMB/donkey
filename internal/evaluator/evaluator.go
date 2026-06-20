@@ -692,38 +692,15 @@ func (e *Evaluator) getIndexableObjectAndIndices(node *ast.ExpressionIndex, env 
 		idxExprLeft = node.Left
 		obj         objects.Object
 		idxs        []objects.Object
-		ok          bool
 	)
 
 	for {
 		switch l := idxExprLeft.(type) {
-		case *ast.ExpressionIdentifier:
-			obj, ok = env.Get(l.Value)
-			if !ok {
-				e.logger.Warn("identifier not found in environment", "name", l.Value)
-				return nil, nil, newError("identifier not found: %s", l.Value)
-			}
-			if obj == nil {
-				e.logger.Warn("identifier not found in environment", "name", l.Value)
-				return nil, nil, newError("identifier not found: %s", l.Value)
-			}
-
-			idx := e.Eval(idxExpr.Index, env)
-			idxs = append(idxs, idx)
-		case *ast.ExpressionLiteralList:
+		case *ast.ExpressionIdentifier, *ast.ExpressionLiteralString, *ast.ExpressionLiteralList, *ast.ExpressionLiteralMap:
 			obj = e.Eval(l, env)
 			if obj == nil {
-				e.logger.Error("list literal evaluated to nil", "literal", l.String())
-				return nil, nil, newError("list literal evaluated to nil: literal:%s", l.String())
-			}
-
-			idx := e.Eval(idxExpr.Index, env)
-			idxs = append(idxs, idx)
-		case *ast.ExpressionLiteralMap:
-			obj = e.Eval(l, env)
-			if obj == nil {
-				e.logger.Error("map literal evaluated to nil", "literal", l.String())
-				return nil, nil, newError("map literal evaluated to nil: literal:%s", l.String())
+				e.logger.Error("indexable %s literal evaluated to nil", l.Type())
+				return nil, nil, newError("indexable %s literal evaluated to nil: literal:%s", l.Type(), l.String())
 			}
 
 			idx := e.Eval(idxExpr.Index, env)
@@ -744,7 +721,7 @@ func (e *Evaluator) getIndexableObjectAndIndices(node *ast.ExpressionIndex, env 
 	}
 
 	// check the type of the object to ensure it is indexable
-	if obj.Type() != objects.TypeList && obj.Type() != objects.TypeMap {
+	if obj.Type() != objects.TypeList && obj.Type() != objects.TypeMap && obj.Type() != objects.TypeString {
 		e.logger.Warn("object is not indexable", "type", obj.Type())
 		return nil, nil, newError("object is not indexable: %s", obj.Type())
 	}
