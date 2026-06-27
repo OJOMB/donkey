@@ -2,12 +2,21 @@
 
 An interpreter (and eventually compiler) that is closely based on the Monkey programming language, as described in the book [Writing An Interpreter In Go](https://interpreterbook.com/).
 
+Includes all the features of Monkey, including support for:
+* integers, booleans, strings, and arrays
+* hash maps
+* first-class functions and closures
+* prefix and infix operators
+* conditionals
+* global and local scopes
+* return statements
+
 Donkey expands on Monkey with additional features such as:
 * for/while loops
 * function statements
 * variable rebinding
 * bitwise operators
-* statement block scoping
+* block scoping
 * increment/decrement suffix operators
 * multi-level indexing into lists and maps (e.g. myList[0][1] or myMap["a"]["b"])
 * and more!
