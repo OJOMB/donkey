@@ -65,8 +65,8 @@ func (r *Repl) Start() {
 	var inputLine = 1
 	// loop indefinitely, reading input from the user and processing it until we encounter a SIGINT (Ctrl+C)
 	for {
-		if _, err := r.out.Write([]byte(fmt.Sprintf(inPromptTemplate, inputLine))); err != nil {
-			r.logger.Error("failed to write prompt", "error", err)
+		if _, err := fmt.Fprintf(r.out, inPromptTemplate, inputLine); err != nil {
+			r.logger.Error("failed to write input prompt", "error", err)
 			return
 		}
 
@@ -91,7 +91,12 @@ func (r *Repl) Start() {
 		program := p.ParseProgram()
 		if len(p.Errors) != 0 {
 			for _, err := range p.Errors {
-				if _, err := r.out.Write([]byte("parser error: " + err + "\n")); err != nil {
+				if _, err := fmt.Fprintf(r.out, outPromptTemplate, inputLine); err != nil {
+					r.logger.Error("failed to write output prompt", "error", err)
+					return
+				}
+
+				if _, err := fmt.Fprintf(r.out, "Parser error: %s\n", err); err != nil {
 					r.logger.Error("failed to write parser error", "error", err)
 					return
 				}
@@ -105,7 +110,12 @@ func (r *Repl) Start() {
 		env = objects.NewEnclosedEnvironment(env)
 		result := e.Eval(program, env)
 		if result != nil {
-			if _, err := r.out.Write([]byte(fmt.Sprintf(outPromptTemplate, inputLine) + result.Inspect() + "\n")); err != nil {
+			if _, err := fmt.Fprintf(r.out, outPromptTemplate, inputLine); err != nil {
+				r.logger.Error("failed to write output prompt", "error", err)
+				return
+			}
+
+			if _, err := fmt.Fprintf(r.out, "%s\n", result.Inspect()); err != nil {
 				r.logger.Error("failed to write evaluation result", "error", err)
 				return
 			}
