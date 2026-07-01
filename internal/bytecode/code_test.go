@@ -6,7 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestNew(t *testing.T) {
+func TestNewInstruction(t *testing.T) {
 	type testCase struct {
 		op       Opcode
 		operands []int
@@ -18,7 +18,7 @@ func TestNew(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		instructions := New(tt.op, tt.operands...)
+		instructions := NewInstruction(tt.op, tt.operands...)
 		assert.Equal(t, len(tt.expected), len(instructions), "wrong instruction length. expected %d, got %d", len(tt.expected), len(instructions))
 
 		for i, b := range tt.expected {

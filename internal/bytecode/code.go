@@ -2,15 +2,15 @@ package bytecode
 
 import "encoding/binary"
 
-type Instructions []byte
+type Instruction []byte
 
 type Opcode byte
 
-// New creates a new instruction with the given opcode and operands.
+// NewInstruction creates a new instruction with the given opcode and operands.
 // It looks up the definition of the opcode to determine the expected operand widths, and then constructs a byte slice representing the instruction.
 // The first byte is the opcode, followed by the operands encoded in big-endian format according to their specified widths.
 // If the opcode is not found in the definitions, it returns nil.
-func New(op Opcode, operands ...int) Instructions {
+func NewInstruction(op Opcode, operands ...int) Instruction {
 	def, ok := Lookup(op)
 	if !ok {
 		return nil
