@@ -18,7 +18,9 @@ func TestNewInstruction(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		instructions := NewInstruction(tt.op, tt.operands...)
+		iFact := NewInstructionFactory(nil)
+
+		instructions := iFact.NewInstruction(tt.op, tt.operands...)
 		assert.Equal(t, len(tt.expected), len(instructions), "wrong instruction length. expected %d, got %d", len(tt.expected), len(instructions))
 
 		for i, b := range tt.expected {

@@ -2,6 +2,20 @@ package bytecode
 
 import "encoding/binary"
 
+type InstructionFactory struct {
+	opCodeToDefinition map[Opcode]*Definition
+}
+
+func NewInstructionFactory(definitions map[Opcode]*Definition) *InstructionFactory {
+	if definitions == nil {
+		definitions = defaultDefinitions
+	}
+
+	return &InstructionFactory{
+		opCodeToDefinition: definitions,
+	}
+}
+
 type Instruction []byte
 
 type Opcode byte
@@ -10,8 +24,8 @@ type Opcode byte
 // It looks up the definition of the opcode to determine the expected operand widths, and then constructs a byte slice representing the instruction.
 // The first byte is the opcode, followed by the operands encoded in big-endian format according to their specified widths.
 // If the opcode is not found in the definitions, it returns nil.
-func NewInstruction(op Opcode, operands ...int) Instruction {
-	def, ok := Lookup(op)
+func (i *InstructionFactory) NewInstruction(op Opcode, operands ...int) Instruction {
+	def, ok := i.Lookup(op)
 	if !ok {
 		return nil
 	}
@@ -38,6 +52,11 @@ func NewInstruction(op Opcode, operands ...int) Instruction {
 	return instructions
 }
 
+func (i InstructionFactory) Lookup(opCode Opcode) (*Definition, bool) {
+	def, ok := i.opCodeToDefinition[opCode]
+	return def, ok
+}
+
 const (
 	OpConstant Opcode = iota
 )
@@ -50,11 +69,6 @@ type Definition struct {
 	OperandWidths []int
 }
 
-var definitions = map[Opcode]*Definition{
+var defaultDefinitions = map[Opcode]*Definition{
 	OpConstant: {"OpConstant", []int{2}},
-}
-
-func Lookup(op Opcode) (*Definition, bool) {
-	def, ok := definitions[op]
-	return def, ok
 }
