@@ -43,7 +43,10 @@ const (
 )
 
 type Definition struct {
-	Name          string
+	Name string
+	// OperandWidths specifies the widths of the operands for this instruction.
+	// Each width is an integer representing the number of bytes used to encode the corresponding operand.
+	// For example, a width of 2 means that the operand is encoded using 2 bytes in big-endian format.
 	OperandWidths []int
 }
 
