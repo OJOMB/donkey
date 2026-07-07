@@ -1,8 +1,7 @@
 package compiler
 
 import (
-	"go/ast"
-
+	"github.com/OJOMB/donkey/internal/ast"
 	"github.com/OJOMB/donkey/internal/bytecode"
 	"github.com/OJOMB/donkey/internal/objects"
 )
