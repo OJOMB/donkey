@@ -20,7 +20,18 @@ func TestCompilerCompile(t *testing.T) {
 		expectedInstructions []bytecode.Instruction
 	}
 
-	testCases := []testCase{}
+	testCases := []testCase{
+		{
+			name:  "integer literal",
+			input: `34;`,
+			expectedConstants: []objects.Object{
+				&objects.Integer{Value: 34},
+			},
+			expectedInstructions: []bytecode.Instruction{
+				bytecode.NewInstruction(bytecode.OpCodeConstant, 0),
+			},
+		},
+	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
