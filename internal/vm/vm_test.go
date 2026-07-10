@@ -8,6 +8,7 @@ import (
 
 	"github.com/OJOMB/donkey/internal/compiler"
 	"github.com/OJOMB/donkey/internal/lexer"
+	"github.com/OJOMB/donkey/internal/objects"
 	"github.com/OJOMB/donkey/internal/parser"
 )
 
@@ -38,4 +39,14 @@ func runVMTests(t *testing.T, tcs []vmTestCase) {
 
 		assert.Equal(t, tc.expected, stackElem)
 	}
+}
+
+func TestIntegerArithmetic(t *testing.T) {
+	tcs := []vmTestCase{
+		{"1", &objects.Integer{Value: 1}},
+		{"2", &objects.Integer{Value: 2}},
+		{"1 + 2", &objects.Integer{Value: 2}}, // fix me later
+	}
+
+	runVMTests(t, tcs)
 }
