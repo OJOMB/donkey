@@ -14,7 +14,7 @@ const (
 	OpCodeConstant Opcode = iota + 1
 )
 
-var defaultDefinitions = map[Opcode]*Definition{
+var definitions = map[Opcode]*Definition{
 	OpCodeConstant: {OpNameConstant, byte(OpCodeConstant), []int{2}},
 }
 
@@ -27,7 +27,7 @@ func (i Instruction) String() string {
 		return ""
 	}
 
-	def, ok := defaultDefinitions[Opcode(i[0])]
+	def, ok := lookup(Opcode(i[0]))
 	if !ok {
 		return "Unknown opcode"
 	}
@@ -93,7 +93,7 @@ func NewInstruction(op Opcode, operands ...int) Instruction {
 }
 
 func lookup(opCode Opcode) (*Definition, bool) {
-	def, ok := defaultDefinitions[opCode]
+	def, ok := definitions[opCode]
 	return def, ok
 }
 
