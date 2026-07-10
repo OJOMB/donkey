@@ -43,6 +43,11 @@ func TestInstructionString(t *testing.T) {
 			input:    NewInstruction(OpCodeConstant, 6553),
 			expected: "OpConstant 6553",
 		},
+		{
+			name:     "opAdd no operands",
+			input:    NewInstruction(OpCodeAdd),
+			expected: "OpAdd",
+		},
 	}
 
 	for _, tc := range testCases {

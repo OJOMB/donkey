@@ -7,15 +7,18 @@ import (
 )
 
 const (
-	OpNameConstant = "opConstant"
+	OpNameConstant = "OpConstant"
+	OpNameAdd      = "OpAdd"
 )
 
 const (
 	OpCodeConstant Opcode = iota + 1
+	OpCodeAdd
 )
 
 var definitions = map[Opcode]*Definition{
 	OpCodeConstant: {OpNameConstant, byte(OpCodeConstant), []int{2}},
+	OpCodeAdd:      {OpNameAdd, byte(OpCodeAdd), []int{}},
 }
 
 type Opcode byte
